@@ -1,0 +1,61 @@
+from typing import TypedDict, List, Optional, Annotated
+from pydantic import BaseModel
+import operator
+
+# Pydantic Models (Strictly Typed Artifacts)
+class BugContext(BaseModel):
+    issue_text: str
+    suspicious_files: List[str]
+    error_trace: Optional[str] = None
+
+class PatchCandidate(BaseModel):
+    id: str
+    code_diff: str
+    strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
+    status: str = "pending" # pending, passed, failed
+    execution_trace: Optional[str] = None
+
+class SpadeState(TypedDict):
+    bug_report: str
+    bug_context: BugContext
+    selected_patterns: List[str]
+    active_pattern: str 
+    
+    # This tells LangGraph: "When multiple agents return v1_patches, do NOT overwrite. Instead, use operator.add to append them."
+    v1_patches: Annotated[List[PatchCandidate], operator.add]
+    current_refined_patch: Optional[PatchCandidate]
+    
+    # Historical trace logs for analysis and potential LLM feedback
+    historical_verdicts: Annotated[List[str], operator.add]
+    failed_traces: Annotated[List[str], operator.add]
+    
+    # Active Debate (Overwritten each inner loop)
+    dynamic_argument: Optional[str]
+    static_argument: Optional[str]
+    dynamic_rebuttal: Optional[str]
+    static_rebuttal: Optional[str]
+    verdict: Optional[str]
+    
+    # Control Flow
+    outer_loop_count: int
+    inner_loop_count: int
+    current_patch_version: int  
+    resolution_status: str # 'resolved', 'unresolved', 'in_progress'    
+
+
+def get_loop_info(state: SpadeState, include_inner: bool = True):
+    """
+    Centralized helper to extract N, M, V values.
+    """
+    from config.settings import N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE
+    
+    n = state.get("outer_loop_count", 1)
+    m = state.get("inner_loop_count", 1)
+    v = state.get("current_patch_version", 1)
+    
+    if include_inner:
+        info_str = f"[N={n}/{N_OUTER_LOOPS}] [M={m}/{M_INNER_LOOPS}] [V={v}/{V_PATIENCE}]"
+    else:
+        info_str = f"[N={n}/{N_OUTER_LOOPS}]"
+    
+    return info_str

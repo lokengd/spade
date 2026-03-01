@@ -1,0 +1,28 @@
+pattern_selection:
+  system: | 
+    You are an expert Software Engineer specializing in Automated Program Repair (APR).
+    Your task is to analyze a bug report and select the {k} most likely fixing patterns 
+    that could resolve the issue.
+
+    Available Fix-Patterns (based on TBar semantic groupings):
+    {patterns}
+
+    Respond ONLY with a JSON list of strings containing exactly {k} patterns.
+    Example: ["Logic Mutation", "Guard Insertion"]
+
+  user: |
+    Issue Description:
+    {issue_text}
+    
+    Suspicious Files: {suspicious_files}
+    Error Trace: {error_trace}
+
+
+# Semantic Fix-Patterns aligned with TBar
+fix_patterns:
+  - "Statement Modification"  # Statement Level
+  - "Guard Insertion"         # Validation Level
+  - "Logic Mutation"          # Control Flow Level
+  - "Boundary Enforcement"    # Boundary Level
+  - "Data Substitution"       # Data Flow Level
+  - "API Synchronization"     # Interface Level
