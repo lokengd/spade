@@ -4,8 +4,11 @@ import operator
 
 # Pydantic Models (Strictly Typed Artifacts)
 class BugContext(BaseModel):
+    bug_id: str
     issue_text: str
-    suspicious_files: List[str]
+    suspicious_files: List[str] = []
+    local_repo_path: str
+    base_commit: str
     error_trace: Optional[str] = None
 
 class PatchCandidate(BaseModel):

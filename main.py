@@ -1,54 +1,42 @@
 import logging
 from src.core.graph import build_spade_orchestrator, draw_graph
 from src.core.state import BugContext
+from src.core.dataset_loader import DatasetLoader
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s")
-
-mock_bug_context = BugContext(
-    issue_text="Dummy bug report...",
-    suspicious_files=[],
-    error_trace=None
-)
 
 if __name__ == "__main__":
     
     app = build_spade_orchestrator()
+    #draw_graph(app)
 
-    # draw_graph(app)
+    
+    loader = DatasetLoader() # Load SWE-Bench-Lite dataset
+    test_data = loader.load_lite_data()
+    # Example: Get the first task instance
+    task = test_data[0]
 
-    # ==========================================
-    # 2. Initialize the strictly-typed Shared Memory State
-    # ==========================================
+    # Setup the local files for the agents to read
+    repo_path = loader.setup_task_env(task)
+
     initial_state = {
-        "bug_report_id": "Mock run-1",
-        "bug_context": mock_bug_context,
-        
-        "active_pattern": "",
-        "selected_patterns": [],
-        "v1_patches": [],
-        "v2_patch": None,
-        
-        "historical_verdicts": [], 
-        "failed_traces": [], 
-
-        # Debate Artifacts initialized to None
-        "dynamic_argument": None,
-        "static_argument": None,
-        "dynamic_rebuttal": None,
-        "static_rebuttal": None,
-        "verdict": None,
-        
-        "outer_loop_count": 1,
-        "inner_loop_count": 1,  
-        "current_patch_version": 1,        
-        "resolution_status": "in_progress" # Matches our updated state
+        "bug_id": task["instance_id"],  
+        "bug_report": task["problem_statement"], # The GitHub issue text        
+        # Bug Context for Agents
+        "bug_context": BugContext(
+            bug_id=task["instance_id"],
+            issue_text=task["problem_statement"],
+            local_repo_path=str(repo_path),
+            base_commit=task["base_commit"],
+            suspicious_files=[] # To be populated by FL Ensemble Agent
+        ),        
     }
 
-    config = {"configurable": {"thread_id": initial_state["bug_report_id"]}}
+    config = {"configurable": {"thread_id": initial_state["bug_id"]}}
 
     print("\n" + "*"*40)
     print("-"*40)
-    print(f"Starting SPADE Run: {initial_state['bug_report_id']}")
+    print(f"Starting SPADE Run: {initial_state['bug_id']}")
     print("-"*40)
     print("*"*40)
     

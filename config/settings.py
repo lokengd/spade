@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 # SAPDE Orchestration
 K_PATTERNS = 2           # K+1 Patterns Selection
@@ -18,3 +19,13 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # Local Endpoints
 OLLAMA_BASE_URL = "http://localhost:11434/v1"
+
+# Dataset and Repository Configuration
+BASE_DIR = pathlib.Path(__file__).parent.parent # Project Root
+DATA_DIR = BASE_DIR / "data"
+DATASET_PATH = DATA_DIR / "datasets"
+REPO_PATH = DATA_DIR / "repos"
+
+# Ensure directories exist
+DATASET_PATH.mkdir(parents=True, exist_ok=True)
+REPO_PATH.mkdir(parents=True, exist_ok=True)
