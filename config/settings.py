@@ -1,11 +1,10 @@
-# SAPDE Orchestration
 import os
 
+# SAPDE Orchestration
 K_PATTERNS = 2           # K+1 Patterns Selection
 N_OUTER_LOOPS = 3        # Outer Loop Hard Stop Limit
 M_INNER_LOOPS = 1        # Inner Loop Hard Reset Limit (debate panel iterations)
 V_PATIENCE = 2           # Version Patience Limit: Max versions per patch before hard reset
-
 
 # LLM Configuration
 LLM_PROVIDER = "ollama"  # Options: "openai", "gemini", "ollama", "local"
