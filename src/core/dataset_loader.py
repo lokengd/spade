@@ -35,7 +35,7 @@ class DatasetLoader:
         # Local path: data/repos/django__django
         local_repo_path = self.repo_root / repo_name.replace("/", "__")
         
-        # 1. Clone if not exists
+        # Clone if not exists
         if not local_repo_path.exists():
             remote_url = f"https://github.com/{repo_name}.git"
             logger.info(f"Cloning {{repo_name}} to {{local_repo_path}}...")
@@ -43,7 +43,7 @@ class DatasetLoader:
         
         repo = Repo(local_repo_path)
         
-        # 2. Reset and Checkout the base commit
+        # Reset and Checkout the base commit
         logger.info(f"Checking out base_commit {{base_commit}} for {{instance_id}}...")
         repo.git.reset("--hard")
         repo.git.clean("-fd")
