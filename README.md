@@ -27,10 +27,3 @@ rm data/checkpoints.sqlite*
 ```
 
 
-## TODO
-- [Partial] Integrate SWE-Bench-Lite Dataset, fetch repo to local env
-- Docker container for reproduction agent
-- Implement all agents
-- Collect metrics - token, data, trace, logs
-- etc
-

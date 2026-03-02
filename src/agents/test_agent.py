@@ -37,7 +37,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
     if new_inner_count >= M_INNER_LOOPS:
         # Increment the outer loop (N)
         next_n = state.get("outer_loop_count", 1) + 1
-        logger.warning(f"[INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED] Restart Outer Loop, preparing for N={next_n}\n")
+        logger.warning(f"INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED. Restart Outer Loop, preparing for N={next_n}\n")
         return {
             "resolution_status": "in_progress", 
             "inner_loop_count": new_inner_count, 
@@ -46,9 +46,9 @@ def _handle_fallback(state: SpadeState, current_v: int):
             "failed_traces": [failed_trace_log]
         }
         
-    # Case 2: Exhausted V Patience -> BACKTRACK to re-select from v1 pool
+    # Case 2: Exhausted V Patience -> Backtracking to re-select from v1 pool
     elif current_v >= V_PATIENCE:
-        logger.warning(f"[V_PATIENCE={V_PATIENCE} REACHED] Patience exhausted. Backtracking at M:{new_inner_count}\n")
+        logger.warning(f"V_PATIENCE={V_PATIENCE} REACHED. Backtracking at M:{new_inner_count}\n")
         return {
             "resolution_status": "in_progress", 
             "inner_loop_count": new_inner_count,
@@ -56,7 +56,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
             "failed_traces": [failed_trace_log]
         }
         
-    # Case 3: Have Patience & Loops left -> DEEPEN (Iterative Refinement)
+    # Case 3: Have Patience & Loops left -> Iterative Refinement
     logger.warning(f">>> FAILED. Iteratively refining to v{current_v + 1} (Inner Attempt {new_inner_count}/{M_INNER_LOOPS}). <<<")
     return {
         "resolution_status": "in_progress", 
