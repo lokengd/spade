@@ -12,8 +12,7 @@ class DatasetLoader:
         self.repo_root = settings.REPO_PATH
         self.dataset_root = settings.DATASET_PATH
 
-    def load_lite_data(self, split="test"):
-        """Downloads/loads metadata for 300 curated task instances."""
+    def load_data(self, split="test"):
         logger.info(f"Loading {self.dataset_name} ({split} split)...")
         # Downloads data to settings.DATASET_PATH
         return load_dataset(

@@ -27,7 +27,7 @@ def generate_refined_patch(state: SpadeState):
     v = state.get("current_patch_version", 1)
     loop_info = get_loop_info(state, include_inner=True)
 
-    v_next = v + 1
+    v_next = v # Incremented version is handled at test_agent._handle_fallback
 
     # Retrieve the origin ID (the v1 patch we are building upon)
     # This should be set by the Judge or a selection node earlier in the loop

@@ -22,38 +22,37 @@ def verify_refined(state: SpadeState):
         logger.info(f">>> v{current_v} PATCH PASSED FAIL_TO_PASS! <<<")
         return {"resolution_status": "resolved"}
     
-    # Otherwise, trigger the policy fallback
-    return _handle_test_failure(state, current_v)
+    # Otherwise, trigger the fallback policy
+    return _handle_fallback(state, current_v)
 
-# ---------------------------------------------------------
-# FALLBACK: Patch failed verification. We need to decide whether to hard reset, hard stop based on N, M and V limits.
-# ---------------------------------------------------------
-def _handle_test_failure(state: SpadeState, current_v: int):
+def _handle_fallback(state: SpadeState, current_v: int):
     """
-    Policy Method: Decides whether to Deepen, Backtrack, or Hard Reset.
+    Policy Method: Records the test failure and increments counters.
+    Leaves the routing decisions to `route_after_refined`.
     """
-    new_inner_count = state.get("inner_loop_count", 0) + 1
-    failed_trace_log = f"v{current_v} Failed: AssertionError" # Mock trace extraction
+    new_inner_count = state.get("inner_loop_count", 1) + 1
+    failed_trace_log = f"v{current_v} Failed: AssertionError"
     
-    # Case 1: Exhausted M Inner Loops -> HARD RESET to next Outer Loop (N)
+    # Case 1: Exhausted M Inner Loops 
     if new_inner_count >= M_INNER_LOOPS:
+        # Increment the outer loop (N)
         next_n = state.get("outer_loop_count", 1) + 1
-        logger.warning(f"!!! [INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED] Hard Resetting to N:{next_n}")
+        logger.warning(f"[INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED] Restart Outer Loop, preparing for N={next_n}\n")
         return {
             "resolution_status": "in_progress", 
-            "inner_loop_count": 0,  
+            "inner_loop_count": new_inner_count, 
             "outer_loop_count": next_n,
-            "current_patch_version": 1,
+            "current_patch_version": current_v,  
             "failed_traces": [failed_trace_log]
         }
         
     # Case 2: Exhausted V Patience -> BACKTRACK to re-select from v1 pool
     elif current_v >= V_PATIENCE:
-        logger.warning(f"!!! [V_PATIENCE={V_PATIENCE} REACHED] Patience exhausted. Backtracking at M:{new_inner_count}")
+        logger.warning(f"[V_PATIENCE={V_PATIENCE} REACHED] Patience exhausted. Backtracking at M:{new_inner_count}\n")
         return {
             "resolution_status": "in_progress", 
             "inner_loop_count": new_inner_count,
-            "current_patch_version": 1, # Signal backtracking for the next debate
+            "current_patch_version": 1, # Signal backtracking for the debate panel
             "failed_traces": [failed_trace_log]
         }
         

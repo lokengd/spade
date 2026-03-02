@@ -13,10 +13,8 @@ def load_prompts():
     with open("config/prompts.yaml", "r") as f:
         return yaml.safe_load(f)
 
-
 class PatternSelectionResponse(BaseModel):
     selected_patterns: List[str] = Field(description="List of selected semantic fix patterns")
-
 
 def run(state: SpadeState):
 
@@ -25,18 +23,18 @@ def run(state: SpadeState):
 
     client = LLM_Client()
 
-    # 1. Load configuration and patterns
+    # Load configuration and patterns
     prompts_config = load_prompts()
     fix_patterns = prompts_config["fix_patterns"]
     
-    # 2. Format the System Prompt
+    # Format the System Prompt
     system_template = prompts_config["pattern_selection"]["system"]
     system_prompt = system_template.format(
         k=K_PATTERNS,
         patterns=", ".join(fix_patterns)
     )
 
-    # 3. Format the User Prompt from BugContext
+    # Format the User Prompt from BugContext
     bug_context = state["bug_context"]
     user_template = prompts_config["pattern_selection"]["user"]
     user_prompt = user_template.format(
@@ -45,10 +43,10 @@ def run(state: SpadeState):
         error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available"
     )
 
-    # 4. Call the LLM
+    # Call the LLM
     try:
-        logger.debug(f"[Pattern Selection Agent] System Prompt: {system_prompt}")    
-        logger.debug(f"[Pattern Selection Agent] User Prompt: {user_prompt}")    
+        # logger.info(f"[Pattern Selection Agent] System Prompt: {system_prompt}")    
+        # logger.info(f"[Pattern Selection Agent] User Prompt: {user_prompt}")    
         # Use generate_structured instead of query
         structured_response = client.generate_structured(
             system_prompt=system_prompt,
@@ -63,5 +61,9 @@ def run(state: SpadeState):
         final_selection = fix_patterns[:K_PATTERNS]
 
     logger.info(f"Selected Patterns: {final_selection}")
-    
-    return {"selected_patterns": final_selection}
+
+    return {
+        "selected_patterns": final_selection,
+        "inner_loop_count": 1, # Reset inner loop count at the start of a new pattern selection,  safe for the first run or hard reset
+        "current_patch_version": 1 # Reset patch version to 1 for the new set of patterns
+    }

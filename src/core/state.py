@@ -10,6 +10,8 @@ class BugContext(BaseModel):
     local_repo_path: str
     base_commit: str
     error_trace: Optional[str] = None
+    fail_to_pass: str
+    pass_to_pass: str
 
 class PatchCandidate(BaseModel):
     id: str
@@ -19,7 +21,7 @@ class PatchCandidate(BaseModel):
     execution_trace: Optional[str] = None
 
 class SpadeState(TypedDict):
-    bug_report: str
+    thread_id: str # Unique identifier for the execution thread, tied to the bug_context 
     bug_context: BugContext
     selected_patterns: List[str]
     active_pattern: str 
