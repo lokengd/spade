@@ -43,7 +43,7 @@ costs:
   gemini-2.5-flash:
     input: 0.075
     output: 0.30
-  qwen2.5-coder:7b:
+  qwen2.5vl:3b:
     input: 0.0
     output: 0.0
   llama3.1:8b:

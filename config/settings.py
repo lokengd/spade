@@ -13,9 +13,13 @@ DATA_DIR = BASE_DIR / "data"
 DATASET_PATH = DATA_DIR / "datasets"
 REPO_PATH = DATA_DIR / "repos"
 
+# Logs Configuration
+LOG_DIR = DATA_DIR / "logs"
+
 # Ensure directories exist
 DATASET_PATH.mkdir(parents=True, exist_ok=True)
 REPO_PATH.mkdir(parents=True, exist_ok=True)
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 # Load LLM Configuration from yaml
 LLM_CONFIG_PATH = BASE_DIR / "config" / "llm.yaml"

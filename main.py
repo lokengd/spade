@@ -1,13 +1,12 @@
 import logging
 import uuid
+from venv import logger
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
+from src.utils.logger import setup_logger 
 from config import settings
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-logger = logging.getLogger(__name__)
 
 def print_run_start_banner(bug_id: str):
     print("\n" + "*"*40)
@@ -38,11 +37,16 @@ def run_spade(bug_id: str):
         unique_thread_id = f"{bug_id}-{run_suffix}"        
         config = {"configurable": {"thread_id": unique_thread_id}}
         
+        # Setup the logger
+        log_file_path = setup_logger(unique_thread_id)
+        logger = logging.getLogger(__name__) 
+        logger.info(f"Start thread run: {log_file_path}")
+
         state_snapshot = app.get_state(config)
         
         if not state_snapshot.values:
             # No memory found
-            logger.info(f"Starting NEW run for {bug_id}. Loading dataset...")
+            logger.info(f"NEW run for {bug_id}. Loading dataset...")
             
             loader = DatasetLoader()
             test_data = loader.load_data()
