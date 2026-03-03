@@ -23,7 +23,7 @@ class DatasetLoader:
             download_mode="reuse_dataset_if_exists" 
         )
 
-    def setup_task_env(self, instance: dict):
+    def load_repo(self, instance: dict):
         """
         Clones the repo and checks out the base_commit for a specific task.
         """

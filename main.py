@@ -49,7 +49,7 @@ def run_spade(bug_id: str):
             # filter the dataset to find that exact bug_id
             task = next(item for item in test_data if item["instance_id"] == bug_id)
 
-            repo_path = loader.setup_task_env(task)
+            repo_path = loader.load_repo(task)
             
             initial_state = {
                 "thread_id": unique_thread_id,  

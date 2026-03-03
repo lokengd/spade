@@ -3,11 +3,12 @@ from src.core.state import SpadeState, get_loop_info
 from config.settings import M_INNER_LOOPS, V_PATIENCE
 
 logger = logging.getLogger(__name__)
+agent_name = "Test Agent"
 
 # Initial verification for v1 patch candidates
 def verify_v1(state: SpadeState):
     loop_info = get_loop_info(state, include_inner=False)
-    logger.info(f"[Test Agent] {loop_info} Initial patch verification (v1)...")
+    logger.info(f"[{agent_name}] {loop_info} Initial patch verification (v1)...")
     # Assumed all v1 patches fail, so we remain in progress to trigger the debate
     return {"resolution_status": "in_progress"}
 
@@ -16,7 +17,7 @@ def verify_refined(state: SpadeState):
     current_v = state.get("current_patch_version", 2)
     
     loop_info = get_loop_info(state, include_inner=True)
-    logger.info(f"[Test Agent] {loop_info} Patch verification (v{current_v})...")
+    logger.info(f"[{agent_name}] {loop_info} Patch verification (v{current_v})...")
     
     if patch is not None and patch.get("id") == "mock_a_pass": 
         logger.info(f">>> v{current_v} PATCH PASSED FAIL_TO_PASS! <<<")

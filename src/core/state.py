@@ -20,6 +20,12 @@ class PatchCandidate(BaseModel):
     status: str = "pending" # pending, passed, failed
     execution_trace: Optional[str] = None
 
+def add_metrics(old_data: dict, new_data: dict) -> dict:
+    """Reducer function to safely add token and cost metrics together."""
+    if not old_data: old_data = {}
+    if not new_data: new_data = {}
+    return {k: old_data.get(k, 0) + new_data.get(k, 0) for k in set(old_data) | set(new_data)}
+
 class SpadeState(TypedDict):
     thread_id: str # Unique identifier for the execution thread, tied to the bug_context 
     bug_context: BugContext
@@ -46,6 +52,9 @@ class SpadeState(TypedDict):
     inner_loop_count: int
     current_patch_version: int  
     resolution_status: str # 'resolved', 'unresolved', 'in_progress'    
+
+    # Telemetry
+    total_metrics: Annotated[dict, add_metrics]
 
 
 def get_loop_info(state: SpadeState, include_inner: bool = True):

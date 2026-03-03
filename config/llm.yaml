@@ -1,0 +1,51 @@
+# LLM Configuration for agents
+agents:
+  fl_ensemble:
+    provider: "ollama"
+    model: "llama3.1:8b"
+    temperature: 0.0
+    base_url: "http://localhost:11434/v1"
+    api_key_env: null  # Local models don't need a real env variable
+
+  pattern_selection:
+    provider: "ollama"
+    model: "qwen2.5vl:3b"
+    temperature: 0.0
+    base_url: "http://localhost:11434/v1"
+    api_key_env: null
+
+  patchgen:
+    provider: "gemini"
+    model: "gemini-2.5-flash"
+    temperature: 0.0
+    base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+    api_key_env: "GEMINI_API_KEY"
+
+  debaters:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.7
+    base_url: null
+    api_key_env: "OPENAI_API_KEY"
+
+  judge:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.0
+    base_url: null
+    api_key_env: "OPENAI_API_KEY"
+
+# Cost per 1,000,000 (1 Million) tokens in USD
+costs:
+  gpt-4o:
+    input: 2.50
+    output: 10.00
+  gemini-2.5-flash:
+    input: 0.075
+    output: 0.30
+  qwen2.5-coder:7b:
+    input: 0.0
+    output: 0.0
+  llama3.1:8b:
+    input: 0.0
+    output: 0.0
