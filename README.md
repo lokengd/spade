@@ -2,7 +2,7 @@
 
 [![Paper](https://img.shields.io/badge/ArXiv-Pending-red.svg)](#) [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![LangGraph](https://img.shields.io/badge/LangGraph-Enabled-orange.svg)](https://github.com/langchain-ai/langgraph) 
 
-SPADE is an advanced, LLM-based multi-agent framework designed for Automated Program Repair (APR). 
+SPADE is an LLM-based multi-agent framework designed for Automated Program Repair (APR). 
 
 ---
 
@@ -29,26 +29,32 @@ python main.py
 
 ## LLM Configuration
 
-You can setup LLM model for each agent, adjust temperatures, and configure endpoints without modifying the codes. Simply edit the `config/llm.yaml` file, for example:
+You can setup LLM models, adjust temperatures, and configure endpoints for specific agents without modifying the source code. Simply edit the config/llm.yaml file:
 ```yaml
 agents:
   pattern_selection:
     provider: "gemini"
     model: "gemini-2.5-flash"
     temperature: 0.0
+    base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+    api_key_env: "GEMINI_API_KEY"
   judge:
     provider: "openai"
     model: "gpt-4o"
     temperature: 0.0
+    api_key_env: "OPENAI_API_KEY"
 ```
 
-Depending on the cloud providers you configure in the YAML file, you must set the corresponding environment variables before running the evaluation. You can export them directly in your terminal:
+Depending on the cloud providers, you must set the corresponding environment variables before running the evaluation. You can export them directly in your terminal:
 
 ```bash
 export OPENAI_API_KEY="[your-openai-api-key]"
 export GEMINI_API_KEY="[your-gemini-api-key]"
 ```
+
 _Note: If using local models via Ollama, ensure your instance is running on http://localhost:11434 prior to execution._
+
+
 
 ## SPADE Orchestration
 
