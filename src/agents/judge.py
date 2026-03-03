@@ -1,7 +1,6 @@
-import logging
+from src.utils.logger import log
 from src.core.state import SpadeState, get_loop_info
 
-logger = logging.getLogger(__name__)
 agent_name = "Judge Agent"
 
 def run(state: SpadeState):
@@ -9,7 +8,7 @@ def run(state: SpadeState):
     v = state.get("current_patch_version", 1)
     v_next = v + 1
 
-    logger.info(f"[{agent_name}] {loop_info} Issuing verdict to proceed to patch version {v_next}.")
+    log(f"{loop_info} Issuing verdict to proceed to patch version {v_next}.", agent_name)
     verdict = f"Winning patch is dynamic_patch_v{v} because <justification>. Proceed to generate patch v{v_next}."
         
     return {

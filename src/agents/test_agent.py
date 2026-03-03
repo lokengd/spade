@@ -1,14 +1,14 @@
+from src.utils.logger import log
 import logging
 from src.core.state import SpadeState, get_loop_info
 from config.settings import M_INNER_LOOPS, V_PATIENCE
 
-logger = logging.getLogger(__name__)
 agent_name = "Test Agent"
 
 # Initial verification for v1 patch candidates
 def verify_v1(state: SpadeState):
     loop_info = get_loop_info(state, include_inner=False)
-    logger.info(f"[{agent_name}] {loop_info} Initial patch verification (v1)...")
+    log(f"{loop_info} Initial patch verification (v1)...", agent_name)
     # Assumed all v1 patches fail, so we remain in progress to trigger the debate
     return {"resolution_status": "in_progress"}
 
@@ -17,10 +17,10 @@ def verify_refined(state: SpadeState):
     current_v = state.get("current_patch_version", 2)
     
     loop_info = get_loop_info(state, include_inner=True)
-    logger.info(f"[{agent_name}] {loop_info} Patch verification (v{current_v})...")
+    log(f"{loop_info} Patch verification (v{current_v})...", agent_name)
     
     if patch is not None and patch.get("id") == "mock_a_pass": 
-        logger.info(f">>> v{current_v} PATCH PASSED FAIL_TO_PASS! <<<")
+        log(f">>> v{current_v} PATCH PASSED FAIL_TO_PASS! <<<", agent_name)
         return {"resolution_status": "resolved"}
     
     # Otherwise, trigger the fallback policy
@@ -38,7 +38,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
     if new_inner_count >= M_INNER_LOOPS:
         # Increment the outer loop (N)
         next_n = state.get("outer_loop_count", 1) + 1
-        logger.warning(f"INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED. Restart Outer Loop, preparing for N={next_n}\n")
+        log(f"INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED. Restart Outer Loop, preparing for N={next_n}\n", agent_name, level=logging.WARNING)
         return {
             "resolution_status": "in_progress", 
             "inner_loop_count": new_inner_count, 
@@ -49,7 +49,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
         
     # Case 2: Exhausted V Patience -> Backtracking to re-select from v1 pool
     elif current_v >= V_PATIENCE:
-        logger.warning(f"V_PATIENCE={V_PATIENCE} REACHED. Backtracking at M:{new_inner_count}\n")
+        log(f"V_PATIENCE={V_PATIENCE} REACHED. Backtracking to pattern selection for new v1 candidates.\n", agent_name, level=logging.WARNING)
         return {
             "resolution_status": "in_progress", 
             "inner_loop_count": new_inner_count,
@@ -58,7 +58,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
         }
         
     # Case 3: Have Patience & Loops left -> Iterative Refinement
-    logger.warning(f">>> FAILED. Iteratively refining to v{current_v + 1} (Inner Attempt {new_inner_count}/{M_INNER_LOOPS}). <<<")
+    log(f"Patch v{current_v} failed. Iteratively refining to v{current_v + 1} (Inner Attempt {new_inner_count}/{M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
     return {
         "resolution_status": "in_progress", 
         "inner_loop_count": new_inner_count,

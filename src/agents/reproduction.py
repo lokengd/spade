@@ -1,9 +1,8 @@
-import logging
+from src.utils.logger import log
 from src.core.state import SpadeState
 
-logger = logging.getLogger(__name__)
 agent_name = "Reproduction Agent"
 
 def run(state: SpadeState):
-    logger.info(f"[{agent_name}] Provisioning Docker Container and Reproducing Bug...")
+    log(f"Provisioning Docker Container and Reproducing Bug...", agent_name)
     return {"error_trace": "AssertionError", "execution_logs": ["Reproduction captured AssertionError."]}

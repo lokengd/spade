@@ -1,15 +1,13 @@
-# src/agents/patchgen.py
-import logging
+from src.utils.logger import log
 import uuid
 from src.core.state import SpadeState, get_loop_info
 
-logger = logging.getLogger(__name__)
 agent_name = "PatchGen Agent"
 
 def generate_v1_patch(state: SpadeState):
     pattern = state.get("active_pattern", "unconstrained")
     loop_info = get_loop_info(state, include_inner=False)
-    logger.info(f"[{agent_name}] {loop_info} Working on strategy -> {pattern}")
+    log(f"{loop_info} Working on strategy -> {pattern}", agent_name)
     
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
             
@@ -34,8 +32,8 @@ def generate_refined_patch(state: SpadeState):
     # This should be set by the Judge or a selection node earlier in the loop
     origin_id = state.get("current_v1_id", "unknown_origin")
 
-    logger.info(f"[{agent_name}] {loop_info} Improve previous patch {origin_id} and generate new patch v{v_next}...")
-        
+    log(f"{loop_info} Improve previous patch {origin_id} and generate new patch v{v_next}...", agent_name)
+
     patch_id = f"v{v_next}_{uuid.uuid4().hex[:6]}"
 
     patch = {

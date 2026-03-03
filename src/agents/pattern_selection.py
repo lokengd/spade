@@ -1,3 +1,4 @@
+from src.utils.logger import log
 import logging
 import yaml
 from pydantic import BaseModel, Field
@@ -6,7 +7,6 @@ from src.core.state import SpadeState, get_loop_info
 from src.core.llm_client import LLM_Client
 from config.settings import K_PATTERNS, LLM_AGENTS
 
-logger = logging.getLogger(__name__)
 agent_name = "Pattern Selection Agent"
 
 def load_prompts():
@@ -23,7 +23,7 @@ def run(state: SpadeState):
     client = LLM_Client(agent=agent_name, **agent_config)
 
     loop_info = get_loop_info(state, include_inner=False)
-    logger.info(f"[{agent_name}] {loop_info} Selecting Top-{K_PATTERNS} Patterns...")    
+    log(f"{loop_info} Selecting Top-{K_PATTERNS} Patterns...", agent_name)
 
     # Load configuration and patterns
     prompts_config = load_prompts()
@@ -56,7 +56,7 @@ def run(state: SpadeState):
         final_selection = structured_response.selected_patterns[:K_PATTERNS]
         
     except Exception as e:
-        logger.error(f"[{agent_name}] Failed to select patterns via LLM: {e}. Falling back to defaults.")
+        log(f"Failed to select patterns via LLM: {e}. Falling back to defaults.", agent_name, level=logging.ERROR)
         # Fallback to the first K patterns to prevent graph crash
         final_selection = fix_patterns[:K_PATTERNS]
 

@@ -1,9 +1,8 @@
-import logging
+from src.utils.logger import log
 from src.core.state import SpadeState
 
-logger = logging.getLogger(__name__)
 agent_name = "FL Ensemble Agent"
 
 def run(state: SpadeState):
-    logger.info(f"[{agent_name}] Running analysis...")
+    log("Running analysis...", agent_name)
     return {"suspicious_files": ["path/to/suspect_1.py", "path/to/suspect_2.py", "path/to/suspect_3.py"], "execution_logs": ["FL identified cart/utils.py"]}
