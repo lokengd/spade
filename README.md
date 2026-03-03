@@ -1,7 +1,15 @@
-# SPADE: Semantic Pattern-Guided LLM-Based Multi-Agent DebatE for Automated Program Repair
+# ♠️ SPADE: Semantic Pattern-Guided LLM-Based Multi-Agent DebatE for Automated Program Repair
 
+[![Paper](https://img.shields.io/badge/ArXiv-Pending-red.svg)](#) [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![LangGraph](https://img.shields.io/badge/LangGraph-Enabled-orange.svg)](https://github.com/langchain-ai/langgraph) 
 
-## Environment
+SPADE is an advanced, LLM-based multi-agent framework designed for Automated Program Repair (APR). 
+
+---
+
+## Quick Start
+
+### 1. Environment Setup
+Clone the repository and run the setup script to initialize the virtual environment and install dependencies.
 ```bash
 # Make the script executable 
 chmod +x setup.sh
@@ -10,7 +18,7 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-## Running SPADE
+### 2. Run the Evaluation
 ```bash
 # Activate the virtual environment (if setup.sh doesn't do it automatically)
 source .venv/bin/activate
@@ -19,11 +27,42 @@ source .venv/bin/activate
 python main.py
 ```
 
-### Tip: Resetting Agent Memory
+## LLM Configuration
+
+You can setup LLM model for each agent, adjust temperatures, and configure endpoints without modifying the codes. Simply edit the `config/llm.yaml` file, for example:
+```yaml
+agents:
+  pattern_selection:
+    provider: "gemini"
+    model: "gemini-2.5-flash"
+    temperature: 0.0
+  judge:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.0
+```
+
+Depending on the cloud providers you configure in the YAML file, you must set the corresponding environment variables before running the evaluation. You can export them directly in your terminal:
+
+```bash
+export OPENAI_API_KEY="[your-openai-api-key]"
+export GEMINI_API_KEY="[your-gemini-api-key]"
+```
+_Note: If using local models via Ollama, ensure your instance is running on http://localhost:11434 prior to execution._
+
+## SPADE Orchestration
+
+![SPADE Architecture](spade_graph.png)
+
+## Tips & Troubleshooting
+### 1. Resetting Agent Memory
+
+SPADE uses a local SQLite checkpointer to persist agent state and memory across runs. To completely clear the memory and start fresh:
 
 ```bash
 # Delete the local checkpointer database to clear agent memory
 rm data/checkpoints.sqlite*
 ```
 
-
+### 2. Viewing Execution Traces
+Detailed, timestamped execution logs, including token consumption and reasoning traces, are automatically saved to the data/logs/ directory for every run.
