@@ -30,12 +30,49 @@ def setup_logger(thread_id: str, level=logging.INFO) -> str:
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
-    return str(log_file)
+    return str(log_file) # Return the log file path
 
-def log(message: str, agent_name: str, level: int = logging.INFO):
-    logger = logging.getLogger() 
-    logger.log(level, f"[{agent_name}] {message}")
 
-def log_msg(message, level: int = logging.INFO):
+def log(message: str, caller: str = "Main", level: int = logging.INFO):
     logger = logging.getLogger() 
-    logger.log(level, message)
+    logger.log(level, f"[{caller}] {message}")
+
+def get_log_header(thread_id: str) -> str:
+    width = 40
+    lines = [
+        "",
+        "*" * width,
+        f"SPADE Run: {thread_id}",
+        "-" * width,
+        f"Orchestration Parameters:",
+        f" K (Top-Patterns)     : {settings.K_PATTERNS}",
+        f" N (Outer Loops)      : {settings.N_OUTER_LOOPS}",
+        f" M (Inner Loops)      : {settings.M_INNER_LOOPS}",
+        f" V (Version Patience) : {settings.V_PATIENCE}",
+        "*" * width,
+    ]
+    return "\n".join(lines)
+
+
+def get_memory_state(shared_memory_state: dict) -> str:
+    """Returns the shared memory state as a formatted string for logging."""
+    width = 40
+    lines = [
+        "",
+        "=" * width,
+        "SHARED MEMORY STATE",
+        "-" * width
+    ]
+    
+    for key, value in shared_memory_state.items():
+        # Special handling for metrics to make them look nice
+        if key == "total_metrics" and isinstance(value, dict):
+            lines.append(f"{key}:")
+            for m_key, m_val in value.items():
+                lines.append(f" {m_key}: {m_val}")
+        else:
+            lines.append(f"{key}: {value}")
+
+    lines.append("=" * width)
+    lines.append("")
+    return "\n".join(lines)

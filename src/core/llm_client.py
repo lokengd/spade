@@ -1,11 +1,11 @@
 import os
-import logging
 from typing import Type, TypeVar, Tuple
 from pydantic import BaseModel
 from openai import OpenAI
 from config.settings import COST_TABLE
+from src.utils.logger import log
+import logging
 
-logger = logging.getLogger(__name__)
 T = TypeVar('T', bound=BaseModel)
 
 class LLM_Client:
@@ -22,7 +22,7 @@ class LLM_Client:
             if env_key:
                 resolved_key = env_key
             else:
-                logger.warning(f"{api_key_env} is missing from environment variables!")
+                log(f"{api_key_env} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
 
         # Initialize the appropriate client based on provider
         client_kwargs = {"api_key": resolved_key}
@@ -53,8 +53,8 @@ class LLM_Client:
     def generate_text(self, system_prompt: str, user_prompt: str) -> Tuple[str, dict]:
         """Returns a simple, unstructured Python string (str)."""
 
-        logger.info(f"[{self.agent_name}] System Prompt: {system_prompt}")    
-        logger.info(f"[{self.agent_name}] User Prompt: {user_prompt}")    
+        log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
+        log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
         try:
             response = self.client.chat.completions.create(
@@ -67,15 +67,16 @@ class LLM_Client:
             )
             
             text_response = response.choices[0].message.content
-            logger.info(f"[{self.agent_name}] LLM response:\n {text_response}\n")
+            
+            log(f"LLM response:\n {text_response}\n", caller=self.agent_name)
 
             metrics = self._calculate_metrics(response.usage)
-            logger.info(f"[{self.agent_name}] LLM response metrics: {metrics}")
+            log(f"LLM response metrics: {metrics}", caller=self.agent_name)
 
             return text_response, metrics
         
         except Exception as e:
-            logger.error(f"[{self.agent_name}] LLM Text Gen Error ({self.provider}): {e}")
+            log(f"LLM Text Gen Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             raise
 
     def generate_structured(self, system_prompt: str, user_prompt: str, response_model: Type[T]) -> Tuple[T, dict]:
@@ -83,8 +84,8 @@ class LLM_Client:
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """
         try:
-            logger.info(f"[{self.agent_name}] System Prompt: {system_prompt}")    
-            logger.info(f"[{self.agent_name}] User Prompt: {user_prompt}")    
+            log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
+            log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
             schema_instruction = f"\n\nYou MUST return ONLY valid JSON matching this schema:\n{response_model.model_json_schema()}"
             
@@ -99,16 +100,16 @@ class LLM_Client:
             )
             
             raw_json = response.choices[0].message.content
-            logger.info(f"[{self.agent_name}] LLM raw response:\n {raw_json}\n")
+            log(f"LLM raw response:\n {raw_json}\n", caller=self.agent_name)
 
             parsed_data = response_model.model_validate_json(raw_json)
-            logger.info(f"[{self.agent_name}] LLM json response:\n {parsed_data}\n")
+            log(f"LLM json response:\n {parsed_data}\n", caller=self.agent_name)
 
             metrics = self._calculate_metrics(response.usage)
-            logger.info(f"[{self.agent_name}] LLM response metrics: {metrics}")
+            log(f"LLM response metrics: {metrics}", caller=self.agent_name)
 
             return parsed_data, metrics
         
         except Exception as e:
-            logger.error(f"[{self.agent_name}] LLM Structured Error ({self.provider}): {e}")
+            log(f"LLM Structured Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             raise

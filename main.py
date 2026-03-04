@@ -1,28 +1,23 @@
 import logging
 import uuid
-from venv import logger
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
-from src.utils.logger import setup_logger 
+from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
 from config import settings
 
-def print_run_start_banner(bug_id: str):
-    print("\n" + "*"*40)
-    print(f"Starting SPADE Run: {bug_id}")
-    print("*"*40)
+def run_spade(task: dict):
 
-def print_memory_state(shared_memory_state: dict):
-    print("\n" + "="*40)
-    print("SHARED MEMORY STATE")
-    print("-"*40)
-    for key, value in shared_memory_state.items():
-        print(f"{key}: {value}")
+    # Assign unique thread id for the bug_id (support multiple runs and used in logging and checkpointing)
+    bug_id = task["instance_id"]
+    thread_suffix = uuid.uuid4().hex[:6] 
+    thread_id = f"{bug_id}_{thread_suffix}"        
+        
+    # Setup the logger
+    setup_logger(thread_id)
+    log(get_log_header(thread_id))
 
-    print("="*40)
-
-def run_spade(bug_id: str):
     # Setup SQLite memory database
     db_path = settings.DATA_DIR / "checkpoints.sqlite"
 
@@ -32,21 +27,12 @@ def run_spade(bug_id: str):
         app = graph.compile(checkpointer=memory)
         #draw_graph(app)
 
-        # The checkpointer permanently ties the SpadeState to the thread_id (bug_id).
-        run_suffix = uuid.uuid4().hex[:6] 
-        unique_thread_id = f"{bug_id}-{run_suffix}"        
-        config = {"configurable": {"thread_id": unique_thread_id}}
-        
-        # Setup the logger
-        log_file_path = setup_logger(unique_thread_id)
-        logger = logging.getLogger(__name__) 
-        logger.info(f"Start thread run: {log_file_path}")
-
+        config = {"configurable": {"thread_id": thread_id}}
         state_snapshot = app.get_state(config)
         
         if not state_snapshot.values:
             # No memory found
-            logger.info(f"NEW run for {bug_id}. Loading dataset...")
+            log(f"NEW run for {bug_id}. Loading dataset...")
             
             loader = DatasetLoader()
             test_data = loader.load_data()
@@ -56,7 +42,7 @@ def run_spade(bug_id: str):
             repo_path = loader.load_repo(task)
             
             initial_state = {
-                "thread_id": unique_thread_id,  
+                "thread_id": thread_id,  
                 "bug_context": BugContext(
                     bug_id=task["instance_id"],
                     issue_text=task["problem_statement"],
@@ -67,40 +53,44 @@ def run_spade(bug_id: str):
                     pass_to_pass=task["PASS_TO_PASS"]
                 ),        
             }
-                        
-            print_run_start_banner(bug_id)
 
             for event in app.stream(initial_state, config=config):
                 for node_name, state_update in event.items():
                     pass
-                    #logger.info(f"Finished node: {node_name}")
+                    #log(f"Finished node: {node_name}")
             
         else:
             # Memory found
-            logger.info(f"Memory found! Resuming run for {bug_id} from exact last step...")
+            log(f"Memory found! Resuming run for {bug_id} from exact last step...")
             
-            print_run_start_banner(bug_id)
-
             # Pass None (state) as the state, but still use streams
             for event in app.stream(None, config=config):
                 for node_name, state_update in event.items():
                     pass
-                    #logger.info(f"Finished node: {node_name}")
+                    #log(f"Finished node: {node_name}")
 
-        shared_memory_state = app.get_state(config).values
-        print_memory_state(shared_memory_state)
-
+        memory_state = app.get_state(config).values
+        log(get_memory_state(memory_state))
 
 if __name__ == "__main__":
-    
+
+    # Initialize dataset Loader
     loader = DatasetLoader()
     test_data = loader.load_data()
-    task = test_data[0] # Grab the first task (test_data[0]) for test run
-    # Inspect test data
-    print("\nAvailable fields in Dataset")
-    for key in task.keys():
+    print(f"\nDataset Loaded. Found {len(test_data)} task instances.")
+
+    # ---- DEMO PURPOSE: Just run the first test instance for now ----
+    # Filter for a specific bug for sample evaluation run 
+    test_data = [t for t in test_data if t['instance_id'] == "astropy__astropy-12907"]
+    print("Available fields in a task:")
+    for key in test_data[0].keys():
         print(f"- {key}")
+    # ---- DEMO PURPOSE: End. ----
 
-    bug_id = task["instance_id"]
-    run_spade(bug_id)
-
+    for task in test_data:
+        bug_id = task.get('instance_id', 'unknown_bug')
+        try:
+            run_spade(task) 
+        except Exception as e:
+            logging.error(f"FATAL: Evaluation failed for {bug_id}. Error: {e}")
+            continue
