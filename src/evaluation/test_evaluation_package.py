@@ -1,6 +1,6 @@
 """Test script to validate the setup and functionality of SWE-bench for evaluation purposes."""
 
-from swe_bench_lite_utils import *
+from src.evaluation.swe_bench_lite_utils import *
 
 print("Starting SWE-bench setup validation...")
 
