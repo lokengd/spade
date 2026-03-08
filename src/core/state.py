@@ -19,6 +19,20 @@ class PatchCandidate(BaseModel):
     strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
     status: str = "pending" # pending, passed, failed
     execution_trace: Optional[str] = None
+    evaluation: Evaluation = None # Populated after evaluation step
+
+class Evaluation(BaseModel):
+    # These 2 fields capture any errors or unexpected issues during the evaluation process itself (e.g., timeouts, docker errors, etc.)
+    evaluation_error: Optional[str] = None
+    evaluation_ran_successfully: bool = False
+
+    # These fields capture the actual results of the test execution for a given patch candidate
+    bug_resolved: bool
+    total_tests: int
+    passed_tests: List[str] # List of test case identifiers that passed
+    failed_tests: List[str] # List of test case identifiers that failed
+    failed_test_traces: Optional[dict] = None # Mapping of failed test cases to their execution traces
+
 
 def add_metrics(old_data: dict, new_data: dict) -> dict:
     """Reducer function to safely add token and cost metrics together."""
