@@ -19,9 +19,9 @@ class PatchCandidate(BaseModel):
     strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
     status: str = "pending" # pending, passed, failed
     execution_trace: Optional[str] = None
-    evaluation: Evaluation = None # Populated after evaluation step
+    evaluation: EvaluationResult = None # Populated after evaluation step
 
-class Evaluation(BaseModel):
+class EvaluationResult(BaseModel):
     # These 2 fields capture any errors or unexpected issues during the evaluation process itself (e.g., timeouts, docker errors, etc.)
     evaluation_error: Optional[str] = None
     evaluation_ran_successfully: bool = False
