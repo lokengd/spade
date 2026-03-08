@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .constants import (
+from constants import (
 	EVAL_DIR,
 	SWE_BENCH_REPO_NAME,
 	SWE_BENCH_REPO_URL,
@@ -99,11 +99,16 @@ def test_installation() -> bool:
 		text=True,
 		check=False,
 	)
+
+	print("Validation command output:")
+	print(run_result.stdout)
+	print(run_result.stderr)
+
 	if run_result.returncode != 0:
 		return False
 
 	logs_dir = eval_dir / "logs"
-	gold_logs_dir = logs_dir / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / VALIDATION_INSTANCE_ID
+	gold_logs_dir = logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / VALIDATION_INSTANCE_ID
 	results_file = eval_dir / f"{VALIDATION_PREDICTIONS_PATH}.{VALIDATION_RUN_ID}.json"
 
 	return logs_dir.exists() and logs_dir.is_dir() and gold_logs_dir.exists() and gold_logs_dir.is_dir() and results_file.exists() and results_file.is_file()

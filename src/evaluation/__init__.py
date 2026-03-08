@@ -1,7 +1,7 @@
 """Evaluation helpers."""
 
-from .constants import EVAL_DIR
-from .swe_bench_lite_utils import (
+from constants import EVAL_DIR
+from swe_bench_lite_utils import (
 	check_docker_installed_and_running,
 	clone_and_install_swe_bench,
 	get_eval_dir_path,
