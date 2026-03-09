@@ -23,14 +23,23 @@ class PatchCandidate(BaseModel):
 
 class EvaluationResult(BaseModel):
     # These 2 fields capture any errors or unexpected issues during the evaluation process itself (e.g., timeouts, docker errors, etc.)
-    evaluation_error: Optional[str] = None
+    evaluation_error_message: Optional[str] = None
     evaluation_ran_successfully: bool = False
 
     # These fields capture the actual results of the test execution for a given patch candidate
-    bug_resolved: bool
-    total_tests: int
-    passed_tests: List[str] # List of test case identifiers that passed
-    failed_tests: List[str] # List of test case identifiers that failed
+    bug_resolved: bool = None
+    patch_applied_successfully: bool = None
+
+    total_tests: int = -1
+    pass_to_pass_success: bool = None
+    fail_to_pass_success: bool = None
+
+    pass_to_pass_failed_tests: List[str] = None
+    fail_to_pass_failed_tests: List[str] = None
+
+    pass_to_pass_successful_tests: List[str] = None
+    fail_to_pass_successful_tests: List[str] = None
+
     failed_test_traces: Optional[dict] = None # Mapping of failed test cases to their execution traces
 
 
