@@ -7,7 +7,7 @@ from src.evaluation.swe_bench_lite_utils import (
 	test_installation,
     run_evaluation_on_instance,
     run_evaluation_with_no_patch,
-	cleanup_validation_logs_and_results,
+    cleanup_logs_and_results_for_run,
 	cleanup_evaluation_dir
 )
 
@@ -18,6 +18,6 @@ __all__ = [
 	"test_installation",
     "run_evaluation_on_instance",
     "run_evaluation_with_no_patch",
-    "cleanup_validation_logs_and_results",
+    "cleanup_logs_and_results_for_run",
     "cleanup_evaluation_dir"
 ]
