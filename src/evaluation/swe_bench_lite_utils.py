@@ -17,6 +17,7 @@ from src.evaluation.constants import (
 	VALIDATION_MAX_WORKERS,
 	VALIDATION_PREDICTIONS_PATH,
 	VALIDATION_RUN_ID,
+	DEFAULT_PREDICTIONS_PATH
 )
 
 
@@ -36,7 +37,12 @@ def get_logs_dir_path() -> Path:
 
 def get_instance_logs_dir(instance_id: str, run_id: str, predictions_path: str) -> Path:
 	logs_dir = get_logs_dir_path()
-	instance_logs_dir = logs_dir / "run_evaluation" / run_id / predictions_path / instance_id
+
+	if predictions_path == VALIDATION_PREDICTIONS_PATH and run_id == VALIDATION_RUN_ID:
+		# For validation run, logs are always stored under "gold" directory to be able to verify the results.
+		return logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / instance_id
+
+	instance_logs_dir = logs_dir / "run_evaluation" / run_id / DEFAULT_PREDICTIONS_PATH / instance_id
 	return instance_logs_dir
 
 
@@ -188,7 +194,7 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 		json_line = json.dumps({
 			"instance_id": instance_id,
 			"model_patch": patch,
-			"model_name_or_path": "spade"
+			"model_name_or_path": DEFAULT_PREDICTIONS_PATH
 		})
 		f.write(json_line + "\n")
 
@@ -246,9 +252,9 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	if run_result.returncode != 0:
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=f"Evaluation failed.\n Log:{run_result.stdout} \nError:{run_result.stderr}")
 
-	logs_dir = eval_dir / "logs"
-	instance_logs_dir = logs_dir / "run_evaluation" / run_id / predictions_path / instance_id
-	results_file = eval_dir / f"{predictions_path}.{run_id}.json"
+	# logs_dir = get_logs_dir_path()
+	# instance_logs_dir = get_instance_logs_dir(instance_id, run_id, predictions_path)
+	# results_file = eval_dir / f"{predictions_path}.{run_id}.json"
 
 	report_file_data = get_report_file(get_report_path(instance_id, run_id, predictions_path))
 	test_output_data = get_test_output_file(get_test_output_path(instance_id, run_id, predictions_path))
@@ -259,7 +265,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	if not test_output_data["method_success"]:
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=test_output_data.get("error", "Unknown error while reading test output file."))
 
-	bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
+	# bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
 	test_output = test_output_data["test_output"]
 
@@ -267,8 +273,8 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	return EvaluationResult(
 		evaluation_ran_successfully=True, 
 		evaluation_error_message=None, 
-		bug_resolved=bug_status, 
-		patch_applied_successfully=test_case_results.get("patch_applied_successfully"),
+		bug_resolved=test_case_results["bug_resolved"], 
+		patch_applied_successfully=test_case_results["patch_applied_successfully"],
 		total_tests=test_case_results["total_tests"],
 		pass_to_pass_success=test_case_results["pass_to_pass_success"],
 		fail_to_pass_success=test_case_results["fail_to_pass_success"],
@@ -329,6 +335,21 @@ def test_installation() -> bool:
 	results_file = eval_dir / f"{VALIDATION_PREDICTIONS_PATH}.{VALIDATION_RUN_ID}.json"
 
 	return logs_dir.exists() and logs_dir.is_dir() and gold_logs_dir.exists() and gold_logs_dir.is_dir() and results_file.exists() and results_file.is_file() and evaluation_result.evaluation_ran_successfully and evaluation_result.bug_resolved
+
+
+def cleanup_logs_and_results_for_run(run_id: str) -> bool:
+	"""Remove logs and results generated for a specific run."""
+	eval_dir = get_eval_dir_path()
+	logs_dir = get_logs_dir_path()
+	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
+
+	if logs_dir.exists() and logs_dir.is_dir():
+		shutil.rmtree(logs_dir)
+
+	if results_file.exists() and results_file.is_file():
+		results_file.unlink()
+	
+	return True
 
 
 def cleanup_validation_logs_and_results() -> bool:
