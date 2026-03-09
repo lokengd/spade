@@ -28,6 +28,13 @@ assert report_path.exists() and report_path.is_file(), "Report file not found af
 report_data = get_report_file(report_path)
 assert report_data["method_success"], f"Failed to read report file: {report_data.get('error')}"
 
+test_output_path = get_test_output_path(instance_id=VALIDATION_INSTANCE_ID, run_id=VALIDATION_RUN_ID, predictions_path=VALIDATION_PREDICTIONS_PATH)
+assert test_output_path.exists() and test_output_path.is_file(), "Test output file not found after validation run."
+
+test_output_data = get_test_output_file(test_output_path)
+assert test_output_data["method_success"], f"Failed to read test output file: {test_output_data.get('error')}"
+assert isinstance(test_output_data.get("test_output"), str), "Test output is empty after validation run."
+
 test_case_results = get_test_case_results(report_data["report_data"])
 assert test_case_results['bug_resolved'], "Bug was not resolved according to test case results."
 assert test_case_results['pass_to_pass_success'], "PASS_TO_PASS test case did not pass."

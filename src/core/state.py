@@ -40,6 +40,7 @@ class EvaluationResult(BaseModel):
     pass_to_pass_successful_tests: List[str] = None
     fail_to_pass_successful_tests: List[str] = None
 
+    test_output: str = None
     failed_test_traces: Optional[dict] = None # Mapping of failed test cases to their execution traces
 
 
