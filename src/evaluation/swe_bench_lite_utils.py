@@ -116,43 +116,6 @@ def setup_evaluation_environment() -> bool:
 	return True
 
 
-def test_installation() -> bool:
-	"""Run SWE-bench validation command and verify expected logs are created."""
-	eval_dir = get_eval_dir_path()
-
-	if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
-		return False
-
-	cmd = [
-		"python3", "-m", "swebench.harness.run_evaluation",
-		"--predictions_path", VALIDATION_PREDICTIONS_PATH,
-		"--max_workers", VALIDATION_MAX_WORKERS,
-		"--instance_ids", VALIDATION_INSTANCE_ID,
-		"--run_id", VALIDATION_RUN_ID,
-	]
-
-	run_result = subprocess.run(
-		cmd,
-		cwd=eval_dir,
-		capture_output=True,
-		text=True,
-		check=False,
-	)
-
-	print("Validation command output:")
-	print(run_result.stdout)
-	print(run_result.stderr)
-
-	if run_result.returncode != 0:
-		return False
-
-	logs_dir = eval_dir / "logs"
-	gold_logs_dir = logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / VALIDATION_INSTANCE_ID
-	results_file = eval_dir / f"{VALIDATION_PREDICTIONS_PATH}.{VALIDATION_RUN_ID}.json"
-
-	return logs_dir.exists() and logs_dir.is_dir() and gold_logs_dir.exists() and gold_logs_dir.is_dir() and results_file.exists() and results_file.is_file()
-
-
 def get_report_file(report_path: Path) -> dict:
 	if not report_path.exists() or not report_path.is_file():
 		return {"method_success": False, "error": "Report file not found."}
@@ -197,7 +160,7 @@ def is_bug_resolved(instance_id: str, run_id: str, predictions_path: str) -> dic
 def get_test_case_results(report_data: dict) -> dict:
 	pass_to_pass_results = report_data.get("tests_status").get("PASS_TO_PASS")
 	fail_to_pass_results = report_data.get("tests_status").get("FAIL_TO_PASS")
-	total_tests = pass_to_pass_results.get("success", 0) + pass_to_pass_results.get("failure", 0) + fail_to_pass_results.get("success", 0) + fail_to_pass_results.get("failure", 0)
+	total_tests = len(pass_to_pass_results.get("success", 0)) + len(pass_to_pass_results.get("failure", 0)) + len(fail_to_pass_results.get("success", 0)) + len(fail_to_pass_results.get("failure", 0))
 
 	return {
 		"bug_resolved": report_data.get("resolved"),
@@ -212,16 +175,50 @@ def get_test_case_results(report_data: dict) -> dict:
 	}
 
 
-def run_evaluation_on_instance(instance_id: str, run_id: str, predictions_path: str, max_workers: int = 1) -> EvaluationResult:
+def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = None) -> str:
+	"""Generate a JSONL file and return unique predictions path for a given instance and run ID."""
+	# {"instance_id": "sympy__sympy-20590", "model_patch": "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n", "model_name_or_path": "test_no_predictions"}
+
+	if run_id == VALIDATION_RUN_ID:
+		# For validation run, we want to use the same predictions path and file to be able to verify the results.
+		return VALIDATION_PREDICTIONS_PATH
+
+
+	with open(get_eval_dir_path() / f"predictions_{instance_id}.jsonl", "w") as f:
+		json_line = json.dumps({
+			"instance_id": instance_id,
+			"model_patch": patch,
+			"model_name_or_path": "spade"
+		})
+		f.write(json_line + "\n")
+
+	return f"predictions_{instance_id}.jsonl"
+
+
+def delete_predictions_file(predictions_file_path: str) -> None:
+    """Delete the predictions file if it exists."""
+    file_path = get_eval_dir_path() / predictions_file_path
+
+    if file_path.exists() and file_path.is_file():
+        file_path.unlink()
+	
+    return True
+
+
+def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_workers: int = 1) -> EvaluationResult:
 	"""Run SWE-bench evaluation on a specific instance and verify logs."""
 	eval_dir = get_eval_dir_path()
 
 	if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
 		log("SWE-bench repo not found in evaluation directory.", caller="Evaluation", level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="SWE-bench repo not found in evaluation directory.")
+
 	if not check_docker_installed_and_running():
 		log("Docker is not installed or running.", caller="Evaluation", level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="Docker is not installed or running.")
+	
+	# Generate predictions file for the given patch and instance
+	predictions_path = generate_predictions_path_file(instance_id, patch, run_id)
 
 	cmd = [
 		"python3", "-m", "swebench.harness.run_evaluation",
@@ -238,6 +235,9 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, predictions_path: 
 		text=True,
 		check=False,
 	)
+
+	# Clean up the predictions file after the run to avoid cluttering the evaluation directory
+	delete_predictions_file(predictions_path)
 
 	print("Evaluation command output:")
 	print(run_result.stdout)
@@ -261,7 +261,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, predictions_path: 
 
 	bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
-	test_output = get_test_output_file(test_output_data["test_output"])
+	test_output = test_output_data["test_output"]
 
 	# return {"method_success": True, "logs_dir": logs_dir, "instance_logs_dir": instance_logs_dir, "results_file": results_file}
 	return EvaluationResult(
@@ -278,6 +278,57 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, predictions_path: 
 		fail_to_pass_successful_tests=test_case_results["fail_to_pass_successful_tests"],
 		test_output=test_output
 		)
+
+
+def run_evaluation_with_no_patch(instance_id: str, run_id: str, max_workers: int = 1) -> EvaluationResult:
+	"""Run SWE-bench evaluation on a specific instance without applying any patches, to get the error trace."""
+	no_change_patch = "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n"
+
+	return run_evaluation_on_instance(instance_id=instance_id, run_id=run_id, patch=no_change_patch, max_workers=max_workers)
+
+
+def test_installation() -> bool:
+	"""Run SWE-bench validation command and verify expected logs are created."""
+	evaluation_result = run_evaluation_on_instance(
+		instance_id=VALIDATION_INSTANCE_ID, 
+		run_id=VALIDATION_RUN_ID, 
+		patch="gold", 
+		max_workers=VALIDATION_MAX_WORKERS
+		)
+	
+	eval_dir = get_eval_dir_path()
+
+	# if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
+	# 	return False
+
+	# cmd = [
+	# 	"python3", "-m", "swebench.harness.run_evaluation",
+	# 	"--predictions_path", VALIDATION_PREDICTIONS_PATH,
+	# 	"--max_workers", VALIDATION_MAX_WORKERS,
+	# 	"--instance_ids", VALIDATION_INSTANCE_ID,
+	# 	"--run_id", VALIDATION_RUN_ID,
+	# ]
+
+	# run_result = subprocess.run(
+	# 	cmd,
+	# 	cwd=eval_dir,
+	# 	capture_output=True,
+	# 	text=True,
+	# 	check=False,
+	# )
+
+	# print("Validation command output:")
+	# print(run_result.stdout)
+	# print(run_result.stderr)
+
+	# if run_result.returncode != 0:
+	# 	return False
+
+	logs_dir = eval_dir / "logs"
+	gold_logs_dir = logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / VALIDATION_INSTANCE_ID
+	results_file = eval_dir / f"{VALIDATION_PREDICTIONS_PATH}.{VALIDATION_RUN_ID}.json"
+
+	return logs_dir.exists() and logs_dir.is_dir() and gold_logs_dir.exists() and gold_logs_dir.is_dir() and results_file.exists() and results_file.is_file() and evaluation_result.evaluation_ran_successfully and evaluation_result.bug_resolved
 
 
 def cleanup_validation_logs_and_results() -> bool:
