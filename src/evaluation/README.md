@@ -13,10 +13,10 @@ python3 -m src.evaluation.test_evaluation_package
 The final output should indicate that the SWE-bench setup validation was successful, confirming that the evaluation environment is ready for use.
 
 ```
-SWE-bench is successfully set up and ready for evaluation. [Tests passed.]
+SWE-bench is successfully set up and ready for evaluation. [Tests passed ✅.]
 ```
 
 ## API Reference
 
-- `check_docker_installed_and_running()`: Checks if Docker is installed and running on the system.
-- `clone_and_install_swe_bench()`: Clones the SWE-bench repository and installs the necessary dependencies.
+- 'setup_evaluation_environment()': Sets up the evaluation environment by checking for Docker, cloning the SWE-bench repository, and installing it. IMPORTANT: This function should be called before running any evaluations to ensure that the necessary dependencies and configurations are in place.
+
