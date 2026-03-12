@@ -13,14 +13,6 @@ class BugContext(BaseModel):
     fail_to_pass: str
     pass_to_pass: str
 
-class PatchCandidate(BaseModel):
-    id: str
-    code_diff: str
-    strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
-    status: str = "pending" # pending, passed, failed
-    execution_trace: Optional[str] = None
-    evaluation: EvaluationResult = None # Populated after evaluation step
-
 class EvaluationResult(BaseModel):
     # These 2 fields capture any errors or unexpected issues during the evaluation process itself (e.g., timeouts, docker errors, etc.)
     evaluation_error_message: Optional[str] = None
@@ -43,6 +35,13 @@ class EvaluationResult(BaseModel):
     test_output: str = None
     failed_test_traces: Optional[dict] = None # Mapping of failed test cases to their execution traces
 
+class PatchCandidate(BaseModel):
+    id: str
+    code_diff: str
+    strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
+    status: str = "pending" # pending, passed, failed
+    execution_trace: Optional[str] = None
+    evaluation: EvaluationResult = None # Populated after evaluation step
 
 def add_metrics(old_data: dict, new_data: dict) -> dict:
     """Reducer function to safely add token and cost metrics together."""

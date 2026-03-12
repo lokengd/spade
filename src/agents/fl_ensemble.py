@@ -1,7 +1,7 @@
 from src.utils.logger import log
 from src.core.state import SpadeState
 
-agent_name = "FL Ensemble Agent"
+agent_name = "FL Ensemble"
 
 def run(state: SpadeState):
     log("Running analysis...", agent_name)

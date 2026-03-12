@@ -7,7 +7,7 @@ from src.core.state import SpadeState, get_loop_info
 from src.core.llm_client import LLM_Client
 from config.settings import K_PATTERNS, LLM_AGENTS
 
-agent_name = "Pattern Selection Agent"
+agent_name = "Pattern Selection"
 
 def load_prompts():
     with open("config/prompts.yaml", "r") as f:

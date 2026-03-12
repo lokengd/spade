@@ -1,7 +1,7 @@
 from src.utils.logger import log
 from src.core.state import SpadeState
 
-agent_name = "Reproduction Agent"
+agent_name = "Reproduction"
 
 def run(state: SpadeState):
     log(f"Provisioning Docker Container and Reproducing Bug...", agent_name)

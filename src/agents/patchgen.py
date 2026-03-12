@@ -2,7 +2,7 @@ from src.utils.logger import log
 import uuid
 from src.core.state import SpadeState, get_loop_info
 
-agent_name = "PatchGen Agent"
+agent_name = "PatchGen"
 
 def generate_v1_patch(state: SpadeState):
     pattern = state.get("active_pattern", "unconstrained")
