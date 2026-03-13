@@ -7,17 +7,11 @@ from src.core.dataset_loader import DatasetLoader
 from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
 from config import settings
 
-def run_spade(task: dict):
+def run_spade(task: dict, config: dict):
 
     # Assign unique thread id for the bug_id (support multiple runs and used in logging and checkpointing)
     bug_id = task["instance_id"]
-    thread_suffix = uuid.uuid4().hex[:6] 
-    thread_id = f"{bug_id}_{thread_suffix}"        
-        
-    # Setup the logger
-    setup_logger(thread_id)
-    log(get_log_header(thread_id))
-
+   
     # Setup SQLite memory database
     db_path = settings.DATA_DIR / "checkpoints.sqlite"
 
@@ -27,7 +21,6 @@ def run_spade(task: dict):
         app = graph.compile(checkpointer=memory)
         #draw_graph(app)
 
-        config = {"configurable": {"thread_id": thread_id}}
         state_snapshot = app.get_state(config)
         
         if not state_snapshot.values:
@@ -48,9 +41,7 @@ def run_spade(task: dict):
                     issue_text=task["problem_statement"],
                     local_repo_path=str(repo_path),
                     base_commit=task["base_commit"],
-                    suspicious_files=[], # to be populated by FL Ensemble Agent
-                    fail_to_pass=task["FAIL_TO_PASS"],
-                    pass_to_pass=task["PASS_TO_PASS"]
+                    resolution_status="open"
                 ),        
             }
 
@@ -87,10 +78,17 @@ if __name__ == "__main__":
         print(f"- {key}")
     # ---- DEMO PURPOSE: End. ----
 
+    thread_prefix = uuid.uuid4().hex[:6] 
+        
     for task in test_data:
         bug_id = task.get('instance_id', 'unknown_bug')
+        thread_id = f"{thread_prefix}_{bug_id}"        
+        # Setup the logger
+        setup_logger(thread_id)
+        log(get_log_header(thread_id))
+
         try:
-            run_spade(task) 
+            run_spade(task, config={"configurable": {"thread_id": thread_id}}) 
         except Exception as e:
             logging.error(f"FATAL: Evaluation failed for {bug_id}. Error: {e}")
             continue

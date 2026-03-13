@@ -10,7 +10,7 @@ def verify_v1(state: SpadeState):
     loop_info = get_loop_info(state, include_inner=False)
     log(f"{loop_info} Initial patch verification (v1)...", agent_name)
     # Assumed all v1 patches fail, so we remain in progress to trigger the debate
-    return {"resolution_status": "in_progress"}
+    return {"resolution_status": "v1_failed"}
 
 def verify_refined(state: SpadeState):
     patch = state.get("current_refined_patch")
@@ -37,10 +37,11 @@ def _handle_fallback(state: SpadeState, current_v: int):
     # Case 1: Exhausted M Inner Loops 
     if new_inner_count >= M_INNER_LOOPS:
         # Increment the outer loop (N)
-        next_n = state.get("outer_loop_count", 1) + 1
+        curr_n = state.get("outer_loop_count", 1) 
+        next_n = curr_n + 1
         log(f"INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED. Restart Outer Loop, preparing for N={next_n}\n", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": "in_progress", 
+            "resolution_status": f"N{curr_n}_failed", 
             "inner_loop_count": new_inner_count, 
             "outer_loop_count": next_n,
             "current_patch_version": current_v,  
@@ -51,7 +52,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
     elif current_v >= V_PATIENCE:
         log(f"V_PATIENCE={V_PATIENCE} REACHED. Backtracking to pattern selection for new v1 candidates.\n", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": "in_progress", 
+            "resolution_status": f"v{current_v}_failed", 
             "inner_loop_count": new_inner_count,
             "current_patch_version": 1, # Signal backtracking for the debate panel
             "failed_traces": [failed_trace_log]
@@ -60,7 +61,7 @@ def _handle_fallback(state: SpadeState, current_v: int):
     # Case 3: Have Patience & Loops left -> Iterative Refinement
     log(f"Patch v{current_v} failed. Iteratively refining to v{current_v + 1} (Inner Attempt {new_inner_count}/{M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
     return {
-        "resolution_status": "in_progress", 
+        "resolution_status": f"v{current_v}_failed", 
         "inner_loop_count": new_inner_count,
         "current_patch_version": current_v + 1,
         "failed_traces": [failed_trace_log]
