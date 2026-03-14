@@ -1,5 +1,6 @@
 from src.utils.logger import log
 from src.core.state import BugContext, EditLocation, SpadeState
+from src.utils.snippet_extractor import extract_snippet
 
 agent_name = "FL_Ensemble"
 
@@ -35,6 +36,18 @@ def run(state: SpadeState):
         )
     ]
     # ---- DEMO PURPOSE: End. ----
+
+
+    # Extract code snippets for each edit location
+    for loc in bug_context.edit_locations:
+        # Store the extracted snippet back in the edit location for later use in the pipeline
+        loc.snippet = extract_snippet(
+            repo_path=bug_context.local_repo_path,
+            relative_file_path=loc.file,
+            target_lines=loc.lines,
+            function_name=loc.function,
+            window_size=20
+        )
 
     return {
         "bug_context": bug_context,

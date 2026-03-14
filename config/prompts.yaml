@@ -11,7 +11,7 @@ pattern_selection:
     2. Determine the Scope (LOCAL vs GLOBAL): 
        - If the fix can be applied directly within the suspicious location, the scope is LOCAL.
        - If the crash is caused by bad data, incorrect defaults, or mismatched contracts originating from another file, the scope is GLOBAL.
-    3. If the scope is GLOBAL, you MUST identify the "scout target path" (the upstream dependency or file that needs to be fixed).
+    3. If the scope is GLOBAL, you MUST identify the upstream dependencies or files that need to be fixed).
 
     Select the top {k} most suitable fix-patterns for this bug.
 

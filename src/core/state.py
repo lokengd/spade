@@ -7,6 +7,7 @@ class EditLocation(BaseModel):
     file: str
     function: Optional[str] = None
     lines: Optional[List[int]] = None
+    snippet: Optional[str] = None
 
 class BugContext(BaseModel):
     bug_id: str
