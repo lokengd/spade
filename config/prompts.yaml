@@ -23,7 +23,7 @@ pattern_selection:
         {{
           "pattern_id": "<PATTERN_ID_FROM_TAXONOMY>",
           "scope": "LOCAL or GLOBAL",
-          "scout_target": "path/to/upstream_file.py or null",
+          "upstream": "path/to/upstream_file.py or null",
           "rationale": "Explanation of why this pattern fits and why the scope was chosen."
         }}
       ]

@@ -16,7 +16,7 @@ def load_prompts():
 class PatternScoutSelection(BaseModel):
     pattern_id: str = Field(description="The pattern ID (e.g., P1_statement_modification)")
     scope: str = Field(description="LOCAL if fix is in local file, GLOBAL if cross-file.")
-    scout_target: Optional[str] = Field(description="Path to upstream file if GLOBAL, else null.")
+    upstream: Optional[str] = Field(description="Path to upstream file if GLOBAL, else null.")
     rationale: str = Field(description="Explanation of why this pattern fits and why the scope was chosen.")
 
 class PatternSelectionResponse(BaseModel):
