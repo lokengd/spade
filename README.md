@@ -18,7 +18,22 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-### 1.2. Run the Evaluation
+### 1.2. LLM Setup
+
+By default, SPADE runs locally and free using `qwen2.5-coder:latest`.
+
+1. Download and install Ollama from [ollama.com](https://ollama.com/).
+
+2. Download the model:
+
+```bash
+ollama pull qwen2.5-coder:latest
+```
+
+3. Start the Server: Ensure the Ollama application is running in the background. The server runs locally on http://localhost:11434.
+
+
+### 1.3. Run the Evaluation
 ```bash
 # Activate the virtual environment (if setup.sh doesn't do it automatically)
 source .venv/bin/activate
@@ -29,22 +44,9 @@ python main.py
 
 ## 2. LLM Configuration
 
-By default, SPADE is configured to run locally and entirely for free. The framework uses `qwen2.5-coder:latest` via Ollama as the default LLM for all agents out of the box.
+By default, SPADE uses `qwen2.5-coder:latest` as the default for all agents.
 
-### 2.1. Local Setup (Default)
-
-To run the default configuration, you will need to:
-
-- Download and install Ollama from [ollama.com](https://ollama.com/).
-
-- Download the model:
-```bash
-ollama pull qwen2.5-coder:latest
-```
-
-- Start the Server: Ensure the Ollama application is running in the background. The server runs locally on http://localhost:11434.
-
-### 2.2. Overriding Defaults
+### 2.1. Overriding Defaults
 
 You can override LLM models, adjust temperatures, and configure endpoints for specific agents without modifying the source code. Simply edit the `config/llm.yaml` file, for example:
 ```yaml
@@ -63,11 +65,28 @@ agents:
     api_key_env: "OPENAI_API_KEY"
 ```
 
-Depending on the cloud providers, you must set the corresponding environment variables before running the evaluation. You can export them directly in your terminal:
+Depending on the cloud providers, you must set the corresponding environment variables before running the evaluation.
 
 ```bash
 export OPENAI_API_KEY="[your-openai-api-key]"
 export GEMINI_API_KEY="[your-gemini-api-key]"
+```
+
+### 2.2. Tracking cost 
+
+SPADE includes a built-in cost tracking to automatically calculates total cost based on token usage. Add or update the costs block in `config/llm.yaml` file, for example.
+```yaml
+# Cost per 1,000,000 (1 Million) tokens in USD
+costs:
+  qwen2.5-coder:latest:
+    input: 0.0
+    output: 0.0
+  gpt-4o:
+    input: 2.50
+    output: 10.00
+  gemini-2.5-flash:
+    input: 0.075
+    output: 0.30
 ```
 
 ## 3. SPADE Orchestration
