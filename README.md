@@ -22,15 +22,12 @@ chmod +x setup.sh
 
 By default, SPADE runs locally and free using `qwen2.5-coder:latest`.
 
-1. Download and install Ollama from [ollama.com](https://ollama.com/).
-
-2. Download the model:
-
+* Download and install Ollama from [ollama.com](https://ollama.com/).
+* Download the model:
 ```bash
 ollama pull qwen2.5-coder:latest
 ```
-
-3. Start the Server: Ensure the Ollama application is running in the background. The server runs locally on http://localhost:11434.
+* Start the Server: Ensure the Ollama application is running in the background. The server runs locally on http://localhost:11434.
 
 
 ### 1.3. Run the Evaluation
@@ -44,7 +41,7 @@ python main.py
 
 ## 2. LLM Configuration
 
-By default, SPADE uses `qwen2.5-coder:latest` as the default for all agents.
+By default, SPADE uses `qwen2.5-coder:latest` for all agents.
 
 ### 2.1. Overriding Defaults
 
