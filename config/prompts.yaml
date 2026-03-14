@@ -1,28 +1,101 @@
 pattern_selection:
-  system: | 
+  system: |
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your task is to analyze a bug report and select the {k} most likely fixing patterns 
-    that could resolve the issue.
+    Your goal is to map a bug to its root cause using a semantic fix-pattern or a combination of patterns for a successful repair.
 
-    Available Fix-Patterns (based on TBar semantic groupings):
-    {patterns}
+    **Step 1: Pattern Taxonomy**
+    {pattern_taxonomy}
 
-    Respond ONLY with a JSON list of strings containing exactly {k} patterns.
-    Example: ["Logic Mutation", "Guard Insertion"]
+    **Step 2: Decision Logic**
+    1. Start at the provided Suspicious Locations to analyze the symptom.
+    2. Determine the Scope (LOCAL vs GLOBAL): 
+       - If the fix can be applied directly within the suspicious location, the scope is LOCAL.
+       - If the crash is caused by bad data, incorrect defaults, or mismatched contracts originating from another file, the scope is GLOBAL.
+    3. If the scope is GLOBAL, you MUST identify the "scout target path" (the upstream dependency or file that needs to be fixed).
+
+    Select the top {k} most suitable fix-patterns for this bug.
+
+    Respond ONLY with a valid JSON object matching this schema:
+    ```json
+    {{
+      "selected_count": {k},
+      "selections": [
+        {{
+          "pattern_id": "<PATTERN_ID_FROM_TAXONOMY>",
+          "scope": "LOCAL or GLOBAL",
+          "scout_target": "path/to/upstream_file.py or null",
+          "rationale": "Explanation of why this pattern fits and why the scope was chosen."
+        }}
+      ]
+    }}
+    ```
+    *Note: The "selections" array should contain exactly {k} objects if patterns are found.* 
+    If no matching fix-patterns apply, return "selected_count": 0 and provide a "rationale" explaining why.
 
   user: |
-    Issue Description:
+    **Bug Issue Description:**
     {issue_text}
-    
-    Suspicious Files: {suspicious_files}
-    Error Trace: {error_trace}
 
+    **Error Trace:**
+    {error_trace}
 
-# Semantic Fix-Patterns aligned with TBar
-fix_patterns:
-  - "Statement Modification"  # Statement Level
-  - "Guard Insertion"         # Validation Level
-  - "Logic Mutation"          # Control Flow Level
-  - "Boundary Enforcement"    # Boundary Level
-  - "Data Substitution"       # Data Flow Level
-  - "API Synchronization"     # Interface Level
+    **Suspicious Locations:**
+    {suspicious_locations}
+
+    Analyze the provided context, apply the decision logic, and return your pattern selections as JSON.
+  
+
+# Semantic Fix-Patterns aligned with TBar, total 14 out of 15 fix-patterns, modified to suit Python where necessary 
+# NOTE: TBar FP5 removed, FP1 and FP7 adjusted for semantic fit
+pattern_taxonomy: 
+  P1_statement_modification: | # Statement Level, TBar: FP4 (Insert Missed Statement), FP14 (Move Statement), FP15 (Remove Buggy Statement)
+    The error is normally missing steps in the execution flow, executing out of order, or executing redundant steps that cause side effects.
+    Possible fixes:
+    - Inserting a missing statement before, or after, or surround a buggy statement.
+    - Moving a buggy statement to a new position.
+    - Deleting entirely the buggy statement from the program.
+    Scope: Usually LOCAL
+
+  P2_guard_insertion: |      # Validation Level, TBar: FP1 (Insert Cast Checker), FP2 (Insert Null Pointer Checker), FP3 (Insert Range Checker) <-- NOTE: FP1 not applied to Python, so, modify fix-patterns to suit Python
+    The logic of the program is mostly correct, but it fails because the code assumes the data state is valid.
+    Insert guard conditions before executing the statement to prevent runtime exceptions and allows safe execution:
+    - Type compatibility
+    - Non-null / non-None objects
+    - Valid index or collection bounds
+    - Existence of keys or attributes
+    Scope: Usually LOCAL
+
+  P3_logic_mutation: |         # Control Flow Level, TBar: FP6 (Mutate Conditional Expression), FP11 (Mutate Operators)
+    The program executes successfully but produces incorrect results because the logical conditions or operators are faulty.
+    Possible fixes by modifying conditional expressions or mutating operators:
+    - Correcting relational operators
+    - Fixing boolean expressions
+    - Adjusting operator precedence
+    - Adding or removing subconditions
+    Scope: Usually LOCAL
+
+  P4_data_semantics_correction: | # Data Validity Level, TBar: FP7 (Mutate Data Type), FP8 (Mutate Integer Division Operation) <-- NOTE: FP7 not applied to Python, so, modify fix-patterns to suit Python
+    The program executes but produces incorrect results because values are interpreted or computed incorrectly.
+    Possible fixes:
+    - correcting type casts or conversions
+    - fixing numeric operations (e.g., integer division vs. float division, precision loss)
+    - adjusting data transformations or aggregations
+    Scope: LOCAL
+
+  P5_data_substitution: |      # Data Flow Level, TBar: FP9 (Mutate Literal Expression), FP12 (Mutate Return Statement), FP13 (Mutate Variable)
+    The procedural logic is correct, but the wrong data value is being used, returned, or propagated.
+    Possible fixes:
+    - Replacing a variable with another variable in scope
+    - Changing a literal value to a different constant
+    - Modifying the return statement to return a different expression
+    Scope: LOCAL or GLOBAL (if the bad data originates elsewhere, then set scope to GLOBAL and target the upstream source file)
+
+  P6_api_synchronization: |    # Interface Level, TBar: FP10 (Mutate Method Invocation Expression) <--  NOTE: FP5 not applied to Python (removed)
+    The program logic is correct but interacts incorrectly with an API, library function, or cross-file object interface.
+    Repair incorrect method invocations by adjusting:
+    - method names
+    - argument values
+    - argument count
+    - parameter order
+    - object construction usage
+    Scope: LOCAL or GLOBAL (if File A calls a method in File B improperly, or an external API contract is broken, set scope to GLOBAL and target the upstream file (File B) or API handler.)

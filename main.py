@@ -90,5 +90,5 @@ if __name__ == "__main__":
         try:
             run_spade(task, config={"configurable": {"thread_id": thread_id}}) 
         except Exception as e:
-            logging.error(f"FATAL: Evaluation failed for {bug_id}. Error: {e}")
+            log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
             continue

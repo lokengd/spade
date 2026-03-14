@@ -2,7 +2,7 @@ from src.utils.logger import log
 import logging
 import yaml
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from src.core.state import SpadeState, get_loop_info
 from src.core.llm_client import LLM_Client
 from config.settings import K_PATTERNS, LLM_AGENTS
@@ -13,8 +13,16 @@ def load_prompts():
     with open("config/prompts.yaml", "r") as f:
         return yaml.safe_load(f)
 
+class PatternScoutSelection(BaseModel):
+    pattern_id: str = Field(description="The pattern ID (e.g., P1_statement_modification)")
+    scope: str = Field(description="LOCAL if fix is in local file, GLOBAL if cross-file.")
+    scout_target: Optional[str] = Field(description="Path to upstream file if GLOBAL, else null.")
+    rationale: str = Field(description="Explanation of why this pattern fits and why the scope was chosen.")
+
 class PatternSelectionResponse(BaseModel):
-    selected_patterns: List[str] = Field(description="List of selected semantic fix patterns")
+    selected_count: int = Field(description="Number of patterns selected")
+    selections: List[PatternScoutSelection] = Field(description="Top K most viable patterns and scout targets.", default_factory=list)
+
 
 def run(state: SpadeState):
 
@@ -27,25 +35,55 @@ def run(state: SpadeState):
 
     # Load configuration and patterns
     prompts_config = load_prompts()
-    fix_patterns = prompts_config["fix_patterns"]
-    
+    taxonomy_dict = prompts_config.get("pattern_taxonomy", {})
+    taxonomy_str = ""
+    for pat_id, description in taxonomy_dict.items():
+        # format the taxonomy into a readable list for the system prompt
+        taxonomy_str += f"- {pat_id}: {description.strip()}\n\n"
+
     # Format the System Prompt
     system_template = prompts_config["pattern_selection"]["system"]
     system_prompt = system_template.format(
         k=K_PATTERNS,
-        patterns=", ".join(fix_patterns)
+        pattern_taxonomy=taxonomy_str.strip()
     )
 
-    # Format the User Prompt from BugContext
+    # Format the User Prompt from BugContext (rerturn by FL Ensemble)
     bug_context = state["bug_context"]
+    locations_str = ""
+    if bug_context.edit_locations:
+        locations_str += "--- Primary Edit Locations ---\n"
+        for loc in bug_context.edit_locations:
+            func_str = f" | Func: {loc.function}" if loc.function else ""
+            lines_str = f" | Lines: {loc.lines}" if loc.lines else ""
+            locations_str += f"- File: {loc.file}{func_str}{lines_str}\n"
+    
+    if bug_context.related_functions:
+        locations_str += "\n--- Related Context / Functions ---\n"
+        for file, funcs in bug_context.related_functions.items():
+            locations_str += f"- {file}: {', '.join(funcs)}\n"
+            
+    if not bug_context.edit_locations and bug_context.suspicious_files:
+        locations_str += "--- Suspicious Files ---\n"
+        locations_str += "\n".join([f"- {f}" for f in bug_context.suspicious_files])
+        
+    if not locations_str.strip():
+        locations_str = "No specific locations identified by Fault Localization."
+
+
+    # Format the User Prompt
     user_template = prompts_config["pattern_selection"]["user"]
     user_prompt = user_template.format(
         issue_text=bug_context.issue_text,
-        suspicious_files=", ".join(bug_context.suspicious_files),
-        error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available"
+        error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+        suspicious_locations=locations_str.strip()
     )
 
+    # DEFAULT TO EMPTY LIST: 
+    # If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
     metrics = {}
+    final_selection = []    
+
     try:
         # Get both the structured response AND telemetry metrics
         structured_response, metrics = client.generate_structured(
@@ -53,17 +91,20 @@ def run(state: SpadeState):
             user_prompt=user_prompt,
             response_model=PatternSelectionResponse
         )
-        final_selection = structured_response.selected_patterns[:K_PATTERNS]
         
+        if structured_response.selected_count == 0 or not structured_response.selections:
+            log("No patterns matched. Proceeding with K=0.", agent_name, level=logging.INFO)
+        else:
+            # Enforce the K_PATTERNS limit and convert Pydantic models to dicts for LangGraph
+            final_selection = [s.model_dump() for s in structured_response.selections[:K_PATTERNS]]
+            log(f"Successfully extracted {len(final_selection)} patterns.", agent_name, level=logging.INFO)
+
     except Exception as e:
-        log(f"Failed to select patterns via LLM: {e}. Falling back to defaults.", agent_name, level=logging.ERROR)
-        # Fallback to the first K patterns to prevent graph crash
-        final_selection = fix_patterns[:K_PATTERNS]
+        log(f"LLM Connection or Parsing Error: {e}. Proceeding with K=0.", agent_name, level=logging.ERROR)
 
     return {
         "selected_patterns": final_selection,
-        "inner_loop_count": 1, # Reset inner loop count at the start of a new pattern selection,  safe for the first run or hard reset
+        "inner_loop_count": 1, # Reset inner loop count at the start of a new pattern selection
         "current_patch_version": 1, # Reset patch version to 1 for the new set of patterns
         "total_metrics": metrics 
     }
-    
