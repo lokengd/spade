@@ -2,6 +2,7 @@ from src.utils.logger import log, get_loop_info
 import logging
 from src.core.state import SpadeState, PatchCandidate
 from config.settings import M_INNER_LOOPS, V_PATIENCE, N_OUTER_LOOPS
+from src.utils.db_logger import db_logger
 
 agent_name = "Test_Agent"
 
@@ -29,6 +30,7 @@ def verify_v1(state: SpadeState):
     log(f"{loop_info_str} Initial patch verification (v1 pool)...", agent_name)
     
     v1_patches = state.get("v1_patches", [])
+    run_id = state.get("thread_id")
     any_passed = False
     
     for patch in v1_patches:
@@ -36,9 +38,23 @@ def verify_v1(state: SpadeState):
             continue
 
         _execute_and_evaluate(patch, state)
-        if patch.status == "passed":
+        
+        # Explicitly check for passed status when updating the DB
+        is_passed = (patch.status == "passed")
+        db_logger.update_patch(patch.id, tests_passed=is_passed)
+
+        if is_passed:
             any_passed = True
             log(f"Patch {patch.id} PASSED v1 verification!", agent_name)
+            
+            if run_id:
+                # Update repair run status
+                db_logger.update_repair_run(
+                    run_id=run_id,
+                    fl_match=True, # Assuming FL success if fix found
+                    is_resolved=True,
+                    status="success"
+                )
             break 
             
     if any_passed:
@@ -57,14 +73,26 @@ def verify_refined(state: SpadeState):
         return {"resolution_status": "error"}
 
     patch = refined_patches[-1]
+    run_id = state.get("thread_id")
     
     loop_info_str, _ = get_loop_info(state, include_inner=True)
     log(f"{loop_info_str} Refined patch verification (v{patch.version})...", agent_name)
     
     _execute_and_evaluate(patch, state)
     
-    if patch.status == "passed":
+    # Explicitly check for passed status when updating the DB
+    is_passed = (patch.status == "passed")
+    db_logger.update_patch(patch.id, tests_passed=is_passed)
+
+    if is_passed:
         log(f">>> v{patch.version} PATCH PASSED! <<<", agent_name)
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=True,
+                is_resolved=True,
+                status="success"
+            )
         return {"resolution_status": "resolved"}
     
     # Otherwise, trigger the fallback policy
@@ -75,13 +103,12 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
     Policy Method: Records the test failure and decides the next step.
     """
     failed_trace_log = f"v{current_v} ({failed_patch.id}) Failed: {failed_patch.execution_trace[:50]}..."
+    run_id = state.get("thread_id")
     
     curr_m = state.get("inner_loop_count", 1)
     curr_n = state.get("outer_loop_count", 1)
 
     # Case 1: Patience left -> Refine same winner (v+1)
-    # V_PATIENCE is the MAX version allowed for a lineage.
-    # If current_v < V_PATIENCE, we can still refine to current_v + 1.
     if current_v < V_PATIENCE:
         next_v = current_v + 1
         log(f"Patch v{current_v} failed. Iteratively refining to v{next_v} (Version {next_v}/{V_PATIENCE}).", agent_name, level=logging.WARNING)
@@ -92,19 +119,17 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         }
 
     # Case 2: Patience hit (current_v == V_PATIENCE), try next winner?
-    # Switch to a new winner (M+1, v=1), new inner loop
     if curr_m < M_INNER_LOOPS:
         log(f"V_PATIENCE={V_PATIENCE} REACHED for winner {failed_patch.origin_v1_id}. "
             f"Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
         return {
             "resolution_status": f"v{current_v}_failed", 
             "inner_loop_count": curr_m + 1,
-            "current_patch_version": 1, # Reset to 1 to signal new winner selection
+            "current_patch_version": 1, 
             "failed_traces": [failed_trace_log]
         }
 
     # Case 3: Inner loops hit, try next patterns?
-    # Reset to new patterns (N+1, M=1, v=1), new outer loop
     if curr_n < N_OUTER_LOOPS:
         log(f"INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED. Resetting to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
         return {
@@ -117,9 +142,15 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
 
     # Case 4: All limits hit -> Hard Stop
     log(f"MAX LIMITS REACHED (N={curr_n}/{N_OUTER_LOOPS}, M={curr_m}/{M_INNER_LOOPS}). Hard stop.", agent_name, level=logging.ERROR)
+    if run_id:
+        db_logger.update_repair_run(
+            run_id=run_id,
+            fl_match=False, 
+            is_resolved=False,
+            status="failed"
+        )
     return {
         "resolution_status": "failed",
-        # Keep last values for logging
         "current_patch_version": current_v,
         "inner_loop_count": curr_m,
         "outer_loop_count": curr_n,

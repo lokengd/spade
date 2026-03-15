@@ -4,6 +4,7 @@ from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.utils.logger import log, get_loop_info
 from config.settings import LLM_AGENTS
+from src.utils.db_logger import db_logger
 import logging
 
 agent_name = "Judge"
@@ -186,6 +187,7 @@ def run(state: SpadeState):
     bug_kwargs = _build_bug_context_kwargs(state)
     v1_patches = state.get("v1_patches", [])
     candidates_block = _format_candidates_block(v1_patches)
+    run_id = state.get("thread_id")
 
     # Shared debate context
     debate_kwargs = {
@@ -226,14 +228,19 @@ def run(state: SpadeState):
     agent_config = LLM_AGENTS["judge"]
     client = LLM_Client(agent=agent_name, **agent_config)
     metrics = {}
+    raw_telemetry = {}
 
     try:
-        verdict, metrics = client.generate_structured(
+        verdict, metrics, raw_telemetry = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
+        # Log to DB
+        if run_id and raw_telemetry:
+            db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
+
     except Exception as e:
         log(f"Judge LLM call failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
         fallback_id = "unknown"

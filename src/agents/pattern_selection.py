@@ -6,6 +6,7 @@ from typing import List, Optional
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from config.settings import K_PATTERNS, LLM_AGENTS
+from src.utils.db_logger import db_logger
 
 agent_name = "Pattern_Selection"
 
@@ -29,6 +30,7 @@ def run(state: SpadeState):
     # Initialize 
     agent_config = LLM_AGENTS["pattern_selection"]
     client = LLM_Client(agent=agent_name, **agent_config)
+    run_id = state.get("thread_id")
 
     # Load configuration and patterns
     prompts_config = load_prompts()
@@ -87,15 +89,20 @@ def run(state: SpadeState):
     # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
     metrics = {}
     final_selection = []
+    raw_telemetry = {}
     try:
         # Get both the structured response AND telemetry metrics
-        structured_response, metrics = client.generate_structured(
+        structured_response, metrics, raw_telemetry = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=PatternSelectionResponse,
             loop_info=loop_info_dict
         )
         
+        # Log to DB
+        if run_id and raw_telemetry:
+            db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
+
         if structured_response.selected_count == 0 or not structured_response.selections:
             log("No patterns matched. Proceeding with K=0.", agent_name, level=logging.INFO)
         else:

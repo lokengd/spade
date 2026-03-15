@@ -54,13 +54,11 @@ class LLM_Client:
             f"calls_{self.model_name}": 1
         }
 
-    def _save_trajectory(self, system_prompt: str, user_prompt: str, response: Any, metrics: dict, is_structured: bool = False, loop_info: Optional[dict] = None):
+    def _save_trajectory(self, system_prompt: str, user_prompt: str, response: Any, metrics: dict, is_structured: bool = False, loop_info: Optional[dict] = None) -> dict:
         """Appends the LLM interaction to a JSON file within the thread's log directory."""
         log_dir = get_current_log_dir()
-        if not log_dir:
-            return
-
-        new_entry = {
+        
+        entry = {
             "timestamp": datetime.now().isoformat(),
             "loop_info": loop_info, # Includes n, m, v
             "model": self.model_name,
@@ -73,6 +71,9 @@ class LLM_Client:
             "response": response,
             "metrics": metrics
         }
+
+        if not log_dir:
+            return entry
 
         # Format the trajectory filename: <folder_name>_<agent_name>_traj.json
         clean_agent_name = self.agent_name.replace("] [", "_").replace("[", "").replace("]", "").replace(" ", "_")
@@ -91,7 +92,7 @@ class LLM_Client:
                 log(f"Failed to load existing trajectory: {e}", caller=self.agent_name, level=logging.WARNING)
                 data = []
 
-        data.append(new_entry)
+        data.append(entry)
 
         try:
             with open(filepath, "w", encoding="utf-8") as f:
@@ -99,9 +100,11 @@ class LLM_Client:
             log(f"Trajectory saved to {filepath}", caller=self.agent_name, level=logging.DEBUG)
         except Exception as e:
             log(f"Failed to save trajectory: {e}", caller=self.agent_name, level=logging.ERROR)
+            
+        return entry
 
-    def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict]:
-        """Returns a simple, unstructured Python string (str)."""
+    def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict, dict]:
+        """Returns a simple, unstructured Python string (str), metrics, and raw telemetry."""
 
         log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
         log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
@@ -121,18 +124,18 @@ class LLM_Client:
             text_response = response.choices[0].message.content
             metrics = self._calculate_metrics(response.usage, duration)
 
-            self._save_trajectory(system_prompt, user_prompt, text_response, metrics, is_structured=False, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, text_response, metrics, is_structured=False, loop_info=loop_info)
             
             log(f"LLM response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)
 
-            return text_response, metrics
+            return text_response, metrics, telemetry
         
         except Exception as e:
             log(f"LLM Text Gen Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             raise
 
-    def generate_structured(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict]:
+    def generate_structured(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """
@@ -157,13 +160,13 @@ class LLM_Client:
             raw_json = response.choices[0].message.content
             metrics = self._calculate_metrics(response.usage, duration)
 
-            self._save_trajectory(system_prompt + schema_instruction, user_prompt, json.loads(raw_json), metrics, is_structured=True, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt + schema_instruction, user_prompt, json.loads(raw_json), metrics, is_structured=True, loop_info=loop_info)
 
             parsed_data = response_model.model_validate_json(raw_json)
             log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)
 
-            return parsed_data, metrics
+            return parsed_data, metrics, telemetry
         
         except Exception as e:
             log(f"LLM Structured Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)

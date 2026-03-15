@@ -1,21 +1,27 @@
 import logging
 import uuid
+import os
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
 from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
+from src.utils.db_logger import db_logger
 from config import settings
 
-def run_spade(task: dict, config: dict):
+def run_spade(task: dict, config: dict, experiment_id: str):
 
     # Assign unique thread id for the bug_id (support multiple runs and used in logging and checkpointing)
+    thread_id = config["configurable"]["thread_id"]
     bug_id = task["instance_id"]
    
-    # Setup SQLite memory database
-    db_path = settings.DATA_DIR / "checkpoints.sqlite"
+    # Setup SQLite checkpoint database
+    ckpt_path = settings.DATA_DIR / "checkpoints.sqlite"
+    
+    # Log the start of this specific repair run using thread_id as run_id
+    db_logger.start_repair_run(experiment_id=experiment_id, bug_id=bug_id, run_id=thread_id)
 
-    with SqliteSaver.from_conn_string(str(db_path)) as memory:
+    with SqliteSaver.from_conn_string(str(ckpt_path)) as memory:
         
         graph = build_graph() 
         app = graph.compile(checkpointer=memory)
@@ -36,6 +42,7 @@ def run_spade(task: dict, config: dict):
             
             initial_state = {
                 "thread_id": thread_id,  
+                "experiment_id": experiment_id,
                 "bug_context": BugContext(
                     bug_id=task["instance_id"],
                     issue_text=task["problem_statement"],
@@ -48,17 +55,14 @@ def run_spade(task: dict, config: dict):
             for event in app.stream(initial_state, config=config):
                 for node_name, state_update in event.items():
                     pass
-                    #log(f"Finished node: {node_name}")
             
         else:
             # Memory found
             log(f"Memory found! Resuming run for {bug_id} from exact last step...")
             
-            # Pass None (state) as the state, but still use streams
             for event in app.stream(None, config=config):
                 for node_name, state_update in event.items():
                     pass
-                    #log(f"Finished node: {node_name}")
 
         memory_state = app.get_state(config).values
         log(get_memory_state(memory_state))
@@ -71,24 +75,24 @@ if __name__ == "__main__":
     print(f"\nDataset Loaded. Found {len(test_data)} task instances.")
 
     # ---- DEMO PURPOSE: Just run the first test instance for now ----
-    # Filter for a specific bug for sample evaluation run 
     test_data = [t for t in test_data if t['instance_id'] == "astropy__astropy-12907"]
-    print("Available fields in a task:")
-    for key in test_data[0].keys():
-        print(f"- {key}")
     # ---- DEMO PURPOSE: End. ----
 
+    # Experiment Configuration
     thread_prefix = uuid.uuid4().hex[:6] 
+    experiment_id = f"spade_baseline_demo_{thread_prefix}"
+    experiment_desc = "Demo run of SPADE"
+    db_logger.start_experiment(experiment_id, experiment_desc)
         
     for task in test_data:
         bug_id = task.get('instance_id', 'unknown_bug')
         thread_id = f"{thread_prefix}_{bug_id}"        
-        # Setup the logger
+        
         setup_logger(thread_id)
         log(get_log_header(thread_id))
 
         try:
-            run_spade(task, config={"configurable": {"thread_id": thread_id}}) 
+            run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=experiment_id) 
         except Exception as e:
             log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
             continue

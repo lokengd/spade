@@ -67,6 +67,7 @@ def add_metrics(old_data: dict, new_data: dict) -> dict:
 
 class SpadeState(TypedDict):
     thread_id: str # Unique identifier for the execution thread, tied to the bug_context 
+    experiment_id: str # Identifier for the current experiment
     bug_context: BugContext
 
     selected_patterns: List[str]

@@ -20,6 +20,8 @@ def activate_patchgen_agents(state: SpadeState):
     current_n = state.get("outer_loop_count", 1)
     current_m = state.get("inner_loop_count", 1)
     current_v = state.get("current_patch_version", 1)
+    thread_id = state.get("thread_id")
+    experiment_id = state.get("experiment_id")
 
     # Activate K agents
     for pattern in state.get("selected_patterns", [])[:K_PATTERNS]:
@@ -28,7 +30,9 @@ def activate_patchgen_agents(state: SpadeState):
             "bug_context": state["bug_context"],
             "outer_loop_count": current_n,
             "inner_loop_count": current_m,
-            "current_patch_version": current_v
+            "current_patch_version": current_v,
+            "thread_id": thread_id,
+            "experiment_id": experiment_id
         }))
         
     # Activate the +1 Unconstrained LLM agent
@@ -37,7 +41,9 @@ def activate_patchgen_agents(state: SpadeState):
         "bug_context": state["bug_context"],
         "outer_loop_count": current_n,
         "inner_loop_count": current_m,
-        "current_patch_version": current_v
+        "current_patch_version": current_v,
+        "thread_id": thread_id,
+        "experiment_id": experiment_id
     }))
     
     return sends

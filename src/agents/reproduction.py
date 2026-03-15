@@ -1,5 +1,6 @@
 from src.utils.logger import log
 from src.core.state import SpadeState
+from src.utils.db_logger import db_logger
 
 agent_name = "Reproduction"
 

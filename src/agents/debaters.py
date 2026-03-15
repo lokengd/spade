@@ -3,6 +3,7 @@ from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.utils.logger import log, get_loop_info
 from config.settings import LLM_AGENTS
+from src.utils.db_logger import db_logger
 import logging
 
 agent_name_dynamic = "Debater:Dynamic"
@@ -180,16 +181,18 @@ def _get_patch_fields(patch) -> dict:
     }
 
 
-def _call_llm(caller: str, system_prompt: str, user_prompt: str, loop_info: dict = None) -> tuple:
+def _call_llm(caller: str, system_prompt: str, user_prompt: str, loop_info: dict = None, run_id: str = None) -> tuple:
     """LLM call with error handling. Returns (raw_text, metrics)."""
     agent_config = LLM_AGENTS["debaters"]
     client = LLM_Client(agent=caller, **agent_config)
     try:
-        text, metrics = client.generate_text(
+        text, metrics, raw_telemetry = client.generate_text(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             loop_info=loop_info
         )
+        if run_id and raw_telemetry:
+            db_logger.log_telemetry(run_id, caller, raw_telemetry)
         return text, metrics
     except Exception as e:
         log(f"LLM call failed: {e}", caller=caller, level=logging.ERROR)
@@ -222,6 +225,7 @@ def generate_dynamic_arg(state: SpadeState):
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
+    run_id = state.get("thread_id")
 
     if v == 1:
         log(f"{loop_info_str} Selecting best v1 candidate (runtime analysis).", agent_name_dynamic)
@@ -246,7 +250,7 @@ def generate_dynamic_arg(state: SpadeState):
             **bug_kwargs,
         )
 
-    raw, metrics = _call_llm(agent_name_dynamic, system_prompt, user_prompt, loop_info=loop_info_dict)
+    raw, metrics = _call_llm(agent_name_dynamic, system_prompt, user_prompt, loop_info=loop_info_dict, run_id=run_id)
     return {"dynamic_argument": raw, "total_metrics": metrics}
 
 
@@ -254,6 +258,7 @@ def generate_static_arg(state: SpadeState):
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
+    run_id = state.get("thread_id")
 
     if v == 1:
         log(f"{loop_info_str} Selecting best v1 candidate (structural analysis).", agent_name_static)
@@ -278,7 +283,7 @@ def generate_static_arg(state: SpadeState):
             **bug_kwargs,
         )
 
-    raw, metrics = _call_llm(agent_name_static, system_prompt, user_prompt, loop_info=loop_info_dict)
+    raw, metrics = _call_llm(agent_name_static, system_prompt, user_prompt, loop_info=loop_info_dict, run_id=run_id)
     return {"static_argument": raw, "total_metrics": metrics}
 
 
@@ -301,6 +306,7 @@ def exchange_arguments(state: SpadeState):
 def generate_dynamic_rebuttal(state: SpadeState):
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     log(f"{loop_info_str} Writing rebuttal against Static argument.", agent_name_dynamic)
+    run_id = state.get("thread_id")
 
     own_arg = state.get("dynamic_argument", "(no argument recorded)")
     opponent_arg = state.get("static_argument", "(no argument recorded)")
@@ -308,13 +314,14 @@ def generate_dynamic_rebuttal(state: SpadeState):
     user_prompt = _DYNAMIC_REBUTTAL_USER.format(
         own_argument=own_arg, opponent_argument=opponent_arg
     )
-    raw, metrics = _call_llm(agent_name_dynamic, _DYNAMIC_REBUTTAL_SYSTEM, user_prompt, loop_info=loop_info_dict)
+    raw, metrics = _call_llm(agent_name_dynamic, _DYNAMIC_REBUTTAL_SYSTEM, user_prompt, loop_info=loop_info_dict, run_id=run_id)
     return {"dynamic_rebuttal": raw, "total_metrics": metrics}
 
 
 def generate_static_rebuttal(state: SpadeState):
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     log(f"{loop_info_str} Writing rebuttal against Dynamic argument.", agent_name_static)
+    run_id = state.get("thread_id")
 
     own_arg = state.get("static_argument", "(no argument recorded)")
     opponent_arg = state.get("dynamic_argument", "(no argument recorded)")
@@ -322,5 +329,5 @@ def generate_static_rebuttal(state: SpadeState):
     user_prompt = _STATIC_REBUTTAL_USER.format(
         own_argument=own_arg, opponent_argument=opponent_arg
     )
-    raw, metrics = _call_llm(agent_name_static, _STATIC_REBUTTAL_SYSTEM, user_prompt, loop_info=loop_info_dict)
+    raw, metrics = _call_llm(agent_name_static, _STATIC_REBUTTAL_SYSTEM, user_prompt, loop_info=loop_info_dict, run_id=run_id)
     return {"static_rebuttal": raw, "total_metrics": metrics}

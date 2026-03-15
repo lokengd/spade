@@ -1,6 +1,7 @@
 from src.utils.logger import log
 from src.core.state import BugContext, EditLocation, SpadeState
 from src.utils.snippet_extractor import extract_snippet
+from src.utils.db_logger import db_logger
 
 agent_name = "FL_Ensemble"
 

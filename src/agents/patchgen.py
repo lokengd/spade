@@ -7,6 +7,7 @@ from src.core.state import SpadeState, PatchCandidate, P_UNCONSTRAINED
 from src.core.llm_client import LLM_Client
 from src.utils.snippet_extractor import extract_snippet
 from config.settings import LLM_AGENTS
+from src.utils.db_logger import db_logger
 
 agent_base_name = "PatchGen"
 
@@ -21,6 +22,7 @@ class PatchGenerationResponse(BaseModel):
 def generate_v1_patch(state: SpadeState):
     # active_pattern is passed via Send API in graph.py
     active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
+    run_id = state.get("thread_id")
     
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
     
@@ -100,9 +102,10 @@ def generate_v1_patch(state: SpadeState):
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
     code_diff = ""
     metrics = {}
+    raw_telemetry = {}
 
     try:
-        structured_response, metrics = client.generate_structured(
+        structured_response, metrics, raw_telemetry = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=PatchGenerationResponse,
@@ -113,6 +116,21 @@ def generate_v1_patch(state: SpadeState):
     except Exception as e:
         log(f"Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
         code_diff = f"# Error: {e}"
+
+    # Log Telemetry and Patch to DB
+    if run_id and raw_telemetry:
+        db_logger.log_telemetry(run_id, f"patchgen_{strategy}", raw_telemetry)
+        db_logger.log_patch(
+            patch_id=patch_id,
+            run_id=run_id,
+            patch_version=1,
+            loop_n=state.get("outer_loop_count", 1),
+            loop_m=state.get("inner_loop_count", 1),
+            loop_v=1,
+            pattern=strategy,
+            diff=code_diff,
+            tests_passed=False
+        )
 
     patch = PatchCandidate(
         id=patch_id, 
@@ -132,6 +150,7 @@ def generate_refined_patch(state: SpadeState):
     origin_id = state.get("current_v1_id", "unknown_origin")
     refined_patches = state.get("refined_patches", [])
     v1_patches = state.get("v1_patches", [])
+    run_id = state.get("thread_id")
     
     # Deciding lineage: Search for the most recent refinement of this winner
     previous_patch = None
@@ -185,12 +204,19 @@ def generate_refined_patch(state: SpadeState):
         static_argument=state.get("static_argument", "No argument.")
     )
 
-    patch_id = f"v{v_now}_{uuid.uuid4().hex[:6]}"
+    # Maintain lineage by using the same UUID suffix as the original v1 winner
+    if "_" in origin_id:
+        suffix = origin_id.split("_")[-1]
+    else:
+        suffix = uuid.uuid4().hex[:6] # Fallback if ID format is unexpected
+        
+    patch_id = f"v{v_now}_{suffix}"
     code_diff = ""
     metrics = {}
+    raw_telemetry = {}
 
     try:
-        structured_response, metrics = client.generate_structured(
+        structured_response, metrics, raw_telemetry = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=PatchGenerationResponse,
@@ -201,6 +227,22 @@ def generate_refined_patch(state: SpadeState):
     except Exception as e:
         log(f"Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
         code_diff = f"# Error: {e}"
+
+    # Log Telemetry and Patch to DB
+    if run_id and raw_telemetry:
+        db_logger.log_telemetry(run_id, f"patchgen_refined_{active_pattern}", raw_telemetry)
+        db_logger.log_patch(
+            patch_id=patch_id,
+            run_id=run_id,
+            patch_version=v_now,
+            loop_n=state.get("outer_loop_count", 1),
+            loop_m=state.get("inner_loop_count", 1),
+            loop_v=v_now,
+            pattern=active_pattern,
+            diff=code_diff,
+            tests_passed=False,
+            feedback=state.get("verdict")
+        )
 
     patch = PatchCandidate(
         id=patch_id, 
