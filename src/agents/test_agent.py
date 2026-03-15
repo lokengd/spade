@@ -1,6 +1,6 @@
-from src.utils.logger import log
+from src.utils.logger import log, get_loop_info
 import logging
-from src.core.state import SpadeState, get_loop_info, PatchCandidate
+from src.core.state import SpadeState, PatchCandidate
 from config.settings import M_INNER_LOOPS, V_PATIENCE, N_OUTER_LOOPS
 
 agent_name = "Test_Agent"
@@ -25,8 +25,8 @@ def verify_v1(state: SpadeState):
     """
     Initial verification for the entire v1 pool.
     """
-    loop_info = get_loop_info(state, include_inner=False)
-    log(f"{loop_info} Initial patch verification (v1 pool)...", agent_name)
+    loop_info_str, _ = get_loop_info(state, include_inner=False)
+    log(f"{loop_info_str} Initial patch verification (v1 pool)...", agent_name)
     
     v1_patches = state.get("v1_patches", [])
     any_passed = False
@@ -58,8 +58,8 @@ def verify_refined(state: SpadeState):
 
     patch = refined_patches[-1]
     
-    loop_info = get_loop_info(state, include_inner=True)
-    log(f"{loop_info} Refined patch verification (v{patch.version})...", agent_name)
+    loop_info_str, _ = get_loop_info(state, include_inner=True)
+    log(f"{loop_info_str} Refined patch verification (v{patch.version})...", agent_name)
     
     _execute_and_evaluate(patch, state)
     

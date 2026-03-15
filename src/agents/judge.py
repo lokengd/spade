@@ -1,8 +1,8 @@
 import json
 from pydantic import BaseModel
-from src.core.state import SpadeState, get_loop_info
+from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
-from src.utils.logger import log
+from src.utils.logger import log, get_loop_info
 from config.settings import LLM_AGENTS
 import logging
 
@@ -181,7 +181,7 @@ def _validate_winning_patch_id(verdict: JudgeVerdict, v1_patches: list) -> str:
 # ---------------------------------------------------------------------------
 
 def run(state: SpadeState):
-    loop_info = get_loop_info(state, include_inner=True)
+    loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
     v1_patches = state.get("v1_patches", [])
@@ -196,7 +196,7 @@ def run(state: SpadeState):
     }
 
     if v == 1:
-        log(f"{loop_info} Selecting winner from v1 pool and issuing improvement instructions.", agent_name)
+        log(f"{loop_info_str} Selecting winner from v1 pool and issuing improvement instructions.", agent_name)
         system_prompt = _JUDGE_SELECT_SYSTEM
         user_prompt = _JUDGE_SELECT_USER.format(
             candidates_block=candidates_block,
@@ -204,7 +204,7 @@ def run(state: SpadeState):
             **debate_kwargs,
         )
     else:
-        log(f"{loop_info} Evaluating failed v{v} patch. Issuing refinement verdict.", agent_name)
+        log(f"{loop_info_str} Evaluating failed v{v} patch. Issuing refinement verdict.", agent_name)
         refined_patches = state.get("refined_patches", [])
         pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = _JUDGE_REFINE_SYSTEM.format(version=v)
@@ -232,6 +232,7 @@ def run(state: SpadeState):
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=JudgeVerdict,
+            loop_info=loop_info_dict
         )
     except Exception as e:
         log(f"Judge LLM call failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
@@ -249,7 +250,7 @@ def run(state: SpadeState):
     validated_id = _validate_winning_patch_id(verdict, v1_patches)
     verdict_str = verdict.model_dump_json()
 
-    log(f"{loop_info} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
+    log(f"{loop_info_str} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
 
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.

@@ -1,14 +1,14 @@
-from src.utils.logger import log
+from src.utils.logger import log, get_loop_info
 import uuid
 import yaml
 import logging
 from pydantic import BaseModel, Field
-from src.core.state import SpadeState, get_loop_info, PatchCandidate
+from src.core.state import SpadeState, PatchCandidate, P_UNCONSTRAINED
 from src.core.llm_client import LLM_Client
 from src.utils.snippet_extractor import extract_snippet
 from config.settings import LLM_AGENTS
 
-agent_name = "PatchGen"
+agent_base_name = "PatchGen"
 
 def load_prompts():
     with open("config/prompts.yaml", "r") as f:
@@ -20,10 +20,11 @@ class PatchGenerationResponse(BaseModel):
 
 def generate_v1_patch(state: SpadeState):
     # active_pattern is passed via Send API in graph.py
-    active_pattern = state.get("active_pattern", "unconstrained")
-    loop_info = get_loop_info(state, include_inner=False)
+    active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
     
-    is_unconstrained = active_pattern == "unconstrained"
+    loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
+    
+    is_unconstrained = active_pattern == P_UNCONSTRAINED
     
     # Normalize pattern info for logging and prompting
     if isinstance(active_pattern, dict):
@@ -33,11 +34,13 @@ def generate_v1_patch(state: SpadeState):
         pattern_str = str(active_pattern)
         strategy = str(active_pattern)
 
-    log_prefix = "Unconstrained" if is_unconstrained else "Pattern-guided"
-    log(f"{loop_info} {log_prefix} PatchGen working on strategy -> {pattern_str}", agent_name)
+    log_prefix = "Unconstrained" if is_unconstrained else "Pattern-Guided"
+    # User requested format: [PatchGen] [PatternName]
+    specific_agent_name = f"{agent_base_name}] [{strategy}"
+    log(f"{loop_info_str} {log_prefix} PatchGen working on strategy -> {pattern_str}", specific_agent_name)
 
     agent_config = LLM_AGENTS["patchgen"]
-    client = LLM_Client(agent=agent_name, **agent_config)
+    client = LLM_Client(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 
     # Extract suspicious code snippets
@@ -65,7 +68,7 @@ def generate_v1_patch(state: SpadeState):
     # If pattern has GLOBAL scope and an upstream file, include it too
     if isinstance(active_pattern, dict) and active_pattern.get("scope") == "GLOBAL" and active_pattern.get("upstream"):
         upstream_file = active_pattern.get("upstream")
-        log(f"Including upstream context: {upstream_file}", agent_name)
+        log(f"Including upstream context: {upstream_file}", specific_agent_name)
         snippet = extract_snippet(
             repo_path=bug_context.local_repo_path,
             relative_file_path=upstream_file
@@ -102,12 +105,13 @@ def generate_v1_patch(state: SpadeState):
         structured_response, metrics = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            response_model=PatchGenerationResponse
+            response_model=PatchGenerationResponse,
+            loop_info=loop_info_dict
         )
         code_diff = structured_response.code_diff
-        log(f"Generated v1 patch: {patch_id} using {pattern_str}", agent_name, level=logging.INFO)
+        log(f"Generated v1 patch: {patch_id} using {pattern_str}", specific_agent_name, level=logging.INFO)
     except Exception as e:
-        log(f"Error generating v1 patch: {e}", agent_name, level=logging.ERROR)
+        log(f"Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
         code_diff = f"# Error: {e}"
 
     patch = PatchCandidate(
@@ -137,16 +141,16 @@ def generate_refined_patch(state: SpadeState):
             break
             
     if previous_patch:
-        log(f"Resuming refinement chain for {origin_id} from v{previous_patch.version}...", agent_name)
+        log(f"Resuming refinement chain for {origin_id} from v{previous_patch.version}...", agent_base_name)
         previous_patch_diff = previous_patch.code_diff
         active_pattern = previous_patch.strategy
         v_now = previous_patch.version + 1
     else:
         # First time refining this specific winner
-        log(f"Starting refinement for {origin_id} (v2).", agent_name)
+        log(f"Starting refinement for {origin_id} (v2).", agent_base_name)
         v_now = 2
         previous_patch_diff = ""
-        active_pattern = "unconstrained"
+        active_pattern = P_UNCONSTRAINED
         
         # Find the v1 base
         for p in v1_patches:
@@ -155,11 +159,16 @@ def generate_refined_patch(state: SpadeState):
                 active_pattern = p.strategy
                 break
 
-    loop_info = get_loop_info(state, include_inner=True)
-    log(f"{loop_info} Lineage: {origin_id} -> Generating v{v_now}", agent_name)
+    # Update version before getting loop info
+    temp_state = state.copy()
+    temp_state["current_patch_version"] = v_now
+    loop_info_str, loop_info_dict = get_loop_info(temp_state, include_inner=True)
+    
+    specific_agent_name = f"{agent_base_name}] [{active_pattern}"
+    log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
 
     agent_config = LLM_AGENTS["patchgen"]
-    client = LLM_Client(agent=agent_name, **agent_config)
+    client = LLM_Client(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 
     # Format prompts
@@ -184,12 +193,13 @@ def generate_refined_patch(state: SpadeState):
         structured_response, metrics = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            response_model=PatchGenerationResponse
+            response_model=PatchGenerationResponse,
+            loop_info=loop_info_dict
         )
         code_diff = structured_response.code_diff
-        log(f"Generated refined patch: {patch_id}", agent_name, level=logging.INFO)
+        log(f"Generated refined patch: {patch_id}", specific_agent_name, level=logging.INFO)
     except Exception as e:
-        log(f"Error generating refined patch: {e}", agent_name, level=logging.ERROR)
+        log(f"Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
         code_diff = f"# Error: {e}"
 
     patch = PatchCandidate(

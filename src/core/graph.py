@@ -3,7 +3,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.constants import Send
 import logging
 
-from src.core.state import SpadeState
+from src.core.state import SpadeState, P_UNCONSTRAINED
 from config.settings import K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS
 from src.utils.logger import log
 from src.agents import (
@@ -31,9 +31,9 @@ def activate_patchgen_agents(state: SpadeState):
             "current_patch_version": current_v
         }))
         
-    # Activate the +1 unconstrained LLM agent
+    # Activate the +1 Unconstrained LLM agent
     sends.append(Send("generate_v1_patch", {
-        "active_pattern": "unconstrained",
+        "active_pattern": P_UNCONSTRAINED,
         "bug_context": state["bug_context"],
         "outer_loop_count": current_n,
         "inner_loop_count": current_m,

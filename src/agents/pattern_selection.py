@@ -1,9 +1,9 @@
-from src.utils.logger import log
+from src.utils.logger import log, get_loop_info
 import logging
 import yaml
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from src.core.state import SpadeState, get_loop_info
+from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from config.settings import K_PATTERNS, LLM_AGENTS
 
@@ -30,9 +30,6 @@ def run(state: SpadeState):
     agent_config = LLM_AGENTS["pattern_selection"]
     client = LLM_Client(agent=agent_name, **agent_config)
 
-    loop_info = get_loop_info(state, include_inner=False)
-    log(f"{loop_info} Selecting Top-{K_PATTERNS} Patterns...", agent_name)
-
     # Load configuration and patterns
     prompts_config = load_prompts()
     taxonomy_dict = prompts_config.get("pattern_taxonomy", {})
@@ -40,6 +37,9 @@ def run(state: SpadeState):
     for pat_id, description in taxonomy_dict.items():
         # format the taxonomy into a readable list for the system prompt
         taxonomy_str += f"- {pat_id}: {description.strip()}\n\n"
+
+    loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
+    log(f"{loop_info_str} Selecting Top-{K_PATTERNS} Patterns...", agent_name)
 
     # Format the System Prompt
     system_template = prompts_config["pattern_selection"]["system"]
@@ -92,7 +92,8 @@ def run(state: SpadeState):
         structured_response, metrics = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            response_model=PatternSelectionResponse
+            response_model=PatternSelectionResponse,
+            loop_info=loop_info_dict
         )
         
         if structured_response.selected_count == 0 or not structured_response.selections:
@@ -100,7 +101,8 @@ def run(state: SpadeState):
         else:
             # Enforce the K_PATTERNS limit and convert Pydantic models to dicts for LangGraph
             final_selection = [s.model_dump() for s in structured_response.selections[:K_PATTERNS]]
-            log(f"Successfully extracted {len(final_selection)} patterns.", agent_name, level=logging.INFO)
+            selected_ids = [s["pattern_id"] for s in final_selection]
+            log(f"Selected {len(final_selection)} patterns: {selected_ids}", agent_name, level=logging.INFO)
 
     except Exception as e:
         log(f"LLM Connection or Parsing Error: {e}. Proceeding with K=0.", agent_name, level=logging.ERROR)

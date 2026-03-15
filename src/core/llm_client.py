@@ -1,9 +1,12 @@
 import os
-from typing import Type, TypeVar, Tuple
+import json
+import time
+from datetime import datetime
+from typing import Type, TypeVar, Tuple, Optional, Any
 from pydantic import BaseModel
 from openai import OpenAI
 from config.settings import COST_TABLE
-from src.utils.logger import log
+from src.utils.logger import log, get_current_log_dir
 import logging
 
 T = TypeVar('T', bound=BaseModel)
@@ -33,9 +36,9 @@ class LLM_Client:
         self.client = OpenAI(**client_kwargs)
 
 
-    def _calculate_metrics(self, usage) -> dict:
+    def _calculate_metrics(self, usage, duration: float) -> dict:
         if not usage:
-            return {}
+            return {"total_seconds": round(duration, 3)}
             
         p_tokens = getattr(usage, 'prompt_tokens', 0)
         c_tokens = getattr(usage, 'completion_tokens', 0)
@@ -47,16 +50,64 @@ class LLM_Client:
             "total_prompt_tokens": p_tokens,
             "total_completion_tokens": c_tokens,
             "total_cost_usd": cost_usd,
+            "total_seconds": round(duration, 3),
             f"calls_{self.model_name}": 1
         }
 
-    def generate_text(self, system_prompt: str, user_prompt: str) -> Tuple[str, dict]:
-        """Returns a simple, unstructured Python string (str)."""
+    def _save_trajectory(self, system_prompt: str, user_prompt: str, response: Any, metrics: dict, is_structured: bool = False, loop_info: Optional[dict] = None):
+        """Appends the LLM interaction to a JSON file within the thread's log directory."""
+        log_dir = get_current_log_dir()
+        if not log_dir:
+            return
 
-        log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
-        log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
+        new_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "loop_info": loop_info, # Includes n, m, v
+            "model": self.model_name,
+            "provider": self.provider,
+            "is_structured": is_structured,
+            "prompts": {
+                "system": system_prompt,
+                "user": user_prompt
+            },
+            "response": response,
+            "metrics": metrics
+        }
+
+        # Format the trajectory filename: <folder_name>_<agent_name>_traj.json
+        clean_agent_name = self.agent_name.replace("] [", "_").replace("[", "").replace("]", "").replace(" ", "_")
+        filename = f"{log_dir.name}_{clean_agent_name}_traj.json"
+        filepath = log_dir / filename
+
+        # Load existing data if file exists
+        data = []
+        if filepath.exists():
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if not isinstance(data, list):
+                        data = [data] # Migrate old format
+            except Exception as e:
+                log(f"Failed to load existing trajectory: {e}", caller=self.agent_name, level=logging.WARNING)
+                data = []
+
+        data.append(new_entry)
 
         try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            log(f"Trajectory saved to {filepath}", caller=self.agent_name, level=logging.DEBUG)
+        except Exception as e:
+            log(f"Failed to save trajectory: {e}", caller=self.agent_name, level=logging.ERROR)
+
+    def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict]:
+        """Returns a simple, unstructured Python string (str)."""
+
+        log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
+        log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+
+        try:
+            start_time = time.time()
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
@@ -65,12 +116,14 @@ class LLM_Client:
                     {"role": "user", "content": user_prompt}
                 ]
             )
+            duration = time.time() - start_time
             
             text_response = response.choices[0].message.content
-            
-            log(f"LLM response:\n {text_response}\n", caller=self.agent_name)
+            metrics = self._calculate_metrics(response.usage, duration)
 
-            metrics = self._calculate_metrics(response.usage)
+            self._save_trajectory(system_prompt, user_prompt, text_response, metrics, is_structured=False, loop_info=loop_info)
+            
+            log(f"LLM response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)
 
             return text_response, metrics
@@ -79,16 +132,17 @@ class LLM_Client:
             log(f"LLM Text Gen Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             raise
 
-    def generate_structured(self, system_prompt: str, user_prompt: str, response_model: Type[T]) -> Tuple[T, dict]:
+    def generate_structured(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict]:
         """
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """
         try:
-            log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
-            log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
+            log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
+            log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
 
             schema_instruction = f"\n\nYou MUST return ONLY valid JSON matching this schema:\n{response_model.model_json_schema()}"
             
+            start_time = time.time()
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
@@ -98,14 +152,15 @@ class LLM_Client:
                     {"role": "user", "content": user_prompt}
                 ]
             )
+            duration = time.time() - start_time
             
             raw_json = response.choices[0].message.content
-            log(f"LLM raw response:\n {raw_json}\n", caller=self.agent_name)
+            metrics = self._calculate_metrics(response.usage, duration)
+
+            self._save_trajectory(system_prompt + schema_instruction, user_prompt, json.loads(raw_json), metrics, is_structured=True, loop_info=loop_info)
 
             parsed_data = response_model.model_validate_json(raw_json)
-            log(f"LLM json response:\n {parsed_data}\n", caller=self.agent_name)
-
-            metrics = self._calculate_metrics(response.usage)
+            log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)
 
             return parsed_data, metrics

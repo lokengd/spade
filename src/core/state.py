@@ -2,6 +2,8 @@ from typing import Dict, TypedDict, List, Optional, Annotated
 from pydantic import BaseModel
 import operator
 
+P_UNCONSTRAINED = "P_Unconstrained" # Unconstrained pattern identifier
+
 # Pydantic Models (Strictly Typed Artifacts)
 class EditLocation(BaseModel):
     file: str
@@ -50,7 +52,7 @@ class EvaluationResult(BaseModel):
 class PatchCandidate(BaseModel):
     id: str
     code_diff: str
-    strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
+    strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 Unconstrained: pX
     version: int = 1 # Version number (1 for v1, 2 for v2, etc.)
     origin_v1_id: Optional[str] = None # Link back to the original v1 candidate
     status: str = "pending" # pending, passed, failed
@@ -98,20 +100,3 @@ class SpadeState(TypedDict):
 
     # Telemetry
     total_metrics: Annotated[dict, add_metrics]
-
-def get_loop_info(state: SpadeState, include_inner: bool = True):
-    """
-    Centralized helper to extract N, M, V values.
-    """
-    from config.settings import N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE
-    
-    n = state.get("outer_loop_count", 1)
-    m = state.get("inner_loop_count", 1)
-    v = state.get("current_patch_version", 1)
-    
-    if include_inner:
-        info_str = f"[N={n}/{N_OUTER_LOOPS}] [M={m}/{M_INNER_LOOPS}] [V={v}/{V_PATIENCE}]"
-    else:
-        info_str = f"[N={n}/{N_OUTER_LOOPS}]"
-    
-    return info_str

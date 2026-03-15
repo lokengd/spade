@@ -142,7 +142,7 @@ patch_generation_unconstrained:
     
     **Instructions:**
     1. Analyze the bug description, error trace, and suspicious code snippets.
-    2. You are UNCONSTRAINED: use your own expert judgment to identify the root cause and the most effective fix strategy without being limited to a specific pattern.
+    2. Use your own expert judgment to identify the root cause and the most effective fix strategy without being limited to a specific pattern.
     3. Generate a patch in UNIFIED DIFF format.
     4. Ensure the patch is minimal, robust, and addresses the root cause directly.
     5. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
