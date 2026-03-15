@@ -32,6 +32,19 @@ class DBLogger:
                 CREATE TABLE IF NOT EXISTS experiments (
                     experiment_id TEXT PRIMARY KEY,
                     description TEXT,
+                    total_bugs INTEGER,
+                    resolution_rate REAL,
+                    fl_accuracy REAL,
+                    pass_at_1_count INTEGER,
+                    debate_rescues_count INTEGER,
+                    inner_loop_rescues_count INTEGER,
+                    outer_loop_rescues_count INTEGER,
+                    avg_attempts_to_fix REAL,
+                    total_cost REAL,
+                    total_tokens INTEGER,
+                    total_input_tokens INTEGER,
+                    total_output_tokens INTEGER,
+                    avg_cost_per_bug REAL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
@@ -102,6 +115,130 @@ class DBLogger:
                 (experiment_id, description)
             )
 
+    def get_all_experiments(self) -> list:
+        """Returns a list of all experiments in the database."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("SELECT experiment_id, created_at FROM experiments ORDER BY created_at DESC")
+            return [dict(r) for r in cursor.fetchall()]
+
+    def get_experiment_metrics(self, experiment_id: str = None) -> dict:
+        """Calculates aggregated metrics for an experiment (or all if None)."""
+        where_clause = ""
+        params = []
+        if experiment_id:
+            where_clause = "WHERE experiment_id = ?"
+            params = [experiment_id]
+        
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # 1. High-level Resolution Metrics
+            cursor.execute(f"SELECT COUNT(*) as total_bugs, SUM(is_resolved) as resolved_bugs, SUM(fl_match) as fl_matches FROM repair_runs {where_clause}", params)
+            row = cursor.fetchone()
+            total_bugs = row['total_bugs'] or 0
+            resolved_bugs = row['resolved_bugs'] or 0
+            fl_matches = row['fl_matches'] or 0
+            
+            resolution_rate = (resolved_bugs / total_bugs * 100) if total_bugs > 0 else 0
+            fl_accuracy = (fl_matches / total_bugs * 100) if total_bugs > 0 else 0
+            
+            # 2. Debate & Efficiency Metrics (only for patches that successfully passed tests)
+            # Join with repair_runs to filter by experiment_id if needed
+            patches_where = "WHERE p.tests_passed = 1"
+            if experiment_id:
+                patches_where += " AND r.experiment_id = ?"
+            
+            cursor.execute(f"""
+                SELECT 
+                    COUNT(CASE WHEN p.loop_n = 1 AND p.loop_m = 1 AND p.loop_v = 1 THEN 1 END) as pass_at_1,
+                    COUNT(CASE WHEN p.loop_n = 1 AND p.loop_m = 1 AND p.loop_v > 1 THEN 1 END) as debate_rescues,
+                    COUNT(CASE WHEN p.loop_n = 1 AND p.loop_m > 1 THEN 1 END) as inner_rescues,
+                    COUNT(CASE WHEN p.loop_n > 1 THEN 1 END) as outer_rescues,
+                    AVG(p.patch_version) as avg_attempts
+                FROM patch_evaluations p
+                JOIN repair_runs r ON p.run_id = r.run_id
+                {patches_where}
+            """, params)
+            row = cursor.fetchone()
+            pass_at_1 = row['pass_at_1'] or 0
+            debate_rescues = row['debate_rescues'] or 0
+            inner_rescues = row['inner_rescues'] or 0
+            outer_rescues = row['outer_rescues'] or 0
+            avg_attempts = row['avg_attempts'] or 0.0
+            
+            # 3. Cost & Telemetry
+            telemetry_where = ""
+            if experiment_id:
+                telemetry_where = "WHERE r.experiment_id = ?"
+            
+            cursor.execute(f"""
+                SELECT 
+                    SUM(l.cost_usd) as total_cost, 
+                    SUM(l.prompt_tokens) as total_in, 
+                    SUM(l.completion_tokens) as total_out
+                FROM llm_telemetry l
+                JOIN repair_runs r ON l.run_id = r.run_id
+                {telemetry_where}
+            """, params)
+            row = cursor.fetchone()
+            total_cost = row['total_cost'] or 0.0
+            total_in = row['total_in'] or 0
+            total_out = row['total_out'] or 0
+            total_tokens = total_in + total_out
+            avg_cost = (total_cost / total_bugs) if total_bugs > 0 else 0.0
+            
+            # 4. Agent Breakdown
+            cursor.execute(f"""
+                SELECT l.agent_name, SUM(l.cost_usd) as total_cost, SUM(l.prompt_tokens) as prompt_t, SUM(l.completion_tokens) as comp_t
+                FROM llm_telemetry l
+                JOIN repair_runs r ON l.run_id = r.run_id
+                {telemetry_where}
+                GROUP BY l.agent_name
+            """, params)
+            agent_breakdown = [dict(r) for r in cursor.fetchall()]
+            
+            return {
+                "total_bugs": total_bugs,
+                "resolved_bugs": resolved_bugs,
+                "resolution_rate": resolution_rate,
+                "fl_accuracy": fl_accuracy,
+                "pass_at_1": pass_at_1,
+                "debate_rescues": debate_rescues,
+                "inner_rescues": inner_rescues,
+                "outer_rescues": outer_rescues,
+                "avg_attempts": avg_attempts,
+                "total_cost": total_cost,
+                "total_tokens": total_tokens,
+                "total_in": total_in,
+                "total_out": total_out,
+                "avg_cost": avg_cost,
+                "agent_breakdown": agent_breakdown
+            }
+
+    def update_experiment_metrics(self, experiment_id: str, stats: dict):
+        """Updates the experiments table with final aggregated metrics."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.cursor().execute("""
+                UPDATE experiments SET 
+                    total_bugs = ?, resolution_rate = ?, fl_accuracy = ?,
+                    pass_at_1_count = ?, debate_rescues_count = ?, 
+                    inner_loop_rescues_count = ?, outer_loop_rescues_count = ?,
+                    avg_attempts_to_fix = ?, total_cost = ?, total_tokens = ?,
+                    total_input_tokens = ?, total_output_tokens = ?, avg_cost_per_bug = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE experiment_id = ?
+            """, (
+                stats.get("total_bugs"), stats.get("resolution_rate"), stats.get("fl_accuracy"),
+                stats.get("pass_at_1"), stats.get("debate_rescues"), 
+                stats.get("inner_rescues"), stats.get("outer_rescues"),
+                stats.get("avg_attempts"), stats.get("total_cost"), stats.get("total_tokens"),
+                stats.get("total_in"), stats.get("total_out"), stats.get("avg_cost"),
+                experiment_id
+            ))
+    
     def start_repair_run(self, experiment_id: str, bug_id: str, run_id: str = None) -> str:
         with sqlite3.connect(self.db_path) as conn:
             conn.cursor().execute(

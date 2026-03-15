@@ -10,45 +10,18 @@ def run(state: SpadeState):
     # Get existing BugContext from state
     bug_context: BugContext = state["bug_context"]
 
-    # Update only the FL results
-    # ---- DEMO PURPOSE: sample bug context for testing - astropy__astropy-12907 ----
-    bug_context.suspicious_files = [
-        "astropy/modeling/separable.py",
-        "astropy/modeling/core.py",
-        "astropy/modeling/models.py",
-        "astropy/modeling/utils.py"
-    ]
-    bug_context.related_functions = {
-        "astropy/modeling/separable.py": [
-            "separability_matrix",
-            "_cstack",
-            "_coord_matrix"
-        ],
-        "astropy/modeling/core.py": [
-            "CompoundModel.evaluate",
-            "CompoundModel.__init__"
-        ]
-    }
-    bug_context.edit_locations = [
-        EditLocation(
-            file="astropy/modeling/separable.py",
-            function="_coord_matrix",
-            lines=[204, 210]
-        )
-    ]
-    # ---- DEMO PURPOSE: End. ----
-
-
     # Extract code snippets for each edit location
     for loc in bug_context.edit_locations:
-        # Store the extracted snippet back in the edit location for later use in the pipeline
-        loc.snippet = extract_snippet(
-            repo_path=bug_context.local_repo_path,
-            relative_file_path=loc.file,
-            target_lines=loc.lines,
-            function_name=loc.function,
-            window_size=20
-        )
+        # Store the extracted snippet back in the edit location 
+        if not loc.snippet:
+            log(f"Extracting snippet for {loc.file} at {loc.function or 'lines ' + str(loc.lines)}", agent_name)
+            loc.snippet = extract_snippet(
+                repo_path=bug_context.local_repo_path,
+                relative_file_path=loc.file,
+                target_lines=loc.lines,
+                function_name=loc.function,
+                window_size=15
+            )
 
     return {
         "bug_context": bug_context,
