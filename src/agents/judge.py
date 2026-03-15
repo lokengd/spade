@@ -37,11 +37,11 @@ _JUDGE_SELECT_SYSTEM = (
     "3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.\n"
     "   These instructions should synthesize the strongest points from BOTH debaters.\n\n"
     "Respond ONLY with valid JSON matching this schema:\n"
-    '{\n'
+    "{{\n"
     '  "winning_patch_id": "<id of the selected v1 patch>",\n'
     '  "improvement_instructions": "<specific, actionable instructions for PatchGen to improve this patch>",\n'
     '  "justification": "<your reasoning, referencing specific debater arguments>"\n'
-    '}'
+    "}}"
 )
 
 _JUDGE_SELECT_USER = (
@@ -70,11 +70,11 @@ _JUDGE_REFINE_SYSTEM = (
     "3. Provide concrete, actionable improvement instructions that address the specific failure mode.\n"
     "   Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.\n\n"
     "Respond ONLY with valid JSON matching this schema:\n"
-    '{\n'
+    "{{\n"
     '  "winning_patch_id": "<id of the v1 patch to continue building on (can change from current)>",\n'
     '  "improvement_instructions": "<specific instructions for the next patch version>",\n'
     '  "justification": "<your reasoning, referencing debater arguments and failure history>"\n'
-    '}'
+    "}}"
 )
 
 _JUDGE_REFINE_USER = (
@@ -205,7 +205,8 @@ def run(state: SpadeState):
         )
     else:
         log(f"{loop_info} Evaluating failed v{v} patch. Issuing refinement verdict.", agent_name)
-        pf = _get_patch_fields(state.get("current_refined_patch"))
+        refined_patches = state.get("refined_patches", [])
+        pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = _JUDGE_REFINE_SYSTEM.format(version=v)
         user_prompt = _JUDGE_REFINE_USER.format(
             version=v,

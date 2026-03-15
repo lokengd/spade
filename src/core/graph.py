@@ -5,6 +5,7 @@ import logging
 
 from src.core.state import SpadeState
 from config.settings import K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS
+from src.utils.logger import log
 from src.agents import (
     fl_ensemble, reproduction, pattern_selection, patchgen, debaters, judge, test_agent
 )
@@ -23,7 +24,7 @@ def activate_patchgen_agents(state: SpadeState):
     # Activate K agents
     for pattern in state.get("selected_patterns", [])[:K_PATTERNS]:
         sends.append(Send("generate_v1_patch", {
-            "active_pattern": f"pattern: {pattern}",
+            "active_pattern": pattern,
             "bug_context": state["bug_context"],
             "outer_loop_count": current_n,
             "inner_loop_count": current_m,
@@ -49,17 +50,18 @@ def route_after_refined(state: SpadeState):
     if state["resolution_status"] == "resolved":
         return "end"
         
-    # Hard Stop check
-    if state.get("outer_loop_count", 1) > N_OUTER_LOOPS:        
-        logger.warning(f"MAX OUTER LOOPS N={N_OUTER_LOOPS} REACHED. Hard Stop!")
+    # Hard Stop check - if test_agent signaled failure or counters exceed limit
+    if state["resolution_status"] == "failed" or state.get("outer_loop_count", 1) > N_OUTER_LOOPS:        
+        log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
-    # Hard Reset check - number of inner loops for debate iterations
-    if state.get("inner_loop_count", 1) > M_INNER_LOOPS:
-        # Hit the inner limit, go back to Pattern Selection
+    # Case 1: Transition to new Outer Loop (N+1)
+    if state["resolution_status"].startswith("N") and state["resolution_status"].endswith("_failed"):
+        log("Transitioning to new Outer Loop (Pattern Selection).", "Orchestrator")
         return "pattern_selection"
 
-    # If not hitting any limits yet, continue the debate to generate v3, v4, etc.
+    # Case 2: Backtracking (pick new winner) or Iterative Refinement (v+1)
+    # Both stay in the debate panel.
     return "debate_panel"
 
 

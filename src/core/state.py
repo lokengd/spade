@@ -51,6 +51,8 @@ class PatchCandidate(BaseModel):
     id: str
     code_diff: str
     strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 unconstrained: pX
+    version: int = 1 # Version number (1 for v1, 2 for v2, etc.)
+    origin_v1_id: Optional[str] = None # Link back to the original v1 candidate
     status: str = "pending" # pending, passed, failed
     execution_trace: Optional[str] = None
     evaluation: EvaluationResult = None # Populated after evaluation step
@@ -70,7 +72,12 @@ class SpadeState(TypedDict):
     
     # This tells LangGraph: "When multiple agents return v1_patches, do NOT overwrite. Instead, use operator.add to append them."
     v1_patches: Annotated[List[PatchCandidate], operator.add]
-    current_refined_patch: Optional[PatchCandidate]
+    
+    # Historical trace of refined patches (v2, v3, etc.)
+    refined_patches: Annotated[List[PatchCandidate], operator.add]
+    
+    # The winner from the last v1 pool or the previous refinement loop
+    current_v1_id: str
     
     # Historical trace logs for analysis and potential LLM feedback
     historical_verdicts: Annotated[List[str], operator.add]

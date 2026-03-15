@@ -24,11 +24,11 @@ _DYNAMIC_ARG_SELECT_SYSTEM = (
     "You will receive the bug context (issue description, error trace, suspicious files)\n"
     "and a list of v1 patch candidates with their diffs and strategies.\n\n"
     "Respond ONLY with valid JSON matching this schema:\n"
-    '{\n'
+    "{{\n"
     '  "recommended_patch_id": "<id of the patch you favor>",\n'
     '  "argument": "<your detailed runtime-focused analysis justifying this choice, '
     'referencing specific patches by ID>"\n'
-    '}'
+    "}}"
 )
 
 _DYNAMIC_ARG_SELECT_USER = (
@@ -50,10 +50,10 @@ _DYNAMIC_ARG_REFINE_SYSTEM = (
     "3. What specific runtime behavior must the next version address?\n"
     "4. Given the history of prior verdicts and failures, what pattern of mistakes is emerging?\n\n"
     "Respond ONLY with valid JSON:\n"
-    '{\n'
+    "{{\n"
     '  "argument": "<your detailed runtime analysis of the failure and concrete suggestions '
     'for the next patch version>"\n'
-    '}'
+    "}}"
 )
 
 _DYNAMIC_ARG_REFINE_USER = (
@@ -81,11 +81,11 @@ _STATIC_ARG_SELECT_SYSTEM = (
     "4. Are there structural anti-patterns (e.g., swallowed exceptions, dead code, implicit type coercions)?\n\n"
     "You will receive the bug context and a list of v1 patch candidates.\n\n"
     "Respond ONLY with valid JSON:\n"
-    '{\n'
+    "{{\n"
     '  "recommended_patch_id": "<id of the patch you favor>",\n'
     '  "argument": "<your detailed structural analysis justifying this choice, '
     'referencing specific patches by ID>"\n'
-    '}'
+    "}}"
 )
 
 _STATIC_ARG_SELECT_USER = _DYNAMIC_ARG_SELECT_USER  # Same user context
@@ -100,10 +100,10 @@ _STATIC_ARG_REFINE_SYSTEM = (
     "3. Is the fix-pattern strategy still appropriate, or should a different pattern be tried?\n"
     "4. What structural changes would make the next version more robust?\n\n"
     "Respond ONLY with valid JSON:\n"
-    '{\n'
+    "{{\n"
     '  "argument": "<your detailed structural analysis of the failure and concrete suggestions '
     'for the next patch version>"\n'
-    '}'
+    "}}"
 )
 
 _STATIC_ARG_REFINE_USER = _DYNAMIC_ARG_REFINE_USER  # Same user context
@@ -116,9 +116,9 @@ _DYNAMIC_REBUTTAL_SYSTEM = (
     "If the Static Debater recommended a different patch than you, argue why yours is better "
     "from a runtime standpoint.\n\n"
     "Respond ONLY with valid JSON:\n"
-    '{\n'
+    "{{\n"
     '  "rebuttal": "<your rebuttal addressing the Static Debater\'s argument point by point>"\n'
-    '}'
+    "}}"
 )
 
 _DYNAMIC_REBUTTAL_USER = (
@@ -133,9 +133,9 @@ _STATIC_REBUTTAL_SYSTEM = (
     "If the Dynamic Debater recommended a different patch than you, argue why yours is better "
     "from a structural standpoint.\n\n"
     "Respond ONLY with valid JSON:\n"
-    '{\n'
+    "{{\n"
     '  "rebuttal": "<your rebuttal addressing the Dynamic Debater\'s argument point by point>"\n'
-    '}'
+    "}}"
 )
 
 _STATIC_REBUTTAL_USER = (
@@ -231,7 +231,8 @@ def generate_dynamic_arg(state: SpadeState):
         )
     else:
         log(f"{loop_info} Analyzing failed v{v} patch (runtime analysis).", agent_name_dynamic)
-        pf = _get_patch_fields(state.get("current_refined_patch"))
+        refined_patches = state.get("refined_patches", [])
+        pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = _DYNAMIC_ARG_REFINE_SYSTEM.format(version=v)
         user_prompt = _DYNAMIC_ARG_REFINE_USER.format(
             version=v,
@@ -262,7 +263,8 @@ def generate_static_arg(state: SpadeState):
         )
     else:
         log(f"{loop_info} Analyzing failed v{v} patch (structural analysis).", agent_name_static)
-        pf = _get_patch_fields(state.get("current_refined_patch"))
+        refined_patches = state.get("refined_patches", [])
+        pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = _STATIC_ARG_REFINE_SYSTEM.format(version=v)
         user_prompt = _STATIC_ARG_REFINE_USER.format(
             version=v,

@@ -99,3 +99,112 @@ pattern_taxonomy:
     - parameter order
     - object construction usage
     Scope: LOCAL or GLOBAL (if File A calls a method in File B improperly, or an external API contract is broken, set scope to GLOBAL and target the upstream file (File B) or API handler.)
+
+patch_generation:
+  system: |
+    You are an expert Software Engineer specializing in Automated Program Repair (APR).
+    Your goal is to generate a precise code patch (unified diff) to fix a bug based on a provided fix-pattern and bug context.
+
+    **Instructions:**
+    1. Analyze the bug description, error trace, and suspicious code snippets.
+    2. Apply the requested Fix-Pattern: {active_pattern}
+    3. Generate a patch in UNIFIED DIFF format.
+    4. Ensure the patch is minimal and only addresses the root cause.
+    5. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
+
+    Respond ONLY with a valid JSON object matching this schema:
+    ```json
+    {{
+      "explanation": "Brief explanation of the fix strategy.",
+      "code_diff": "--- file.py\n+++ file.py\n@@ ... @@\n- old_code\n+ new_code"
+    }}
+    ```
+
+  user: |
+    **Bug Issue Description:**
+    {issue_text}
+
+    **Error Trace:**
+    {error_trace}
+
+    **Suspicious Code Snippets:**
+    {suspicious_snippets}
+
+    **Target Fix-Pattern:**
+    {active_pattern}
+
+    Generate the patch as JSON.
+
+patch_generation_unconstrained:
+  system: |
+    You are an expert Software Engineer specializing in Automated Program Repair (APR).
+    Your goal is to generate a precise code patch (unified diff) to fix a bug.
+    
+    **Instructions:**
+    1. Analyze the bug description, error trace, and suspicious code snippets.
+    2. You are UNCONSTRAINED: use your own expert judgment to identify the root cause and the most effective fix strategy without being limited to a specific pattern.
+    3. Generate a patch in UNIFIED DIFF format.
+    4. Ensure the patch is minimal, robust, and addresses the root cause directly.
+    5. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
+
+    Respond ONLY with a valid JSON object matching this schema:
+    ```json
+    {{
+      "explanation": "Detailed explanation of your identified root cause and fix strategy.",
+      "code_diff": "--- file.py\n+++ file.py\n@@ ... @@\n- old_code\n+ new_code"
+    }}
+    ```
+
+  user: |
+    **Bug Issue Description:**
+    {issue_text}
+
+    **Error Trace:**
+    {error_trace}
+
+    **Suspicious Code Snippets:**
+    {suspicious_snippets}
+
+    Generate the best possible patch as JSON.
+
+patch_refinement:
+  system: |
+    You are an expert Software Engineer specializing in Automated Program Repair (APR).
+    Your goal is to refine an existing patch based on feedback from a debate between static and dynamic analysis agents.
+
+    **Instructions:**
+    1. Analyze the original bug context and the previous patch candidate.
+    2. Review the Target Fix-Pattern (if any): {active_pattern}
+    3. Review the Debate Verdict and the arguments from both sides.
+    4. Generate an improved patch in UNIFIED DIFF format that addresses the weaknesses identified in the debate.
+    5. Ensure the patch is minimal and robust.
+    6. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
+
+    Respond ONLY with a valid JSON object matching this schema:
+    ```json
+    {{
+      "explanation": "Brief explanation of how the patch was refined based on the debate.",
+      "code_diff": "--- file.py\n+++ file.py\n@@ ... @@\n- old_code\n+ new_code"
+    }}
+    ```
+
+  user: |
+    **Original Bug Issue:**
+    {issue_text}
+
+    **Target Fix-Pattern:**
+    {active_pattern}
+
+    **Previous Patch (v{version}):**
+    {previous_patch_diff}
+
+    **Debate Verdict:**
+    {verdict}
+
+    **Dynamic Analysis Argument:**
+    {dynamic_argument}
+
+    **Static Analysis Argument:**
+    {static_argument}
+
+    Refine the patch and return it as JSON.
