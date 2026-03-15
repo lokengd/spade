@@ -51,19 +51,19 @@ def generate_metrics_report(db_path="data/spade_results.db", experiment_id=None,
             WHERE p.tests_passed = 1 {f"AND r.experiment_id = '{experiment_id}'" if experiment_id else ""}
         """, conn)
 
-        if not patches_df.empty:
-            # Pass@1: Fixed on the first attempt (v=1)
-            pass_at_1 = len(patches_df[patches_df['loop_v'] == 1])
-            pass_at_1_rate = (pass_at_1 / resolved_bugs) * 100 if resolved_bugs > 0 else 0
-            
-            # Efficacy of Debate: Required inner loop refinement (v > 1)
-            debate_fixes = len(patches_df[patches_df['loop_v'] > 1])
-            debate_rate = (debate_fixes / resolved_bugs) * 100 if resolved_bugs > 0 else 0
+        # Pass@1: Fixed on the first attempt (v=1)
+        pass_at_1 = len(patches_df[patches_df['loop_v'] == 1]) if not patches_df.empty else 0
+        pass_at_1_rate = (pass_at_1 / resolved_bugs) * 100 if resolved_bugs > 0 else 0
+        
+        # Efficacy of Debate: Required inner loop refinement (v > 1)
+        debate_fixes = len(patches_df[patches_df['loop_v'] > 1]) if not patches_df.empty else 0
+        debate_rate = (debate_fixes / resolved_bugs) * 100 if resolved_bugs > 0 else 0
 
-            report_print(f"\n[Multi-Agent Debate Efficacy]")
-            report_print(f"Pass@1 (First Try)   : {pass_at_1_rate:.1f}% ({pass_at_1} bugs)")
-            report_print(f"Debate Rescues (v>1) : {debate_rate:.1f}% ({debate_fixes} bugs)")
-            report_print(f"Avg Attempts to Fix  : {patches_df['patch_version'].mean():.1f} patches/bug")
+        avg_attempts = patches_df['patch_version'].mean() if not patches_df.empty else 0.0
+
+        report_print(f"Pass@1 (First Try)   : {pass_at_1_rate:.1f}% ({pass_at_1} bugs)")
+        report_print(f"Debate Rescues (v>1) : {debate_rate:.1f}% ({debate_fixes} bugs)")
+        report_print(f"Avg Attempts to Fix  : {avg_attempts:.1f} patches/bug")
 
         # Cost & Telemetry
         costs_df = pd.read_sql_query(f"""
@@ -76,13 +76,22 @@ def generate_metrics_report(db_path="data/spade_results.db", experiment_id=None,
 
         total_cost = costs_df['total_cost'].sum()
         avg_cost_per_bug = total_cost / total_bugs if total_bugs > 0 else 0
+        total_input_tokens = int(costs_df['prompt_t'].sum())
+        total_output_tokens = int(costs_df['comp_t'].sum())
+        total_tokens = total_input_tokens + total_output_tokens
 
-        report_print(f"Total Run Cost       : ${total_cost:.4f}")
+        report_print(f"\nTotal Run Cost       : ${total_cost:.4f}")
+        report_print(f"Total Tokens         : {total_tokens:,}")
+        report_print(f"Total Input Tokens   : {total_input_tokens:,}")
+        report_print(f"Total Output Tokens  : {total_output_tokens:,}")
         report_print(f"Avg Cost per Bug     : ${avg_cost_per_bug:.4f}")
         report_print(f"\nCost by Agent Breakdown:")
         
         for _, row in costs_df.iterrows():
-            report_print(f"  - {row['agent_name'].ljust(20)}: ${row['total_cost']:.4f} ({row['prompt_t']} in / {row['comp_t']} out)")
+            agent_in = int(row['prompt_t'])
+            agent_out = int(row['comp_t'])
+            agent_total = agent_in + agent_out
+            report_print(f"  - {row['agent_name'].ljust(20)}: ${row['total_cost']:.4f}, Tokens: {agent_in:,} input + {agent_out:,} output = {agent_total:,} total")
             
         report_print("="*50 + "\n")
 

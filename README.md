@@ -103,6 +103,7 @@ rm data/checkpoints.sqlite*
 ### 4.2. Viewing Execution Traces
 Detailed, timestamped execution logs, including token consumption and reasoning traces, are automatically saved to the data/logs/ directory for every run.
 
-### 5. Acknowledgement
+## 5. Acknowledgement
 
 - [SWE-bench-Lite](https://www.swebench.com/lite.html)
+- [LangGraph](https://github.com/langchain-ai/langgraph)

@@ -119,7 +119,7 @@ def generate_v1_patch(state: SpadeState):
 
     # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
-        db_logger.log_telemetry(run_id, f"patchgen_{strategy}", raw_telemetry)
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_{strategy}", raw_telemetry)
         db_logger.log_patch(
             patch_id=patch_id,
             run_id=run_id,
@@ -230,7 +230,7 @@ def generate_refined_patch(state: SpadeState):
 
     # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
-        db_logger.log_telemetry(run_id, f"patchgen_refined_{active_pattern}", raw_telemetry)
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_refined_{active_pattern}", raw_telemetry)
         db_logger.log_patch(
             patch_id=patch_id,
             run_id=run_id,
