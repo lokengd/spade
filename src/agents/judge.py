@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.utils.logger import log, get_loop_info
-from config.settings import LLM_AGENTS
+from src.core.settings import LLM_AGENTS
 from src.utils.db_logger import db_logger
 import logging
 

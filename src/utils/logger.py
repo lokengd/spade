@@ -2,7 +2,7 @@ from datetime import datetime
 import logging
 from pathlib import Path
 from typing import Tuple, Dict
-from config import settings
+from src.core import settings
 
 # Global to store the current thread's log directory
 _current_log_dir: Path = None

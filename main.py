@@ -1,62 +1,12 @@
 import logging
 import uuid
-import os
-import json
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
-from src.core.state import BugContext, EditLocation
+from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
 from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
 from src.utils.db_logger import db_logger
-from config import settings
-
-def load_fl_data(bug_id: str):
-    """Loads Fault Localization data from the sample results JSONL file."""
-    fl_file = "results/afl-qwen2.5_32b_sample.jsonl"
-    if not os.path.exists(fl_file):
-        log(f"Warning: FL results file {fl_file} not found.", level=logging.WARNING)
-        return [], {}, []
-    
-    with open(fl_file, "r") as f:
-        for line in f:
-            data = json.loads(line)
-            if data["instance_id"] == bug_id:
-                suspicious_files = data.get("found_files", [])
-                
-                # Parse related functions
-                raw_related = data.get("found_related_locs", {})
-                related_functions = {}
-                for file, locs in raw_related.items():
-                    funcs = []
-                    for loc in locs:
-                        if not loc: continue
-                        for part in loc.split('\n'):
-                            if part.startswith('function: '):
-                                funcs.append(part.replace('function: ', '').strip())
-                    related_functions[file] = funcs
-                
-                # Parse edit locations from found_edit_locs
-                raw_edits = data.get("found_edit_locs", {})
-                edit_locations = []
-                for file, locs in raw_edits.items():
-                    for loc in locs:
-                        if not loc: continue
-                        lines = []
-                        function_name = None
-                        for part in loc.split('\n'):
-                            if part.startswith('function: '):
-                                function_name = part.replace('function: ', '').strip()
-                            elif part.startswith('line: '):
-                                lines.append(int(part.replace('line: ', '').strip()))
-                        
-                        edit_locations.append(EditLocation(
-                            file=file,
-                            function=function_name,
-                            lines=lines if lines else None
-                        ))
-                
-                return suspicious_files, related_functions, edit_locations
-    return [], {}, []
+from src.core import settings
 
 def run_spade(task: dict, config: dict, experiment_id: str):
 
@@ -89,9 +39,6 @@ def run_spade(task: dict, config: dict, experiment_id: str):
 
             repo_path = loader.load_repo(task)
             
-            # Load pre-calculated FL data from sample file
-            suspicious_files, related_functions, edit_locations = load_fl_data(bug_id)
-
             initial_state = {
                 "thread_id": thread_id,  
                 "experiment_id": experiment_id,
@@ -100,10 +47,7 @@ def run_spade(task: dict, config: dict, experiment_id: str):
                     issue_text=task["problem_statement"],
                     local_repo_path=str(repo_path),
                     base_commit=task["base_commit"],
-                    resolution_status="open",
-                    suspicious_files=suspicious_files,
-                    related_functions=related_functions,
-                    edit_locations=edit_locations
+                    resolution_status="open"
                 ),        
             }
 
@@ -126,35 +70,43 @@ if __name__ == "__main__":
 
     # Initialize dataset Loader
     loader = DatasetLoader()
-    test_data = loader.load_data()
-    print(f"\nDataset Loaded. Found {len(test_data)} task instances.")
+    all_test_data = loader.load_data()
+    print(f"\nDataset Loaded. Found {len(all_test_data)} task instances.")
 
-    # ---- DEMO PURPOSE: Run specific sample bugs ----
-    # These should match instance_ids in results/afl-qwen2.5_32b_sample.jsonl
-    demo_bugs = ["astropy__astropy-12907", "django__django-10914"]
-    test_data = [t for t in test_data if t['instance_id'] in demo_bugs]
-    # ---- DEMO PURPOSE: End. ----
+    for experiment_id in settings.ACTIVE_EXPERIMENTS:
+        exp_config = settings.update_orchestration_settings(experiment_id)
+        experiment_desc = exp_config.get("description", "No description provided")
+        bug_list = exp_config.get("bug_list", [])
 
-    # Experiment Configuration
-    thread_prefix = uuid.uuid4().hex[:6] 
-    experiment_id = f"spade_baseline_demo_{thread_prefix}"
-    experiment_desc = "Demo run of SPADE with sample bugs"
-    db_logger.start_experiment(experiment_id, experiment_desc)
+        print(f"\n--- Starting Experiment: {experiment_id} ---")
+        print(f"Description: {experiment_desc}")
+
+        # Filter dataset based on bug_list
+        if bug_list == "all":
+            test_data = all_test_data
+        else:
+            test_data = [t for t in all_test_data if t['instance_id'] in bug_list]
         
-    for task in test_data:
-        bug_id = task.get('instance_id', 'unknown_bug')
-        thread_id = f"{thread_prefix}_{bug_id}"        
-        
-        setup_logger(thread_id)
-        log(get_log_header(thread_id))
+        print(f"Bugs to process: {len(test_data)}")
 
-        try:
-            run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=experiment_id) 
-        except Exception as e:
-            log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
-            continue
+        # Experiment ID in DB includes a unique suffix for this run
+        db_experiment_id = f"{experiment_id}_{uuid.uuid4().hex[:6]}"
+        db_logger.start_experiment(db_experiment_id, experiment_desc)
+            
+        for task in test_data:
+            bug_id = task.get('instance_id', 'unknown_bug')
+            thread_id = f"{db_experiment_id}_{bug_id}"        
+            
+            setup_logger(thread_id)
+            log(get_log_header(thread_id))
 
-    # Update final aggregated experiment metrics
-    metrics = db_logger.get_experiment_metrics(experiment_id)
-    db_logger.update_experiment_metrics(experiment_id, metrics)
-    log(f"Experiment {experiment_id} finished. Metrics updated in database.", caller="Main")
+            try:
+                run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=db_experiment_id) 
+            except Exception as e:
+                log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
+                continue
+
+        # Update final aggregated experiment metrics
+        metrics = db_logger.get_experiment_metrics(db_experiment_id)
+        db_logger.update_experiment_metrics(db_experiment_id, metrics)
+        log(f"Experiment {db_experiment_id} finished. Metrics updated in database.", caller="Main")

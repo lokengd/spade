@@ -1,0 +1,28 @@
+# List of experiment IDs to run
+active_experiments: ["spade_trial_run"]
+
+# Experiments collection
+experiments:
+  spade_trial_run:
+    description: "Trial run of SWE-Bench-Lite with sample bugs"
+    k_patterns: 2
+    n_outer_loops: 1
+    m_inner_loops: 1
+    v_patience: 2
+    bug_list: ["astropy__astropy-12907", "django__django-10914"]
+    snippet_context_lines: 15
+    # Optional: override default config: "llm.yaml" and "prompts.yaml"
+    # llm_config: "config/llm_trial_run.yaml"
+    # prompts_config: "config/prompts_trial_run.yaml"
+
+  swe_bench_lite_full:
+    description: "Full evaluation on SWE-Bench-Lite"
+    k_patterns: 2
+    n_outer_loops: 3
+    m_inner_loops: 1
+    v_patience: 2
+    bug_list: "all"
+    snippet_context_lines: 15
+    # Optional: override default config: "llm.yaml" and "prompts.yaml"
+    # llm_config: "config/llm_full_run.yaml"
+    # prompts_config: "config/prompts_full_run.yaml"

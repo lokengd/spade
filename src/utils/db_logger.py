@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 from datetime import datetime
-from config.settings import DATA_DIR
+from src.core.settings import DATA_DIR
 
 class DBLogger:
     _instance = None

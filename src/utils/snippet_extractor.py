@@ -4,7 +4,7 @@ from src.utils.logger import log
 
 caller = "SnippetExtractor"
 
-def extract_snippet(repo_path: str, relative_file_path: str, target_lines: list[int] = None, function_name: str = None, window_size: int = 15) -> str:
+def extract_snippet(repo_path: str, relative_file_path: str, target_lines: list[int] = None, function_name: str = None, margin: int = 15) -> str:
     """
     Extracts the import statements and a window of code around the target lines.
     
@@ -13,7 +13,7 @@ def extract_snippet(repo_path: str, relative_file_path: str, target_lines: list[
         relative_file_path: Path to the file relative to the repo root.
         target_lines: List of line numbers identified as suspicious.
         function_name: Name of the function to extract if target lines are not provided.
-        window_size: Number of lines to include above and below the target lines.
+        margin: Number of lines to include above and below the target lines.
     """
     full_path = os.path.join(repo_path, relative_file_path)
     
@@ -39,20 +39,20 @@ def extract_snippet(repo_path: str, relative_file_path: str, target_lines: list[
             imports.append(f"   {i + 1:4d}: {line.rstrip()}")
 
     # Determine Bounds 
-    start_idx, end_idx = 0, min(len(lines), window_size * 2) # Default top-of-file
+    start_idx, end_idx = 0, min(len(lines), margin * 2) # Default top-of-file
     if target_lines:
         # if target lines are provided, use them
         min_line = min(target_lines)
         max_line = max(target_lines)
-        start_idx = max(0, min_line - 1 - window_size)
-        end_idx = min(len(lines), max_line + window_size)
+        start_idx = max(0, min_line - 1 - margin)
+        end_idx = min(len(lines), max_line + margin)
     elif function_name:
         # else, find the function in the file
         func_def = f"def {function_name}("
         for i, line in enumerate(lines):
             if func_def in line:
                 start_idx = max(0, i - 5) # 5 lines (a margin) above the def
-                end_idx = min(len(lines), i + window_size * 2) # Extract a chunk of window_size*2 lines starting from the function definition
+                end_idx = min(len(lines), i + margin * 2) # Extract a chunk of margin*2 lines starting from the function definition
                 break
 
     # Extract snippet

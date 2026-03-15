@@ -1,8 +1,6 @@
-import os
-import logging
 from git import Repo
 from datasets import load_dataset
-from config import settings
+from src.core import settings
 from src.utils.logger import log
 
 class DatasetLoader:

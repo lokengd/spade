@@ -5,13 +5,13 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
-from config.settings import K_PATTERNS, LLM_AGENTS
+from src.core.settings import K_PATTERNS, LLM_AGENTS, PROMPTS_CONFIG_PATH
 from src.utils.db_logger import db_logger
 
 agent_name = "Pattern_Selection"
 
 def load_prompts():
-    with open("config/prompts.yaml", "r") as f:
+    with open(PROMPTS_CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
 
 class PatternScoutSelection(BaseModel):

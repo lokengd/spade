@@ -4,7 +4,7 @@ from langgraph.constants import Send
 import logging
 
 from src.core.state import SpadeState, P_UNCONSTRAINED
-from config.settings import K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS
+from src.core.settings import K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS
 from src.utils.logger import log
 from src.agents import (
     fl_ensemble, reproduction, pattern_selection, patchgen, debaters, judge, test_agent

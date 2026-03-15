@@ -1,7 +1,7 @@
 from src.utils.logger import log, get_loop_info
 import logging
 from src.core.state import SpadeState, PatchCandidate
-from config.settings import M_INNER_LOOPS, V_PATIENCE, N_OUTER_LOOPS
+from src.core.settings import M_INNER_LOOPS, V_PATIENCE, N_OUTER_LOOPS
 from src.utils.db_logger import db_logger
 
 agent_name = "Test_Agent"

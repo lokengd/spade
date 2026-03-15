@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Type, TypeVar, Tuple, Optional, Any
 from pydantic import BaseModel
 from openai import OpenAI
-from config.settings import COST_TABLE
+from src.core.settings import COST_TABLE
 from src.utils.logger import log, get_current_log_dir
 import logging
 
