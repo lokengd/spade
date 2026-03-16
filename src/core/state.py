@@ -1,6 +1,7 @@
 from typing import TypedDict, List, Optional, Annotated
 from pydantic import BaseModel
 import operator
+from typing_extensions import NotRequired
 
 # Pydantic Models (Strictly Typed Artifacts)
 class BugContext(BaseModel):
@@ -79,9 +80,9 @@ class SpadeState(TypedDict):
     total_metrics: Annotated[dict, add_metrics]
 
     # Evaluation of no and current patch candidate - populated after evaluation step
-    reproduction_evaluation_result: EvaluationResult = None # Populated after reproduction step
-    v1_patches_evaluation_result: List[EvaluationResult] = [] # Populated after running on proposed patch
-    refined_patch_evaluation_result: EvaluationResult = None # Populated after running on proposed patch
+    reproduction_evaluation_result: NotRequired[EvaluationResult] # Populated after reproduction step
+    v1_patches_evaluation_result: NotRequired[List[EvaluationResult]] # Populated after running on proposed patch
+    refined_patch_evaluation_result: NotRequired[EvaluationResult] # Populated after running on proposed patch
 
 def get_loop_info(state: SpadeState, include_inner: bool = True):
     """
