@@ -45,6 +45,7 @@ class DBLogger:
                     total_input_tokens INTEGER,
                     total_output_tokens INTEGER,
                     avg_cost_per_bug REAL,
+                    total_duration_seconds REAL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
@@ -59,6 +60,7 @@ class DBLogger:
                     fl_match BOOLEAN,
                     is_resolved BOOLEAN DEFAULT 0,
                     resolution_status TEXT,
+                    duration_seconds REAL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(experiment_id) REFERENCES experiments(experiment_id)
@@ -213,7 +215,19 @@ class DBLogger:
     def update_experiment_metrics(self, experiment_id: str):
         """Updates the experiments table with final aggregated metrics."""
         metrics = self._get_experiment_metrics(experiment_id)
+        
+        # Calculate total duration from DB timestamps
         with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT created_at FROM experiments WHERE experiment_id = ?", (experiment_id,))
+            row = cursor.fetchone()
+            if row:
+                # SQLite CURRENT_TIMESTAMP is in '%Y-%m-%d %H:%M:%S' format
+                created_at = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
+                total_duration = (datetime.utcnow() - created_at).total_seconds()
+            else:
+                total_duration = 0.0
+
             conn.cursor().execute("""
                 UPDATE experiments SET 
                     total_bugs = ?, resolution_rate = ?, fl_accuracy = ?,
@@ -221,6 +235,7 @@ class DBLogger:
                     inner_loop_rescues = ?, outer_loop_rescues = ?,
                     avg_attempts_to_fix = ?, total_cost = ?, total_tokens = ?,
                     total_input_tokens = ?, total_output_tokens = ?, avg_cost_per_bug = ?,
+                    total_duration_seconds = ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE experiment_id = ?
             """, (
@@ -229,6 +244,7 @@ class DBLogger:
                 metrics.get("inner_loop_rescues"), metrics.get("outer_loop_rescues"),
                 metrics.get("avg_attempts"), metrics.get("total_cost"), metrics.get("total_tokens"),
                 metrics.get("total_in"), metrics.get("total_out"), metrics.get("avg_cost"),
+                total_duration,
                 experiment_id
             ))
     
@@ -241,12 +257,22 @@ class DBLogger:
         return run_id
 
     def update_repair_run(self, run_id: str, fl_match: bool, is_resolved: bool, status: str):
+        # Calculate duration from DB timestamps
         with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT created_at FROM repair_runs WHERE run_id = ?", (run_id,))
+            row = cursor.fetchone()
+            if row:
+                created_at = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
+                duration = (datetime.utcnow() - created_at).total_seconds()
+            else:
+                duration = 0.0
+
             conn.cursor().execute("""
                 UPDATE repair_runs 
-                SET fl_match = ?, is_resolved = ?, resolution_status = ?, updated_at = CURRENT_TIMESTAMP
+                SET fl_match = ?, is_resolved = ?, resolution_status = ?, duration_seconds = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE run_id = ?
-            """, (fl_match, is_resolved, status, run_id))
+            """, (fl_match, is_resolved, status, duration, run_id))
 
     def log_telemetry(self, run_id: str, agent_name: str, log_data: dict) -> int:
         with sqlite3.connect(self.db_path) as conn:
