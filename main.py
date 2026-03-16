@@ -74,12 +74,13 @@ def run_spade(task: dict, config: dict, experiment_id: str):
 if __name__ == "__main__":
 
     # Reset any stale evaluation artifacts from previous runs, then initialize SWE-bench Lite evaluation environment
-    log("Setting up evaluation environment...", "Main", level=logging.INFO)
+    setup_logger("evaluation")
+    log("Setting up Docker environment for evaluation...", "Main", level=logging.INFO)
     cleanup_evaluation_dir()
 
     if not setup_evaluation_environment():
-        log("Failed to set up evaluation environment. Check logs for details.", "Main", level=logging.CRITICAL)
-        raise RuntimeError("Failed to set up evaluation environment.")
+        log("Failed to set up Docker environment for evaluation. Check logs for details.", "Main", level=logging.CRITICAL)
+        raise RuntimeError("Failed to set up Docker environment.")
 
     log("Evaluation environment setup complete. Starting SPADE runs...", "Main", level=logging.INFO)
 
@@ -113,7 +114,7 @@ if __name__ == "__main__":
             thread_id = f"{db_experiment_id}_{bug_id}"        
             
             setup_logger(thread_id)
-            log(get_log_header(thread_id))
+            log(get_log_header(db_experiment_id))
 
             try:
                 run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=db_experiment_id) 

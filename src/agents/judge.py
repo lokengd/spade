@@ -1,4 +1,5 @@
 import json
+import yaml
 from pydantic import BaseModel
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
@@ -22,82 +23,12 @@ class JudgeVerdict(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Prompt Templates
+# Prompt Loading
 # ---------------------------------------------------------------------------
 
-# Mode 1: v==1 -> judge selects winner from v1 pool after debate
-_JUDGE_SELECT_SYSTEM = (
-    "You are the Judge in an Automated Program Repair debate panel.\n"
-    "Two debaters -- Dynamic (runtime-focused) and Static (structure-focused) -- have argued\n"
-    "over which v1 patch candidate best fixes the bug. Each has presented an initial argument\n"
-    "and a rebuttal of the other's position.\n\n"
-    "Your task:\n"
-    "1. Weigh both perspectives. Runtime correctness takes slight priority over structural elegance,\n"
-    "   but a patch with serious structural flaws (API contract violations, type errors) should be penalized.\n"
-    "2. Select the winning patch from the v1 candidate pool.\n"
-    "3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.\n"
-    "   These instructions should synthesize the strongest points from BOTH debaters.\n\n"
-    "Respond ONLY with valid JSON matching this schema:\n"
-    "{{\n"
-    '  "winning_patch_id": "<id of the selected v1 patch>",\n'
-    '  "improvement_instructions": "<specific, actionable instructions for PatchGen to improve this patch>",\n'
-    '  "justification": "<your reasoning, referencing specific debater arguments>"\n'
-    "}}"
-)
-
-_JUDGE_SELECT_USER = (
-    "Bug ID: {bug_id}\n"
-    "Issue: {issue_text}\n"
-    "Error Trace: {error_trace}\n\n"
-    "v1 Patch Candidates:\n{candidates_block}\n\n"
-    "=== DYNAMIC DEBATER ===\n"
-    "Argument:\n{dynamic_argument}\n\n"
-    "Rebuttal:\n{dynamic_rebuttal}\n\n"
-    "=== STATIC DEBATER ===\n"
-    "Argument:\n{static_argument}\n\n"
-    "Rebuttal:\n{static_rebuttal}"
-)
-
-# Mode 2: v>=2 -> judge evaluates failed refined patch after debate
-_JUDGE_REFINE_SYSTEM = (
-    "You are the Judge in an Automated Program Repair debate panel.\n"
-    "A refined patch (v{version}) has FAILED verification. Two debaters have analyzed the failure:\n"
-    "- Dynamic Debater: runtime perspective\n"
-    "- Static Debater: structural perspective\n\n"
-    "Your task:\n"
-    "1. Synthesize both analyses to determine the root cause of the failure.\n"
-    "2. Decide whether to continue refining the current v1 base patch or suggest a different\n"
-    "   v1 candidate (by setting winning_patch_id to a different v1 ID).\n"
-    "3. Provide concrete, actionable improvement instructions that address the specific failure mode.\n"
-    "   Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.\n\n"
-    "Respond ONLY with valid JSON matching this schema:\n"
-    "{{\n"
-    '  "winning_patch_id": "<id of the v1 patch to continue building on (can change from current)>",\n'
-    '  "improvement_instructions": "<specific instructions for the next patch version>",\n'
-    '  "justification": "<your reasoning, referencing debater arguments and failure history>"\n'
-    "}}"
-)
-
-_JUDGE_REFINE_USER = (
-    "Bug ID: {bug_id}\n"
-    "Issue: {issue_text}\n"
-    "Error Trace (original): {error_trace}\n\n"
-    "Failed Patch (v{version}):\n"
-    "  ID: {patch_id}\n"
-    "  Strategy: {patch_strategy}\n"
-    "  Built on v1: {origin_v1_id}\n"
-    "  Diff:\n{patch_diff}\n"
-    "  Execution Trace: {execution_trace}\n\n"
-    "Available v1 Candidates:\n{candidates_block}\n\n"
-    "=== DYNAMIC DEBATER ===\n"
-    "Argument:\n{dynamic_argument}\n\n"
-    "Rebuttal:\n{dynamic_rebuttal}\n\n"
-    "=== STATIC DEBATER ===\n"
-    "Argument:\n{static_argument}\n\n"
-    "Rebuttal:\n{static_rebuttal}\n\n"
-    "Prior Verdicts: {historical_verdicts}\n"
-    "Prior Failed Traces: {failed_traces}"
-)
+def _load_prompts():
+    with open(settings.PROMPTS_CONFIG_PATH, "r") as f:
+        return yaml.safe_load(f)
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +113,7 @@ def _validate_winning_patch_id(verdict: JudgeVerdict, v1_patches: list) -> str:
 # ---------------------------------------------------------------------------
 
 def run(state: SpadeState):
+    prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
@@ -199,8 +131,8 @@ def run(state: SpadeState):
 
     if v == 1:
         log(f"{loop_info_str} Selecting winner from v1 pool and issuing improvement instructions.", agent_name)
-        system_prompt = _JUDGE_SELECT_SYSTEM
-        user_prompt = _JUDGE_SELECT_USER.format(
+        system_prompt = prompts["judge_select"]["system"]
+        user_prompt = prompts["judge_select"]["user"].format(
             candidates_block=candidates_block,
             **bug_kwargs,
             **debate_kwargs,
@@ -209,8 +141,8 @@ def run(state: SpadeState):
         log(f"{loop_info_str} Evaluating failed v{v} patch. Issuing refinement verdict.", agent_name)
         refined_patches = state.get("refined_patches", [])
         pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
-        system_prompt = _JUDGE_REFINE_SYSTEM.format(version=v)
-        user_prompt = _JUDGE_REFINE_USER.format(
+        system_prompt = prompts["judge_refine"]["system"].format(version=v)
+        user_prompt = prompts["judge_refine"]["user"].format(
             version=v,
             patch_id=pf["id"],
             patch_strategy=pf["strategy"],
@@ -237,7 +169,6 @@ def run(state: SpadeState):
             response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
-        # Log to DB
         if run_id and raw_telemetry:
             db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
 

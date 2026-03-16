@@ -1,4 +1,5 @@
 import json
+import yaml
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.utils.logger import log, get_loop_info
@@ -9,140 +10,14 @@ import logging
 agent_name_dynamic = "Debater:Dynamic"
 agent_name_static = "Debater:Static"
 
+
 # ---------------------------------------------------------------------------
-# Prompt Templates
+# Prompt Loading
 # ---------------------------------------------------------------------------
 
-# Mode 1: v==1 -> selecting best candidate from v1 pool
-_DYNAMIC_ARG_SELECT_SYSTEM = (
-    "You are the Dynamic Debater in an Automated Program Repair pipeline.\n"
-    "Your role is to evaluate patch candidates from a RUNTIME perspective.\n\n"
-    "Analyze each candidate on:\n"
-    "1. Does the patch directly address the observed error trace?\n"
-    "2. Does it handle edge cases that could trigger the same class of failure?\n"
-    "3. What is the regression risk -- could this patch break passing tests?\n"
-    "4. Is the fix minimal and targeted, or does it mask the root cause?\n\n"
-    "You will receive the bug context (issue description, error trace, suspicious files)\n"
-    "and a list of v1 patch candidates with their diffs and strategies.\n\n"
-    "Respond ONLY with valid JSON matching this schema:\n"
-    "{{\n"
-    '  "recommended_patch_id": "<id of the patch you favor>",\n'
-    '  "argument": "<your detailed runtime-focused analysis justifying this choice, '
-    'referencing specific patches by ID>"\n'
-    "}}"
-)
-
-_DYNAMIC_ARG_SELECT_USER = (
-    "Bug ID: {bug_id}\n"
-    "Issue: {issue_text}\n"
-    "Error Trace: {error_trace}\n"
-    "Suspicious Files: {suspicious_files}\n\n"
-    "v1 Patch Candidates:\n{candidates_block}"
-)
-
-# Mode 2: v>=2 -> evaluating a failed refined patch
-_DYNAMIC_ARG_REFINE_SYSTEM = (
-    "You are the Dynamic Debater in an Automated Program Repair pipeline.\n"
-    "A refined patch (v{version}) has just FAILED verification.\n"
-    "Your role is to analyze the failure from a RUNTIME perspective.\n\n"
-    "Analyze:\n"
-    "1. What does the execution trace reveal about why the patch failed?\n"
-    "2. Is this a regression (broke passing tests) or an incomplete fix (did not fix the failing test)?\n"
-    "3. What specific runtime behavior must the next version address?\n"
-    "4. Given the history of prior verdicts and failures, what pattern of mistakes is emerging?\n\n"
-    "Respond ONLY with valid JSON:\n"
-    "{{\n"
-    '  "argument": "<your detailed runtime analysis of the failure and concrete suggestions '
-    'for the next patch version>"\n'
-    "}}"
-)
-
-_DYNAMIC_ARG_REFINE_USER = (
-    "Bug ID: {bug_id}\n"
-    "Issue: {issue_text}\n"
-    "Error Trace (original): {error_trace}\n\n"
-    "Failed Patch (v{version}):\n"
-    "  ID: {patch_id}\n"
-    "  Strategy: {patch_strategy}\n"
-    "  Diff:\n{patch_diff}\n"
-    "  Execution Trace: {execution_trace}\n\n"
-    "Prior Failed Traces: {failed_traces}\n"
-    "Prior Verdicts: {historical_verdicts}"
-)
-
-# Static debater: structural perspective, same mode split
-
-_STATIC_ARG_SELECT_SYSTEM = (
-    "You are the Static Debater in an Automated Program Repair pipeline.\n"
-    "Your role is to evaluate patch candidates from a STRUCTURAL / STATIC ANALYSIS perspective.\n\n"
-    "Analyze each candidate on:\n"
-    "1. Is the diff syntactically correct and minimal (no unnecessary changes)?\n"
-    "2. Does the fix align with the declared semantic fix-pattern strategy?\n"
-    "3. Does it respect API contracts, type signatures, and module interfaces?\n"
-    "4. Are there structural anti-patterns (e.g., swallowed exceptions, dead code, implicit type coercions)?\n\n"
-    "You will receive the bug context and a list of v1 patch candidates.\n\n"
-    "Respond ONLY with valid JSON:\n"
-    "{{\n"
-    '  "recommended_patch_id": "<id of the patch you favor>",\n'
-    '  "argument": "<your detailed structural analysis justifying this choice, '
-    'referencing specific patches by ID>"\n'
-    "}}"
-)
-
-_STATIC_ARG_SELECT_USER = _DYNAMIC_ARG_SELECT_USER  # Same user context
-
-_STATIC_ARG_REFINE_SYSTEM = (
-    "You are the Static Debater in an Automated Program Repair pipeline.\n"
-    "A refined patch (v{version}) has just FAILED verification.\n"
-    "Your role is to analyze the failure from a STRUCTURAL / STATIC ANALYSIS perspective.\n\n"
-    "Analyze:\n"
-    "1. Does the diff introduce any syntactic or structural issues?\n"
-    "2. Does it violate the API contracts or type expectations of the surrounding code?\n"
-    "3. Is the fix-pattern strategy still appropriate, or should a different pattern be tried?\n"
-    "4. What structural changes would make the next version more robust?\n\n"
-    "Respond ONLY with valid JSON:\n"
-    "{{\n"
-    '  "argument": "<your detailed structural analysis of the failure and concrete suggestions '
-    'for the next patch version>"\n'
-    "}}"
-)
-
-_STATIC_ARG_REFINE_USER = _DYNAMIC_ARG_REFINE_USER  # Same user context
-
-# Rebuttal prompts -- both modes share the same structure
-_DYNAMIC_REBUTTAL_SYSTEM = (
-    "You are the Dynamic Debater writing a rebuttal.\n"
-    "You have read the Static Debater's argument. Counter their claims using runtime evidence.\n"
-    "Where you agree, acknowledge it. Where you disagree, explain why from a runtime behavior perspective.\n"
-    "If the Static Debater recommended a different patch than you, argue why yours is better "
-    "from a runtime standpoint.\n\n"
-    "Respond ONLY with valid JSON:\n"
-    "{{\n"
-    '  "rebuttal": "<your rebuttal addressing the Static Debater\'s argument point by point>"\n'
-    "}}"
-)
-
-_DYNAMIC_REBUTTAL_USER = (
-    "Your original argument:\n{own_argument}\n\n"
-    "Static Debater's argument to rebut:\n{opponent_argument}"
-)
-
-_STATIC_REBUTTAL_SYSTEM = (
-    "You are the Static Debater writing a rebuttal.\n"
-    "You have read the Dynamic Debater's argument. Counter their claims using structural evidence.\n"
-    "Where you agree, acknowledge it. Where you disagree, explain why from a code structure perspective.\n"
-    "If the Dynamic Debater recommended a different patch than you, argue why yours is better "
-    "from a structural standpoint.\n\n"
-    "Respond ONLY with valid JSON:\n"
-    "{{\n"
-    '  "rebuttal": "<your rebuttal addressing the Dynamic Debater\'s argument point by point>"\n'
-    "}}"
-)
-
-_STATIC_REBUTTAL_USER = (
-    "Your original argument:\n{own_argument}\n\n"
-    "Dynamic Debater's argument to rebut:\n{opponent_argument}"
-)
+def _load_prompts():
+    with open(settings.PROMPTS_CONFIG_PATH, "r") as f:
+        return yaml.safe_load(f)
 
 
 # ---------------------------------------------------------------------------
@@ -222,6 +97,7 @@ def _build_bug_context_kwargs(state: SpadeState) -> dict:
 # ---------------------------------------------------------------------------
 
 def generate_dynamic_arg(state: SpadeState):
+    prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
@@ -230,16 +106,16 @@ def generate_dynamic_arg(state: SpadeState):
     if v == 1:
         log(f"{loop_info_str} Selecting best v1 candidate (runtime analysis).", agent_name_dynamic)
         candidates_block = _format_candidates_block(state.get("v1_patches", []))
-        system_prompt = _DYNAMIC_ARG_SELECT_SYSTEM
-        user_prompt = _DYNAMIC_ARG_SELECT_USER.format(
+        system_prompt = prompts["debater_dynamic_arg_select"]["system"]
+        user_prompt = prompts["debater_arg_select"]["user"].format(
             candidates_block=candidates_block, **bug_kwargs
         )
     else:
         log(f"{loop_info_str} Analyzing failed v{v} patch (runtime analysis).", agent_name_dynamic)
         refined_patches = state.get("refined_patches", [])
         pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
-        system_prompt = _DYNAMIC_ARG_REFINE_SYSTEM.format(version=v)
-        user_prompt = _DYNAMIC_ARG_REFINE_USER.format(
+        system_prompt = prompts["debater_dynamic_arg_refine"]["system"].format(version=v)
+        user_prompt = prompts["debater_arg_refine"]["user"].format(
             version=v,
             patch_id=pf["id"],
             patch_strategy=pf["strategy"],
@@ -255,6 +131,7 @@ def generate_dynamic_arg(state: SpadeState):
 
 
 def generate_static_arg(state: SpadeState):
+    prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
@@ -263,16 +140,16 @@ def generate_static_arg(state: SpadeState):
     if v == 1:
         log(f"{loop_info_str} Selecting best v1 candidate (structural analysis).", agent_name_static)
         candidates_block = _format_candidates_block(state.get("v1_patches", []))
-        system_prompt = _STATIC_ARG_SELECT_SYSTEM
-        user_prompt = _STATIC_ARG_SELECT_USER.format(
+        system_prompt = prompts["debater_static_arg_select"]["system"]
+        user_prompt = prompts["debater_arg_select"]["user"].format(
             candidates_block=candidates_block, **bug_kwargs
         )
     else:
         log(f"{loop_info_str} Analyzing failed v{v} patch (structural analysis).", agent_name_static)
         refined_patches = state.get("refined_patches", [])
         pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
-        system_prompt = _STATIC_ARG_REFINE_SYSTEM.format(version=v)
-        user_prompt = _STATIC_ARG_REFINE_USER.format(
+        system_prompt = prompts["debater_static_arg_refine"]["system"].format(version=v)
+        user_prompt = prompts["debater_arg_refine"]["user"].format(
             version=v,
             patch_id=pf["id"],
             patch_strategy=pf["strategy"],
@@ -304,6 +181,7 @@ def exchange_arguments(state: SpadeState):
 # ---------------------------------------------------------------------------
 
 def generate_dynamic_rebuttal(state: SpadeState):
+    prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     log(f"{loop_info_str} Writing rebuttal against Static argument.", agent_name_dynamic)
     run_id = state.get("thread_id")
@@ -311,14 +189,16 @@ def generate_dynamic_rebuttal(state: SpadeState):
     own_arg = state.get("dynamic_argument", "(no argument recorded)")
     opponent_arg = state.get("static_argument", "(no argument recorded)")
 
-    user_prompt = _DYNAMIC_REBUTTAL_USER.format(
+    system_prompt = prompts["debater_dynamic_rebuttal"]["system"]
+    user_prompt = prompts["debater_dynamic_rebuttal"]["user"].format(
         own_argument=own_arg, opponent_argument=opponent_arg
     )
-    raw, metrics = _call_llm(agent_name_dynamic, _DYNAMIC_REBUTTAL_SYSTEM, user_prompt, loop_info=loop_info_dict, run_id=run_id)
+    raw, metrics = _call_llm(agent_name_dynamic, system_prompt, user_prompt, loop_info=loop_info_dict, run_id=run_id)
     return {"dynamic_rebuttal": raw, "total_metrics": metrics}
 
 
 def generate_static_rebuttal(state: SpadeState):
+    prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     log(f"{loop_info_str} Writing rebuttal against Dynamic argument.", agent_name_static)
     run_id = state.get("thread_id")
@@ -326,8 +206,9 @@ def generate_static_rebuttal(state: SpadeState):
     own_arg = state.get("static_argument", "(no argument recorded)")
     opponent_arg = state.get("dynamic_argument", "(no argument recorded)")
 
-    user_prompt = _STATIC_REBUTTAL_USER.format(
+    system_prompt = prompts["debater_static_rebuttal"]["system"]
+    user_prompt = prompts["debater_static_rebuttal"]["user"].format(
         own_argument=own_arg, opponent_argument=opponent_arg
     )
-    raw, metrics = _call_llm(agent_name_static, _STATIC_REBUTTAL_SYSTEM, user_prompt, loop_info=loop_info_dict, run_id=run_id)
+    raw, metrics = _call_llm(agent_name_static, system_prompt, user_prompt, loop_info=loop_info_dict, run_id=run_id)
     return {"static_rebuttal": raw, "total_metrics": metrics}

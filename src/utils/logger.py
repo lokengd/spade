@@ -1,10 +1,11 @@
 from datetime import datetime
 import logging
 from pathlib import Path
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 from src.core import settings
 
-# Global to store the current thread's log directory
+# Global to store the current session and thread log directory
+_session_log_dir: Path = None
 _current_log_dir: Path = None
 
 def get_current_log_dir() -> Path:
@@ -30,9 +31,12 @@ def get_loop_info(state: dict, include_inner: bool = True) -> Tuple[str, Dict[st
     
     return info_str, info_dict
 
-def setup_logger(thread_id: str, level=logging.INFO) -> str:
-    """Configures console and file logging dynamically for each thread run."""
-    global _current_log_dir
+def setup_logger(thread_id: str = "Main", level=logging.INFO) -> str:
+    """
+    Configures console and file logging dynamically. 
+    Groups all thread logs under a single session directory created on the first call.
+    """
+    global _session_log_dir, _current_log_dir
 
     log_format = '%(asctime)s - %(levelname)s %(message)s'
     date_format = '%Y-%m-%d %H:%M:%S'
@@ -41,43 +45,48 @@ def setup_logger(thread_id: str, level=logging.INFO) -> str:
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
 
-    # Clear out any old handlers
+    # Initialize Session Directory (Once per execution)
+    if _session_log_dir is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        _session_log_dir = settings.LOG_DIR / f"session_{timestamp}"
+        _session_log_dir.mkdir(parents=True, exist_ok=True)
+
+    # Clear out any old handlers (to switch files)
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
 
-    # Setup File Handler
-    # Format the folder: e.g., YYYYMMDD_HHMISS-thread_id
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")    
-    folder_name = f"{timestamp}-{thread_id}"
-    _current_log_dir = settings.LOG_DIR / folder_name
-    _current_log_dir.mkdir(parents=True, exist_ok=True)
-
-    # The log file itself inside the subfolder
-    filename = f"{folder_name}.log"
-    log_file = _current_log_dir / filename
-
-    file_handler = logging.FileHandler(log_file, encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    root_logger.addHandler(file_handler)
-
-    # Setup Console Handler
+    # Setup Console Handler (Always present)
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
-    return str(log_file) # Return the log file path
+    # Setup File Handler for the specific thread
+    # Thread logs are stored in subfolders.
+    _current_log_dir = _session_log_dir / thread_id
+    _current_log_dir.mkdir(parents=True, exist_ok=True)
+
+    log_file = _current_log_dir / f"{thread_id}.log"
+    file_handler = logging.FileHandler(log_file, encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
+
+    return str(log_file)
 
 
 def log(message: str, caller: str = "Main", level: int = logging.INFO):
     logger = logging.getLogger() 
+    # If no handlers, e.g. log() called before setup_logger, default to a simple basicConfig to avoid losing logs.
+    if not logger.handlers:
+        logging.basicConfig(level=level, format='%(asctime)s - %(levelname)s [%(name)s] %(message)s')
+    
     logger.log(level, f"[{caller}] {message}")
 
-def get_log_header(thread_id: str) -> str:
+def get_log_header(experiment_id: str) -> str:
     width = 40
     lines = [
         "",
         "*" * width,
-        f"SPADE Run: {thread_id}",
+        f"SPADE Experiment: {experiment_id}",
         "-" * width,
         f"Orchestration Parameters:",
         f" K (Top-Patterns)     : {settings.K_PATTERNS}",
