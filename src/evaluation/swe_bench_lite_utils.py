@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import shutil
 import subprocess
 from pathlib import Path
@@ -19,6 +20,8 @@ from src.evaluation.constants import (
 	VALIDATION_RUN_ID,
 	DEFAULT_PREDICTIONS_PATH
 )
+
+CALLER = "Evaluator"
 
 
 def _repo_root() -> Path:
@@ -58,7 +61,10 @@ def get_report_path(instance_id: str, run_id: str, predictions_path: str) -> Pat
 
 def check_docker_installed_and_running() -> bool:
 	"""Return True when Docker is installed and daemon is running."""
+	log("Checking if Docker is installed and running...", caller=CALLER, level=logging.INFO)
+
 	if shutil.which("docker") is None:
+		log("Docker is not installed.", caller=CALLER, level=logging.ERROR)
 		return False
 
 	try:
@@ -69,8 +75,10 @@ def check_docker_installed_and_running() -> bool:
 			check=False,
 		)
 	except OSError:
+		log("Failed to run Docker command.", caller=CALLER, level=logging.ERROR)
 		return False
 
+	log("Docker is installed and running.", caller=CALLER, level=logging.INFO)
 	return result.returncode == 0
 
 
@@ -80,6 +88,8 @@ def clone_and_install_swe_bench() -> bool:
 	Returns:
 		True on success, False otherwise.
 	"""
+	log("Cloning and installing SWE-bench...", caller=CALLER, level=logging.INFO)
+
 	eval_dir = get_eval_dir_path()
 	eval_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,9 +103,12 @@ def clone_and_install_swe_bench() -> bool:
 			text=True,
 			check=False,
 		)
+
 		if clone_result.returncode != 0:
+			log(f"Failed to clone SWE-bench repo. Error: {clone_result.stderr}", caller=CALLER, level=logging.ERROR)
 			return False
 
+	log("Installing SWE-bench...", caller=CALLER, level=logging.INFO)
 	install_result = subprocess.run(
 		["pip3", "install", "-e", "."],
 		cwd=repo_dir,
@@ -104,20 +117,28 @@ def clone_and_install_swe_bench() -> bool:
 		check=False,
 	)
 
+	if install_result.returncode != 0:
+		log(f"Failed to install SWE-bench. Error: {install_result.stderr}", caller=CALLER, level=logging.ERROR)
+		return False
+
+	log("SWE-bench cloned and installed successfully.", caller=CALLER, level=logging.INFO)
+
 	return install_result.returncode == 0
 
 
 def setup_evaluation_environment() -> bool:
 	"""Set up the evaluation environment by checking Docker and installing SWE-bench."""
+	log("Setting up evaluation environment...", caller=CALLER, level=logging.INFO)
+
 	if not check_docker_installed_and_running():
-		log("Docker is not installed or running. Please install and start Docker to proceed.", caller="Evaluation", level=logging.ERROR)
+		log("Docker is not installed or running. Please install and start Docker to proceed.", caller=CALLER, level=logging.ERROR)
 		return False
 
 	if not clone_and_install_swe_bench():
-		log("Failed to clone and install SWE-bench. Please check the logs for details.", caller="Evaluation", level=logging.ERROR)
+		log("Failed to clone and install SWE-bench. Please check the logs for details.", caller=CALLER, level=logging.ERROR)
 		return False
 
-	log("Evaluation environment set up successfully.", caller="Evaluation", level=logging.INFO)
+	log("Evaluation environment set up successfully.", caller=CALLER, level=logging.INFO)
 
 	return True
 
@@ -213,14 +234,16 @@ def delete_predictions_file(predictions_file_path: str) -> None:
 
 def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_workers: int = 1) -> EvaluationResult:
 	"""Run SWE-bench evaluation on a specific instance and verify logs."""
+	log(f"Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
+
 	eval_dir = get_eval_dir_path()
 
 	if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
-		log("SWE-bench repo not found in evaluation directory.", caller="Evaluation", level=logging.ERROR)
+		log("SWE-bench repo not found in evaluation directory.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="SWE-bench repo not found in evaluation directory.")
 
 	if not check_docker_installed_and_running():
-		log("Docker is not installed or running.", caller="Evaluation", level=logging.ERROR)
+		log("Docker is not installed or running.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="Docker is not installed or running.")
 	
 	# Generate predictions file for the given patch and instance
@@ -250,6 +273,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	print(run_result.stderr)
 
 	if run_result.returncode != 0:
+		log(f"Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=f"Evaluation failed.\n Log:{run_result.stdout} \nError:{run_result.stderr}")
 
 	# logs_dir = get_logs_dir_path()
@@ -260,14 +284,18 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	test_output_data = get_test_output_file(get_test_output_path(instance_id, run_id, predictions_path))
 
 	if not report_file_data["method_success"]:
+		log(f"Failed to get report file data: {report_file_data.get('error')}", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=report_file_data.get("error", "Unknown error while reading report file."))
 	
 	if not test_output_data["method_success"]:
+		log(f"Failed to get test output file data: {test_output_data.get('error')}", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=test_output_data.get("error", "Unknown error while reading test output file."))
 
 	# bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
 	test_output = test_output_data["test_output"]
+
+	log(f"Evaluation completed for instance {instance_id} with run ID {run_id}. Bug resolved: {test_case_results['bug_resolved']}.", caller=CALLER, level=logging.INFO)
 
 	# return {"method_success": True, "logs_dir": logs_dir, "instance_logs_dir": instance_logs_dir, "results_file": results_file}
 	return EvaluationResult(
@@ -288,6 +316,8 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 
 def run_evaluation_with_no_patch(instance_id: str, run_id: str, max_workers: int = 1) -> EvaluationResult:
 	"""Run SWE-bench evaluation on a specific instance without applying any patches, to get the error trace."""
+	log(f"Running evaluation with no patch for instance {instance_id} with run ID {run_id}...", caller=CALLER, level=logging.INFO)
+
 	no_change_patch = "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n"
 
 	return run_evaluation_on_instance(instance_id=instance_id, run_id=run_id, patch=no_change_patch, max_workers=max_workers)
@@ -295,6 +325,8 @@ def run_evaluation_with_no_patch(instance_id: str, run_id: str, max_workers: int
 
 def test_installation() -> bool:
 	"""Run SWE-bench validation command and verify expected logs are created."""
+	log("Testing SWE-bench installation with validation command...", caller=CALLER, level=logging.INFO)
+
 	evaluation_result = run_evaluation_on_instance(
 		instance_id=VALIDATION_INSTANCE_ID, 
 		run_id=VALIDATION_RUN_ID, 
@@ -339,6 +371,8 @@ def test_installation() -> bool:
 
 def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 	"""Remove logs and results generated for a specific run."""
+	log(f"Cleaning up logs and results for run ID {run_id}...", caller=CALLER, level=logging.INFO)
+
 	eval_dir = get_eval_dir_path()
 	logs_dir = get_logs_dir_path()
 	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
@@ -348,12 +382,16 @@ def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 
 	if results_file.exists() and results_file.is_file():
 		results_file.unlink()
-	
+
+	log(f"Logs and results for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
+
 	return True
 
 
 def cleanup_validation_logs_and_results() -> bool:
     """Remove logs and results generated by the validation test."""
+    log("Cleaning up validation logs and results...", caller=CALLER, level=logging.INFO)
+
     eval_dir = get_eval_dir_path()
     logs_dir = eval_dir / "logs"
     results_file = eval_dir / f"{VALIDATION_PREDICTIONS_PATH}.{VALIDATION_RUN_ID}.json"
@@ -363,15 +401,20 @@ def cleanup_validation_logs_and_results() -> bool:
 
     if results_file.exists() and results_file.is_file():
         results_file.unlink()
-    
+
+    log("Validation logs and results cleaned up successfully.", caller=CALLER, level=logging.INFO)
     return True
 
 
 def cleanup_evaluation_dir() -> bool:
     """Remove the cloned SWE-bench repo and logs."""
+    log("Cleaning up evaluation directory...", caller=CALLER, level=logging.INFO)
+
     eval_dir = get_eval_dir_path()
 
     if eval_dir.exists() and eval_dir.is_dir():
         shutil.rmtree(eval_dir)
+
+    log("Evaluation directory cleaned up successfully.", caller=CALLER, level=logging.INFO)
 
     return True
