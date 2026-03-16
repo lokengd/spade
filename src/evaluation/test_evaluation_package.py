@@ -62,4 +62,8 @@ print("Cleaning up evaluation directory...")
 assert cleanup_evaluation_dir(), "Failed to clean up evaluation directory."
 print("Evaluation directory cleaned up successfully. ✅")
 
+print("Cleaning up docker instances...")
+assert cleanup_sweb_docker_images(), "Failed to clean up SWE-bench Docker images."
+print("Docker instances cleaned up successfully. ✅")
+
 print("SWE-bench is successfully set up and ready for evaluation. [Tests passed ✅.]")

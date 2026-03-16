@@ -259,6 +259,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 		"python3", "-m", "swebench.harness.run_evaluation",
 		"--predictions_path", predictions_path,
 		"--max_workers", str(max_workers),
+		"--cache_level", "instance",
 		"--instance_ids", instance_id,
 		"--run_id", run_id,
 	]
@@ -391,6 +392,29 @@ def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 
 	log(f"Logs and results for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
 
+	return True
+
+
+def cleanup_sweb_docker_images() -> bool:
+	"""
+		Runs the command: docker images --filter=reference='swebench/sweb.eval.*' -q | xargs -r docker rmi -f
+	"""
+
+	log("Cleaning up SWE-bench Docker images...", caller=CALLER, level=logging.INFO)
+
+	cmd = "docker images --filter=reference='swebench/sweb.eval.*' -q | xargs -r docker rmi -f"
+
+	try:
+		result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
+
+		if result.returncode != 0:
+			log("Failed to clean up SWE-bench Docker images. Please check Docker and try again.", caller=CALLER, level=logging.ERROR)
+			return False
+	except OSError:
+		log("Failed to run Docker command for cleaning up images.", caller=CALLER, level=logging.ERROR)
+		return False
+
+	log("SWE-bench Docker images cleaned up successfully.", caller=CALLER, level=logging.INFO)
 	return True
 
 
