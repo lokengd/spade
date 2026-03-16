@@ -1,6 +1,6 @@
 from src.utils.logger import log, get_loop_info
 import logging
-from src.core.state import EvaluationResult, SpadeState, get_loop_info, SpadeState, PatchCandidate
+from src.core.state import EvaluationResult, SpadeState, get_loop_info, PatchCandidate
 from config.settings import M_INNER_LOOPS, V_PATIENCE
 from src.evaluation.swe_bench_lite_utils import run_evaluation_on_instance, cleanup_logs_and_results_for_run
 from src.core import settings
