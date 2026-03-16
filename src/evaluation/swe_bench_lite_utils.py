@@ -239,7 +239,7 @@ def delete_predictions_file(predictions_file_path: str) -> None:
 
 
 def _get_filtered_test_output(test_output: str) -> str:
-    # Take lines including and after the line that contains "test process starts" to "tests finished"
+	# Take lines including and after the line that contains "test process starts" to "tests finished"
 
 	lines = test_output.splitlines()
 
@@ -247,15 +247,21 @@ def _get_filtered_test_output(test_output: str) -> str:
 	end_index = -1
 
 	for i, line in enumerate(lines):
-		if "test process starts" in line:
+		if line.startswith("===") and ("test" in line) and line.endswith("==="):
 			start_index = i
 			break
-	
+
 	for i, line in enumerate(lines):
-		if "tests finished:" in line:
-			end_index = i
+		if ">>>>> End Test Output" in line:
+			end_index = i - 1 # We want to exclude this line from the output
 			break
-	
+
+	while (not (lines[end_index].startswith("===") and lines[end_index].endswith("==="))):
+		end_index -= 1
+		if end_index <= start_index: # In case we can't find the end line for some reason, we return everything from the start line to the end of the output
+			end_index = len(lines) - 1
+			break
+
 	if start_index != -1 and end_index != -1 and end_index > start_index:
 		return "\n".join(lines[start_index:end_index+1])
 	else:

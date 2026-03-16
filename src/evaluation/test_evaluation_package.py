@@ -54,6 +54,7 @@ assert evaluation_result.evaluation_ran_successfully, f"Evaluation with no patch
 assert not evaluation_result.bug_resolved, "Bug should not be resolved when running evaluation with no patch."
 assert evaluation_result.test_output.split("\n")[0].__contains__("test process starts"), "Start Test output does not contain expected content."
 assert evaluation_result.test_output.split("\n")[-1].__contains__("tests finished:"), "End Test output does not contain expected content."
+assert evaluation_result.test_output.split("\n")[0].__contains__("==="), "Start Test output does not contain expected content."
 print("Evaluation with no patch completed successfully. ✅")
 
 print("Cleaning up logs and results for the run with no patch...")
