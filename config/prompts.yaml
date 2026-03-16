@@ -10,11 +10,11 @@ pattern_selection:
     {pattern_taxonomy}
 
     **Decision Logic**
-    1. Look into the provided bug issue, error trace, and suspicious locations to analyze the symptom.
-    2. Determine the Scope (LOCAL vs GLOBAL): 
+    1. Look into the provided bug issue, error trace, and suspicious locations to perform a root casue analysis.
+    2. Determine the scope of the bug problem (LOCAL vs GLOBAL): 
        - If the fix can be applied directly within the suspicious location, the scope is LOCAL.
        - If the crash is caused by bad data, incorrect defaults, or mismatched contracts originating from another file, the scope is GLOBAL.
-    3. If the scope is GLOBAL, you MUST identify the upstream dependencies or files that need to be fixed).
+    3. If the scope is GLOBAL, you MUST identify the upstream dependencies or files that need to be fixed.
     4. Select the top {k} most suitable fix-patterns from the pattern taxonomy for this bug.
 
     Respond ONLY with a valid JSON object matching this schema:
