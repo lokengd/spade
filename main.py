@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     # Reset any stale evaluation artifacts from previous runs, then initialize SWE-bench Lite evaluation environment
     setup_logger("evaluation")
-    log("Setting up Docker environment for evaluation...", "Main", level=logging.INFO)
+    log("Setting up Docker environment for evaluation...", "evaluation", level=logging.INFO)
     cleanup_evaluation_dir()
 
     if not setup_evaluation_environment():

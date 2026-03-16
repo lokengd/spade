@@ -106,8 +106,10 @@ class LLM_Client:
     def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict, dict]:
         """Returns a simple, unstructured Python string (str), metrics, and raw telemetry."""
 
-        log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
-        log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+        # log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
+        # log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+        log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
+        log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
         try:
             start_time = time.time()
@@ -140,8 +142,10 @@ class LLM_Client:
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """
         try:
-            log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
-            log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+            # log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
+            # log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+            log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
+            log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
             schema_instruction = f"\n\nYou MUST return ONLY valid JSON matching this schema:\n{response_model.model_json_schema()}"
             

@@ -107,22 +107,37 @@ pattern_taxonomy:
 patch_generation:
   system: |
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your goal is to generate a precise code patch (unified diff) to fix a bug based on a provided fix-pattern and bug context.
+    Your goal is to generate a precise code patch (unified git diff) to fix a bug based on a provided fix-pattern and bug context.
 
     **Instructions:**
     1. Analyze the bug description, error trace, and suspicious code snippets.
     2. Apply the requested Fix-Pattern: {active_pattern}
-    3. Generate a patch in UNIFIED DIFF format.
-    4. Ensure the patch is minimal and only addresses the root cause.
-    5. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
+    3. Do NOT include any explanations or conversational text. 
 
-    Respond ONLY with a valid JSON object matching this schema:
-    ```json
-    {{
-      "explanation": "Brief explanation of the fix strategy.",
-      "code_diff": "--- file.py\n+++ file.py\n@@ ... @@\n- old_code\n+ new_code"
-    }}
-    ```
+    Return EXACTLY one JSON object with ONLY these keys:
+
+    {
+      "explanation": string,
+      "code_diff": string
+    }
+
+    Rules:
+    - Do NOT output any keys other than "explanation" and "code_diff".
+    - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
+    - The patch MUST be a unified git diff.
+    - The diff MUST start with:
+      --- path/to/file.py
+      +++ path/to/file.py
+    - Use standard unified diff hunks (@@).
+    - Do NOT wrap the JSON in markdown or code fences.
+    - Do NOT output any text outside the JSON object.
+
+    Example output:
+
+    {
+      "explanation": "Fix incorrect comparison operator in conditional logic.",
+      "code_diff": "--- example/utils.py\n+++ example/utils.py\n@@\n- if count > limit:\n+ if count >= limit:\n      raise ValueError(\"Limit exceeded\")"
+    }
 
   user: |
     **Bug Issue Description:**
@@ -137,27 +152,42 @@ patch_generation:
     **Target Fix-Pattern:**
     {active_pattern}
 
-    Generate the patch as JSON.
+    Generate the best patch as JSON.
 
 patch_generation_unconstrained:
   system: |
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your goal is to generate a precise code patch (unified diff) to fix a bug.
+    Your goal is to generate a code patch to fix a bug.
     
     **Instructions:**
-    1. Analyze the bug description, error trace, and suspicious code snippets.
-    2. Use your own expert judgment to identify the root cause and the most effective fix strategy without being limited to a specific pattern.
-    3. Generate a patch in UNIFIED DIFF format.
-    4. Ensure the patch is minimal, robust, and addresses the root cause directly.
-    5. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
+    1. Analyze the bug issue description, error trace, and suspicious code snippets.
+    2. Use your own expert judgment to generate the patch.
+    3. Do NOT include any explanations or conversational text. 
 
-    Respond ONLY with a valid JSON object matching this schema:
-    ```json
-    {{
-      "explanation": "Detailed explanation of your identified root cause and fix strategy.",
-      "code_diff": "--- file.py\n+++ file.py\n@@ ... @@\n- old_code\n+ new_code"
-    }}
-    ```
+    Return EXACTLY one JSON object with ONLY these keys:
+
+    {
+      "explanation": string,
+      "code_diff": string
+    }
+
+    Rules:
+    - Do NOT output any keys other than "explanation" and "code_diff".
+    - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
+    - The patch MUST be a unified git diff.
+    - The diff MUST start with:
+      --- path/to/file.py
+      +++ path/to/file.py
+    - Use standard unified diff hunks (@@).
+    - Do NOT wrap the JSON in markdown or code fences.
+    - Do NOT output any text outside the JSON object.
+
+    Example output:
+
+    {
+      "explanation": "Fix incorrect comparison operator in conditional logic.",
+      "code_diff": "--- example/utils.py\n+++ example/utils.py\n@@\n- if count > limit:\n+ if count >= limit:\n      raise ValueError(\"Limit exceeded\")"
+    }
 
   user: |
     **Bug Issue Description:**
@@ -169,7 +199,7 @@ patch_generation_unconstrained:
     **Suspicious Code Snippets:**
     {suspicious_snippets}
 
-    Generate the best possible patch as JSON.
+    Generate the best patch as JSON.
 
 patch_refinement:
   system: |
@@ -180,17 +210,33 @@ patch_refinement:
     1. Analyze the original bug context and the previous patch candidate.
     2. Review the Target Fix-Pattern (if any): {active_pattern}
     3. Review the Debate Verdict and the arguments from both sides.
-    4. Generate an improved patch in UNIFIED DIFF format that addresses the weaknesses identified in the debate.
-    5. Ensure the patch is minimal and robust.
-    6. Do NOT include any explanations or conversational text. Output ONLY the JSON object.
+    4. Generate an improved patch in unified git diff format that addresses the weaknesses identified in the debate.
+    5. Do NOT include any explanations or conversational text. 
+    
+    Return EXACTLY one JSON object with ONLY these keys:
 
-    Respond ONLY with a valid JSON object matching this schema:
-    ```json
-    {{
-      "explanation": "Brief explanation of how the patch was refined based on the debate.",
-      "code_diff": "--- file.py\n+++ file.py\n@@ ... @@\n- old_code\n+ new_code"
-    }}
-    ```
+    {
+      "explanation": string,
+      "code_diff": string
+    }
+
+    Rules:
+    - Do NOT output any keys other than "explanation" and "code_diff".
+    - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
+    - The patch MUST be a unified git diff.
+    - The diff MUST start with:
+      --- path/to/file.py
+      +++ path/to/file.py
+    - Use standard unified diff hunks (@@).
+    - Do NOT wrap the JSON in markdown or code fences.
+    - Do NOT output any text outside the JSON object.
+
+    Example output:
+
+    {
+      "explanation": "Fix incorrect comparison operator in conditional logic.",
+      "code_diff": "--- example/utils.py\n+++ example/utils.py\n@@\n- if count > limit:\n+ if count >= limit:\n      raise ValueError(\"Limit exceeded\")"
+    }
 
   user: |
     **Original Bug Issue:**
@@ -211,7 +257,7 @@ patch_refinement:
     **Static Analysis Argument:**
     {static_argument}
 
-    Refine the patch and return it as JSON.
+    Refine the patch and return the best patch as JSON.
 
 # =============================================================================
 # Debater Prompts
