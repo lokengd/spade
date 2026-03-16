@@ -132,29 +132,27 @@ By default, SPADE is evaluated on **[SWE-bench-Lite](https://www.swebench.com/li
 ### 4.1. Viewing Execution Traces
 Detailed, timestamped execution logs, including token consumption and reasoning traces, are automatically saved to the `data/logs/` directory for every run. These logs provide a granular view of agent interactions and decision-making processes.
 
-### 4.2. Resetting Agent Memory
+### 4.2. Collecting Metrics
+SPADE persists experiment data to a local SQLite database (`data/spade_results.db`) which allows for post-run analysis and performance tracking. The following metrics are automatically collected and aggregated:
+
+*   **Resolution Metrics**: Total bugs processed, resolution rate (%), and Fault Localization (FL) accuracy.
+*   **Repair Efficiency**: 
+    *   `pass@1`: Success on the first attempt (N=1, M=1, V=1).
+    *   `debate_rescues@1`: Success on the the first debate loop (N=1, M=1, V=2).
+    *   `inner_loop_rescues`: Success achieved in subsequent debate cycles (M > 1).
+    *   `outer_loop_rescues`: Success after re-triggering pattern selection (N > 1).
+*   **LLM Telemetry**: Token usage (input/output), cost per agent, model performance, and execution duration.
+*   **Patch Evaluations**: A history of all generated patches, their diffs, applied patterns, and test results (plausibility).
+
+You can query the database directly to extract custom insights or generate summary reports.
+
+### 4.3. Resetting Agent Memory
 SPADE uses a local SQLite checkpointer to persist agent state and memory across runs. To completely clear the memory and start fresh (e.g., to re-run a bug from scratch):
 
 ```bash
 # Delete the local checkpointer database to clear agent memory
 rm data/checkpoints.sqlite*
 ```
-
-### 4.3. DBLogger & Metrics Collection
-SPADE includes a built-in `DBLogger` that persists comprehensive experiment data to a local SQLite database (`data/spade_results.db`). This allows for detailed post-run analysis and performance tracking.
-
-The following metrics are automatically collected and aggregated:
-
-*   **Resolution Metrics**: Total bugs processed, resolution rate (%), and Fault Localization (FL) accuracy.
-*   **Repair Efficiency**: 
-    *   `pass_at_1`: Success on the first attempt.
-    *   `debate_rescues`: Success after refinement within the debate panel.
-    *   `inner_loop_rescues`: Success after multiple debate/refinement cycles (M > 1).
-    *   `outer_loop_rescues`: Success after re-triggering pattern selection (N > 1).
-*   **LLM Telemetry**: Token usage (input/output), cost per agent, model performance, and execution duration.
-*   **Patch Evaluations**: A history of all generated patches, their diffs, applied patterns, and test results (plausibility).
-
-You can query the database directly to extract custom insights or generate summary reports.
 
 ## 5. Acknowledgement
 
