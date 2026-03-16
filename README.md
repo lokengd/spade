@@ -141,7 +141,7 @@ SPADE persists experiment data to a local SQLite database (`data/spade_results.d
     *   `debate_rescues@1`: Success on the the first debate loop (N=1, M=1, V=2).
     *   `inner_loop_rescues`: Success achieved in subsequent debate cycles (M > 1).
     *   `outer_loop_rescues`: Success after re-triggering pattern selection (N > 1).
-*   **LLM Telemetry**: Token usage (input/output), cost per agent, model performance, and execution duration.
+*   **LLM Telemetry**: Token usage (input/output), cost per agent, model performance, and execution duration per agent.
 *   **Patch Evaluations**: A history of all generated patches, their diffs, applied patterns, and test results (plausibility).
 
 You can query the database directly to extract custom insights or generate summary reports.
