@@ -80,7 +80,8 @@ class SpadeState(TypedDict):
 
     # Evaluation of no and current patch candidate - populated after evaluation step
     reproduction_evaluation_result: EvaluationResult = None # Populated after reproduction step
-    patch_verification_evaluation_result: EvaluationResult = None # Populated after running on proposed patch
+    v1_patches_evaluation_result: List[EvaluationResult] = [] # Populated after running on proposed patch
+    refined_patch_evaluation_result: EvaluationResult = None # Populated after running on proposed patch
 
 def get_loop_info(state: SpadeState, include_inner: bool = True):
     """
