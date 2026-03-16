@@ -66,7 +66,7 @@ def run(state: SpadeState):
     # MOCK FL: Load pre-calculated FL data from sample file
     log(f"Loading mock FL data for {bug_context.bug_id}...", agent_name)
     suspicious_files, related_functions, edit_locations = load_mock_fl_data(bug_context.bug_id)
-    
+
     # Inject mock data into context
     bug_context.suspicious_files = suspicious_files
     bug_context.related_functions = related_functions

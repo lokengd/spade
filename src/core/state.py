@@ -25,8 +25,6 @@ class BugContext(BaseModel):
 
     # Expected output from  Reproduction steps 
     error_trace: Optional[str] = None
-    fail_to_pass: str = None
-    pass_to_pass: str = None
 
 class EvaluationResult(BaseModel):
     # These 2 fields capture any errors or unexpected issues during the evaluation process itself (e.g., timeouts, docker errors, etc.)
