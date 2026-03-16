@@ -1,19 +1,21 @@
+# =============================================================================
+# Pattern Selection Prompts
+# =============================================================================
 pattern_selection:
   system: |
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
     Your goal is to map a bug to its root cause using a semantic fix-pattern or a combination of patterns for a successful repair.
 
-    **Step 1: Pattern Taxonomy**
+    **Pattern Taxonomy**
     {pattern_taxonomy}
 
-    **Step 2: Decision Logic**
-    1. Start at the provided Suspicious Locations to analyze the symptom.
+    **Decision Logic**
+    1. Look into the provided bug issue, error trace, and suspicious locations to analyze the symptom.
     2. Determine the Scope (LOCAL vs GLOBAL): 
        - If the fix can be applied directly within the suspicious location, the scope is LOCAL.
        - If the crash is caused by bad data, incorrect defaults, or mismatched contracts originating from another file, the scope is GLOBAL.
     3. If the scope is GLOBAL, you MUST identify the upstream dependencies or files that need to be fixed).
-
-    Select the top {k} most suitable fix-patterns for this bug.
+    4. Select the top {k} most suitable fix-patterns from the pattern taxonomy for this bug.
 
     Respond ONLY with a valid JSON object matching this schema:
     ```json
@@ -44,9 +46,8 @@ pattern_selection:
 
     Analyze the provided context, apply the decision logic, and return your pattern selections as JSON.
   
-
-# Semantic Fix-Patterns aligned with TBar, total 14 out of 15 fix-patterns, modified to suit Python where necessary 
-# NOTE: TBar FP5 removed, FP1 and FP7 adjusted for semantic fit
+# Semantic Fix-Patterns are derived based on TBar. Total 14 out of 15 fix-patterns (FP), some fix-patterns are modified to suit Python where necessary 
+# Adaptation to SPADE: TBar FP5 removed, FP1 and FP7 adjusted for semantic fit
 pattern_taxonomy: 
   P1_statement_modification: | # Statement Level, TBar: FP4 (Insert Missed Statement), FP14 (Move Statement), FP15 (Remove Buggy Statement)
     The error is normally missing steps in the execution flow, executing out of order, or executing redundant steps that cause side effects.
@@ -100,6 +101,9 @@ pattern_taxonomy:
     - object construction usage
     Scope: LOCAL or GLOBAL (if File A calls a method in File B improperly, or an external API contract is broken, set scope to GLOBAL and target the upstream file (File B) or API handler.)
 
+# =============================================================================
+# Patch Generation Prompts
+# =============================================================================
 patch_generation:
   system: |
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
@@ -212,7 +216,6 @@ patch_refinement:
 # =============================================================================
 # Debater Prompts
 # =============================================================================
-
 debater_dynamic_arg_select:
   system: |
     You are the Dynamic Debater in an Automated Program Repair pipeline.
@@ -228,7 +231,6 @@ debater_dynamic_arg_select:
     and a list of v1 patch candidates with their diffs and strategies.
 
     Respond ONLY with valid JSON matching this schema:
-    
 
 debater_static_arg_select:
   system: |
@@ -244,7 +246,6 @@ debater_static_arg_select:
     You will receive the bug context and a list of v1 patch candidates.
 
     Respond ONLY with valid JSON matching this schema:
-    
 
 # Shared user template for both dynamic and static debaters in select mode
 debater_arg_select:
@@ -271,7 +272,6 @@ debater_dynamic_arg_refine:
 
     Respond ONLY with valid JSON:
     
-
 debater_static_arg_refine:
   system: |
     You are the Static Debater in an Automated Program Repair pipeline.
@@ -285,7 +285,6 @@ debater_static_arg_refine:
     4. What structural changes would make the next version more robust?
 
     Respond ONLY with valid JSON:
-    
 
 # Shared user template for both dynamic and static debaters in refine mode
 debater_arg_refine:
@@ -335,7 +334,6 @@ debater_static_rebuttal:
 
     Dynamic Debater's argument to rebut:
     {opponent_argument}
-
 
 # =============================================================================
 # Judge Prompts

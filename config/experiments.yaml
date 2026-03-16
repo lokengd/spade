@@ -15,21 +15,21 @@ experiments:
     # llm_config: "config/llm_trial_run.yaml"
     # prompts_config: "config/prompts_trial_run.yaml"
 
-  spade_ablation_k0:
-    description: "Ablation Study: K=0, unconstrained PatchGen only, no PatternSelection"
-    k_patterns: 0 # K=0, no pattern selection
-    n_outer_loops: 1
-    m_inner_loops: 1
-    v_patience: 2
-    bug_list: ["astropy__astropy-12907"]
-    snippet_context_lines: 15
-    # TODO: override default llm and prompts config to support ablation
-
   spade_ablation_k0_no_debate:
     description: "Ablation Study: K=0, unconstrained PatchGen only, no PatternSelection, M=0, no debate panel"
     k_patterns: 0 # K=0, no pattern selection
     n_outer_loops: 2
     m_inner_loops: 0 # M=0, no debate panel
+    v_patience: 2
+    bug_list: ["astropy__astropy-12907"]
+    snippet_context_lines: 15
+    # TODO: override default llm and prompts config to support ablation
+
+  spade_ablation_k0_with_debate:
+    description: "Ablation Study: K=0, unconstrained PatchGen only, no PatternSelection, with debate"
+    k_patterns: 0 # K=0, no pattern selection
+    n_outer_loops: 1
+    m_inner_loops: 1
     v_patience: 2
     bug_list: ["astropy__astropy-12907"]
     snippet_context_lines: 15
