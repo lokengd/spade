@@ -17,9 +17,12 @@ def verify_v1(state: SpadeState):
         log(f"Testing v1 patch candidate: {patch['id']}...", caller=agent_name)
         
         run_id = f"{state['thread_id']}_v1_patch_{patch['id']}"
-        patch = patch['code_diff']
+        patch_code = patch['code_diff']
 
-        evaluation_result = _run_evaluation_on_patch(instance_id, run_id, patch)
+        evaluation_result = _run_evaluation_on_patch(instance_id, run_id, patch_code)
+
+        if state.get("v1_patches_evaluation_result") is None:
+            state["v1_patches_evaluation_result"] = []
 
         state["v1_patches_evaluation_result"].append(evaluation_result) # Store each evaluation result in the state for future reference
 
@@ -38,18 +41,19 @@ def verify_refined(state: SpadeState):
     log(f"Starting refined patch verification...", agent_name)
 
     instance_id = state["bug_context"].bug_id
-    patch = state.get("current_refined_patch").code_diff
-    run_id = f"{state['thread_id']}_refined_patch_{state.get("current_refined_patch").id}"
+    patch = state.get("current_refined_patch")
+    patch_code = patch.code_diff
+    run_id = f"{state['thread_id']}_refined_patch_{patch.id}"
 
-    evaluation_result = _run_evaluation_on_patch(instance_id, run_id, patch)
+    evaluation_result = _run_evaluation_on_patch(instance_id, run_id, patch_code)
     state["refined_patch_evaluation_result"] = evaluation_result # Store the evaluation result in the state for future reference
 
     if evaluation_result.bug_resolved:
         log(f">>> Refined PATCH Resolved Issue <<<", caller=agent_name)
-        state.get("current_refined_patch").status = 'passed'
-        return {"bug_resolved": True, "patch_id": state.get("current_refined_patch").id}
+        patch.status = 'passed'
+        return {"bug_resolved": True, "patch_id": patch.id}
 
-    state.get("current_refined_patch").status = 'failed'
+    patch.status = 'failed'
     log(f"Refined PATCH failed to resolve the issue.", caller=agent_name, level=logging.INFO)
 
     return {"bug_resolved": False, "patch_id": None}
