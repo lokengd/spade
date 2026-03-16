@@ -238,6 +238,30 @@ def delete_predictions_file(predictions_file_path: str) -> None:
     return True
 
 
+def _get_filtered_test_output(test_output: str) -> str:
+    # Take lines including and after the line that contains "test process starts" to "tests finished"
+
+	lines = test_output.splitlines()
+
+	start_index = -1
+	end_index = -1
+
+	for i, line in enumerate(lines):
+		if "test process starts" in line:
+			start_index = i
+			break
+	
+	for i, line in enumerate(lines):
+		if "tests finished:" in line:
+			end_index = i
+			break
+	
+	if start_index != -1 and end_index != -1 and end_index > start_index:
+		return "\n".join(lines[start_index:end_index+1])
+	else:
+		return test_output
+
+
 def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_workers: int = 1) -> EvaluationResult:
 	"""Run SWE-bench evaluation on a specific instance and verify logs."""
 	log(f"Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
@@ -259,6 +283,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 		"python3", "-m", "swebench.harness.run_evaluation",
 		"--predictions_path", predictions_path,
 		"--max_workers", str(max_workers),
+		"--cache_level", "instance",
 		"--instance_ids", instance_id,
 		"--run_id", run_id,
 	]
@@ -299,7 +324,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 
 	# bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
-	test_output = test_output_data["test_output"]
+	test_output = _get_filtered_test_output(test_output_data["test_output"])
 
 	log(f"Evaluation completed for instance {instance_id} with run ID {run_id}. Bug resolved: {test_case_results['bug_resolved']}.", caller=CALLER, level=logging.INFO)
 
@@ -391,6 +416,29 @@ def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 
 	log(f"Logs and results for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
 
+	return True
+
+
+def cleanup_sweb_docker_images() -> bool:
+	"""
+		Runs the command: docker images --filter=reference='swebench/sweb.eval.*' -q | xargs -r docker rmi -f
+	"""
+
+	log("Cleaning up SWE-bench Docker images...", caller=CALLER, level=logging.INFO)
+
+	cmd = "docker images --filter=reference='swebench/sweb.eval.*' -q | xargs -r docker rmi -f"
+
+	try:
+		result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
+
+		if result.returncode != 0:
+			log("Failed to clean up SWE-bench Docker images. Please check Docker and try again.", caller=CALLER, level=logging.ERROR)
+			return False
+	except OSError:
+		log("Failed to run Docker command for cleaning up images.", caller=CALLER, level=logging.ERROR)
+		return False
+
+	log("SWE-bench Docker images cleaned up successfully.", caller=CALLER, level=logging.INFO)
 	return True
 
 

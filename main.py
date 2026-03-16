@@ -4,7 +4,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
-from src.evaluation import cleanup_evaluation_dir, setup_evaluation_environment
+from src.evaluation import cleanup_evaluation_dir, setup_evaluation_environment, cleanup_sweb_docker_images
 from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
 from src.utils.db_logger import db_logger
 from src.core import settings
@@ -120,7 +120,9 @@ if __name__ == "__main__":
                 run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=db_experiment_id) 
             except Exception as e:
                 log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
-                continue
+            
+            # Clean up any leftover Docker images after each run to save space and avoid conflicts
+            cleanup_sweb_docker_images()
 
         # Update final aggregated experiment metrics
         db_logger.update_experiment_metrics(db_experiment_id)
