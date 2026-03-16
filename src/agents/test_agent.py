@@ -1,7 +1,7 @@
 from src.utils.logger import log, get_loop_info
 import logging
 from src.core.state import SpadeState, PatchCandidate
-from src.core.settings import M_INNER_LOOPS, V_PATIENCE, N_OUTER_LOOPS
+from src.core import settings
 from src.utils.db_logger import db_logger
 
 agent_name = "Test_Agent"
@@ -60,6 +60,21 @@ def verify_v1(state: SpadeState):
     if any_passed:
         return {"resolution_status": "resolved"}
     
+    if settings.M_INNER_LOOPS == 0:
+        log("All v1 candidates failed. M=0: Skipping debate loop.", agent_name)
+        curr_n = state.get("outer_loop_count", 1)
+        if curr_n < settings.N_OUTER_LOOPS:
+            log(f"M=0: Preparing for next Outer Loop (N={curr_n + 1}).", agent_name)
+            return {
+                "resolution_status": "v1_failed",
+                "outer_loop_count": curr_n + 1,
+                "inner_loop_count": 1,
+                "current_patch_version": 1
+            }
+        else:
+            log(f"M=0: All outer loops exhausted (N={curr_n}/{settings.N_OUTER_LOOPS}).", agent_name)
+            return {"resolution_status": "failed"}
+
     log("All v1 candidates failed. Moving to debate panel.", agent_name)
     return {"resolution_status": "v1_failed"}
 
@@ -109,9 +124,9 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
     curr_n = state.get("outer_loop_count", 1)
 
     # Case 1: Patience left -> Refine same winner (v+1)
-    if current_v < V_PATIENCE:
+    if current_v < settings.V_PATIENCE:
         next_v = current_v + 1
-        log(f"Patch v{current_v} failed. Iteratively refining to v{next_v} (Version {next_v}/{V_PATIENCE}).", agent_name, level=logging.WARNING)
+        log(f"Patch v{current_v} failed. Iteratively refining to v{next_v} (Version {next_v}/{settings.V_PATIENCE}).", agent_name, level=logging.WARNING)
         return {
             "resolution_status": f"v{current_v}_failed", 
             "current_patch_version": next_v,
@@ -119,9 +134,9 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         }
 
     # Case 2: Patience hit (current_v == V_PATIENCE), try next winner?
-    if curr_m < M_INNER_LOOPS:
-        log(f"V_PATIENCE={V_PATIENCE} REACHED for winner {failed_patch.origin_v1_id}. "
-            f"Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
+    if curr_m < settings.M_INNER_LOOPS:
+        log(f"V_PATIENCE={settings.V_PATIENCE} REACHED for winner {failed_patch.origin_v1_id}. "
+            f"Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{settings.M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
         return {
             "resolution_status": f"v{current_v}_failed", 
             "inner_loop_count": curr_m + 1,
@@ -130,8 +145,8 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         }
 
     # Case 3: Inner loops hit, try next patterns?
-    if curr_n < N_OUTER_LOOPS:
-        log(f"INNER-LOOP-LIMIT M={M_INNER_LOOPS} REACHED. Resetting to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
+    if curr_n < settings.N_OUTER_LOOPS:
+        log(f"INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Resetting to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
         return {
             "resolution_status": f"N{curr_n}_failed", 
             "inner_loop_count": 1, # Reset M
@@ -141,7 +156,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         }
 
     # Case 4: All limits hit -> Hard Stop
-    log(f"MAX LIMITS REACHED (N={curr_n}/{N_OUTER_LOOPS}, M={curr_m}/{M_INNER_LOOPS}). Hard stop.", agent_name, level=logging.ERROR)
+    log(f"MAX LIMITS REACHED (N={curr_n}/{settings.N_OUTER_LOOPS}, M={curr_m}/{settings.M_INNER_LOOPS}). Hard stop.", agent_name, level=logging.ERROR)
     if run_id:
         db_logger.update_repair_run(
             run_id=run_id,

@@ -2,7 +2,7 @@ from typing import Dict, TypedDict, List, Optional, Annotated
 from pydantic import BaseModel
 import operator
 
-P_UNCONSTRAINED = "P_Unconstrained" # Unconstrained pattern identifier
+P_UNCONSTRAINED = "P_unconstrained" # Unconstrained pattern identifier
 
 # Pydantic Models (Strictly Typed Artifacts)
 class EditLocation(BaseModel):

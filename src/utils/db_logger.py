@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 from datetime import datetime
-from src.core.settings import DATA_DIR
+from src.core import settings
 
 class DBLogger:
     _instance = None
@@ -15,7 +15,7 @@ class DBLogger:
 
     def __init__(self, db_path=None):
         if not DBLogger._initialized:
-            self.db_path = db_path or (DATA_DIR / "spade_results.db")
+            self.db_path = db_path or (settings.DATA_DIR / "spade_results.db")
             # Ensure parent dir exists
             os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
             self._init_db()
@@ -115,15 +115,7 @@ class DBLogger:
                 (experiment_id, description)
             )
 
-    def get_all_experiments(self) -> list:
-        """Returns a list of all experiments in the database."""
-        with sqlite3.connect(self.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute("SELECT experiment_id, created_at FROM experiments ORDER BY created_at DESC")
-            return [dict(r) for r in cursor.fetchall()]
-
-    def get_experiment_metrics(self, experiment_id: str = None) -> dict:
+    def _get_experiment_metrics(self, experiment_id: str = None) -> dict:
         """Calculates aggregated metrics for an experiment (or all if None)."""
         where_clause = ""
         params = []
@@ -218,8 +210,9 @@ class DBLogger:
                 "agent_breakdown": agent_breakdown
             }
 
-    def update_experiment_metrics(self, experiment_id: str, stats: dict):
+    def update_experiment_metrics(self, experiment_id: str):
         """Updates the experiments table with final aggregated metrics."""
+        metrics = self._get_experiment_metrics(experiment_id)
         with sqlite3.connect(self.db_path) as conn:
             conn.cursor().execute("""
                 UPDATE experiments SET 
@@ -231,11 +224,11 @@ class DBLogger:
                     updated_at = CURRENT_TIMESTAMP
                 WHERE experiment_id = ?
             """, (
-                stats.get("total_bugs"), stats.get("resolution_rate"), stats.get("fl_accuracy"),
-                stats.get("pass_at_1"), stats.get("debate_rescues"), 
-                stats.get("inner_rescues"), stats.get("outer_rescues"),
-                stats.get("avg_attempts"), stats.get("total_cost"), stats.get("total_tokens"),
-                stats.get("total_in"), stats.get("total_out"), stats.get("avg_cost"),
+                metrics.get("total_bugs"), metrics.get("resolution_rate"), metrics.get("fl_accuracy"),
+                metrics.get("pass_at_1"), metrics.get("debate_rescues"), 
+                metrics.get("inner_rescues"), metrics.get("outer_rescues"),
+                metrics.get("avg_attempts"), metrics.get("total_cost"), metrics.get("total_tokens"),
+                metrics.get("total_in"), metrics.get("total_out"), metrics.get("avg_cost"),
                 experiment_id
             ))
     

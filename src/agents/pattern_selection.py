@@ -5,13 +5,13 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
-from src.core.settings import K_PATTERNS, LLM_AGENTS, PROMPTS_CONFIG_PATH
+from src.core import settings
 from src.utils.db_logger import db_logger
 
 agent_name = "Pattern_Selection"
 
 def load_prompts():
-    with open(PROMPTS_CONFIG_PATH, "r") as f:
+    with open(settings.PROMPTS_CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
 
 class PatternScoutSelection(BaseModel):
@@ -28,7 +28,7 @@ class PatternSelectionResponse(BaseModel):
 def run(state: SpadeState):
 
     # Initialize 
-    agent_config = LLM_AGENTS["pattern_selection"]
+    agent_config = settings.LLM_AGENTS["pattern_selection"]
     client = LLM_Client(agent=agent_name, **agent_config)
     run_id = state.get("thread_id")
 
@@ -41,12 +41,12 @@ def run(state: SpadeState):
         taxonomy_str += f"- {pat_id}: {description.strip()}\n\n"
 
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
-    log(f"{loop_info_str} Selecting Top-{K_PATTERNS} Patterns...", agent_name)
+    log(f"{loop_info_str} Selecting Top-{settings.K_PATTERNS} Patterns...", agent_name)
 
     # Format the System Prompt
     system_template = prompts_config["pattern_selection"]["system"]
     system_prompt = system_template.format(
-        k=K_PATTERNS,
+        k=settings.K_PATTERNS,
         pattern_taxonomy=taxonomy_str.strip()
     )
 
@@ -107,7 +107,7 @@ def run(state: SpadeState):
             log("No patterns matched. Proceeding with K=0.", agent_name, level=logging.INFO)
         else:
             # Enforce the K_PATTERNS limit and convert Pydantic models to dicts for LangGraph
-            final_selection = [s.model_dump() for s in structured_response.selections[:K_PATTERNS]]
+            final_selection = [s.model_dump() for s in structured_response.selections[:settings.K_PATTERNS]]
             selected_ids = [s["pattern_id"] for s in final_selection]
             log(f"Selected {len(final_selection)} patterns: {selected_ids}", agent_name, level=logging.INFO)
 

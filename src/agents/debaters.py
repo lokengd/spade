@@ -2,7 +2,7 @@ import json
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.utils.logger import log, get_loop_info
-from src.core.settings import LLM_AGENTS
+from src.core import settings
 from src.utils.db_logger import db_logger
 import logging
 
@@ -183,7 +183,7 @@ def _get_patch_fields(patch) -> dict:
 
 def _call_llm(caller: str, system_prompt: str, user_prompt: str, loop_info: dict = None, run_id: str = None) -> tuple:
     """LLM call with error handling. Returns (raw_text, metrics)."""
-    agent_config = LLM_AGENTS["debaters"]
+    agent_config = settings.LLM_AGENTS["debaters"]
     client = LLM_Client(agent=caller, **agent_config)
     try:
         text, metrics, raw_telemetry = client.generate_text(

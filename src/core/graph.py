@@ -1,10 +1,9 @@
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.constants import Send
 import logging
 
 from src.core.state import SpadeState, P_UNCONSTRAINED
-from src.core.settings import K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS
+from src.core import settings
 from src.utils.logger import log
 from src.agents import (
     fl_ensemble, reproduction, pattern_selection, patchgen, debaters, judge, test_agent
@@ -24,16 +23,17 @@ def activate_patchgen_agents(state: SpadeState):
     experiment_id = state.get("experiment_id")
 
     # Activate K agents
-    for pattern in state.get("selected_patterns", [])[:K_PATTERNS]:
-        sends.append(Send("generate_v1_patch", {
-            "active_pattern": pattern,
-            "bug_context": state["bug_context"],
-            "outer_loop_count": current_n,
-            "inner_loop_count": current_m,
-            "current_patch_version": current_v,
-            "thread_id": thread_id,
-            "experiment_id": experiment_id
-        }))
+    if settings.K_PATTERNS > 0:
+        for pattern in state.get("selected_patterns", [])[:settings.K_PATTERNS]:
+            sends.append(Send("generate_v1_patch", {
+                "active_pattern": pattern,
+                "bug_context": state["bug_context"],
+                "outer_loop_count": current_n,
+                "inner_loop_count": current_m,
+                "current_patch_version": current_v,
+                "thread_id": thread_id,
+                "experiment_id": experiment_id
+            }))
         
     # Activate the +1 Unconstrained LLM agent
     sends.append(Send("generate_v1_patch", {
@@ -48,8 +48,24 @@ def activate_patchgen_agents(state: SpadeState):
     
     return sends
 
+def route_after_reproduction(state: SpadeState):
+    if settings.K_PATTERNS == 0:
+        log("K=0: Skipping Pattern Selection, proceeding to Unconstrained PatchGen.", "Orchestrator")
+        return activate_patchgen_agents(state)
+    return "pattern_selection"
+
 def route_after_v1(state: SpadeState):
-    return "end" if state["resolution_status"] == "resolved" else "debate_panel"
+    if state["resolution_status"] == "resolved":
+        return "end"
+    
+    if settings.M_INNER_LOOPS == 0:
+        log("M=0: Skipping Debate Loop.", "Orchestrator")
+        if state["resolution_status"] == "failed":
+            return "hard_stop"
+        # If we are transitioning to a new outer loop, we should respect the K=0 setting
+        return route_after_reproduction(state)
+
+    return "debate_panel"
 
 def route_after_refined(state: SpadeState):
     # Success! Exit the graph.
@@ -57,7 +73,7 @@ def route_after_refined(state: SpadeState):
         return "end"
         
     # Hard Stop check - if test_agent signaled failure or counters exceed limit
-    if state["resolution_status"] == "failed" or state.get("outer_loop_count", 1) > N_OUTER_LOOPS:        
+    if state["resolution_status"] == "failed" or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
         log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
@@ -95,7 +111,14 @@ def build_graph():
     # Add edges
     graph.add_edge(START, "fl_ensemble")
     graph.add_edge("fl_ensemble", "reproduction")
-    graph.add_edge("reproduction", "pattern_selection")
+    
+    # Conditional edge from reproduction
+    graph.add_conditional_edges(
+        "reproduction",
+        route_after_reproduction,
+        ["pattern_selection", "generate_v1_patch"]
+    )
+
     # Fan-Out to K+1 PatchGen agents using the dynamic Send API
     graph.add_conditional_edges(
         "pattern_selection", 
@@ -107,7 +130,9 @@ def build_graph():
     # Conditional route to Debate Setup
     graph.add_conditional_edges("initial_verification", route_after_v1, {
         "end": END, 
-        "debate_panel": "debate_panel"
+        "debate_panel": "debate_panel",
+        "pattern_selection": "pattern_selection",
+        "hard_stop": END
     })
     
     # Debate panel edges

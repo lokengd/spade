@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Type, TypeVar, Tuple, Optional, Any
 from pydantic import BaseModel
 from openai import OpenAI
-from src.core.settings import COST_TABLE
+from src.core import settings
 from src.utils.logger import log, get_current_log_dir
 import logging
 
@@ -43,7 +43,7 @@ class LLM_Client:
         p_tokens = getattr(usage, 'prompt_tokens', 0)
         c_tokens = getattr(usage, 'completion_tokens', 0)
         
-        rates = COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
+        rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
         cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
         
         return {

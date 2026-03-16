@@ -6,13 +6,13 @@ from pydantic import BaseModel, Field
 from src.core.state import SpadeState, PatchCandidate, P_UNCONSTRAINED
 from src.core.llm_client import LLM_Client
 from src.utils.snippet_extractor import extract_snippet
-from src.core.settings import LLM_AGENTS, PROMPTS_CONFIG_PATH
+from src.core import settings
 from src.utils.db_logger import db_logger
 
 agent_base_name = "PatchGen"
 
 def load_prompts():
-    with open(PROMPTS_CONFIG_PATH, "r") as f:
+    with open(settings.PROMPTS_CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
 
 class PatchGenerationResponse(BaseModel):
@@ -41,7 +41,7 @@ def generate_v1_patch(state: SpadeState):
     specific_agent_name = f"{agent_base_name}] [{strategy}"
     log(f"{loop_info_str} {log_prefix} PatchGen working on strategy -> {pattern_str}", specific_agent_name)
 
-    agent_config = LLM_AGENTS["patchgen"]
+    agent_config = settings.LLM_AGENTS["patchgen"]
     client = LLM_Client(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 
@@ -186,7 +186,7 @@ def generate_refined_patch(state: SpadeState):
     specific_agent_name = f"{agent_base_name}] [{active_pattern}"
     log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
 
-    agent_config = LLM_AGENTS["patchgen"]
+    agent_config = settings.LLM_AGENTS["patchgen"]
     client = LLM_Client(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 

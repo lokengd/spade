@@ -48,7 +48,11 @@ def run_spade(task: dict, config: dict, experiment_id: str):
                     local_repo_path=str(repo_path),
                     base_commit=task["base_commit"],
                     resolution_status="open"
-                ),        
+                ),
+                "outer_loop_count": 1,
+                "inner_loop_count": 1,
+                "current_patch_version": 1,
+                "resolution_status": "open"
             }
 
             for event in app.stream(initial_state, config=config):
@@ -107,6 +111,5 @@ if __name__ == "__main__":
                 continue
 
         # Update final aggregated experiment metrics
-        metrics = db_logger.get_experiment_metrics(db_experiment_id)
-        db_logger.update_experiment_metrics(db_experiment_id, metrics)
+        db_logger.update_experiment_metrics(db_experiment_id)
         log(f"Experiment {db_experiment_id} finished. Metrics updated in database.", caller="Main")
