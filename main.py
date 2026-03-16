@@ -4,6 +4,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
+from src.evaluation import cleanup_evaluation_dir, setup_evaluation_environment
 from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
 from src.utils.db_logger import db_logger
 from src.core import settings
@@ -71,6 +72,16 @@ def run_spade(task: dict, config: dict, experiment_id: str):
         log(get_memory_state(memory_state))
 
 if __name__ == "__main__":
+
+    # Reset any stale evaluation artifacts from previous runs, then initialize SWE-bench Lite evaluation environment
+    log("Setting up evaluation environment...", "Main", level=logging.INFO)
+    cleanup_evaluation_dir()
+
+    if not setup_evaluation_environment():
+        log("Failed to set up evaluation environment. Check logs for details.", "Main", level=logging.CRITICAL)
+        raise RuntimeError("Failed to set up evaluation environment.")
+
+    log("Evaluation environment setup complete. Starting SPADE runs...", "Main", level=logging.INFO)
 
     # Initialize dataset Loader
     loader = DatasetLoader()
