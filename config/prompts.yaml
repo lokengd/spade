@@ -124,19 +124,21 @@ patch_generation:
     Rules:
     - Do NOT output any keys other than "explanation" and "code_diff".
     - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
-    - The patch MUST be a unified git diff.
-    - The diff MUST start with:
-      --- path/to/file.py
-      +++ path/to/file.py
-    - Use standard unified diff hunks (@@).
+    - The "code_diff" MUST be a valid, strictly formatted unified git diff.
+    - The diff MUST start with the standard prefixes:
+      --- a/path/to/file.py
+      +++ b/path/to/file.py
+    - MUST include valid hunk headers with line numbers (e.g., @@ -15,4 +15,4 @@).
+    - Unchanged context lines in the diff MUST begin with exactly one space.
+    - Added lines MUST begin with a plus (+).
+    - Removed lines MUST begin with a minus (-).
     - Do NOT wrap the JSON in markdown or code fences.
     - Do NOT output any text outside the JSON object.
 
-    Example output:
-
+    Example Output:
     {
       "explanation": "Fix incorrect comparison operator in conditional logic.",
-      "code_diff": "--- example/utils.py\n+++ example/utils.py\n@@\n- if count > limit:\n+ if count >= limit:\n      raise ValueError(\"Limit exceeded\")"
+      "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
     }
 
   user: |
@@ -174,19 +176,21 @@ patch_generation_unconstrained:
     Rules:
     - Do NOT output any keys other than "explanation" and "code_diff".
     - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
-    - The patch MUST be a unified git diff.
-    - The diff MUST start with:
-      --- path/to/file.py
-      +++ path/to/file.py
-    - Use standard unified diff hunks (@@).
+    - The "code_diff" MUST be a valid, strictly formatted unified git diff.
+    - The diff MUST start with the standard prefixes:
+      --- a/path/to/file.py
+      +++ b/path/to/file.py
+    - MUST include valid hunk headers with line numbers (e.g., @@ -15,4 +15,4 @@).
+    - Unchanged context lines in the diff MUST begin with exactly one space.
+    - Added lines MUST begin with a plus (+).
+    - Removed lines MUST begin with a minus (-).
     - Do NOT wrap the JSON in markdown or code fences.
     - Do NOT output any text outside the JSON object.
 
-    Example output:
-
+    Example Output:
     {
       "explanation": "Fix incorrect comparison operator in conditional logic.",
-      "code_diff": "--- example/utils.py\n+++ example/utils.py\n@@\n- if count > limit:\n+ if count >= limit:\n      raise ValueError(\"Limit exceeded\")"
+      "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
     }
 
   user: |
@@ -223,19 +227,21 @@ patch_refinement:
     Rules:
     - Do NOT output any keys other than "explanation" and "code_diff".
     - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
-    - The patch MUST be a unified git diff.
-    - The diff MUST start with:
-      --- path/to/file.py
-      +++ path/to/file.py
-    - Use standard unified diff hunks (@@).
+    - The "code_diff" MUST be a valid, strictly formatted unified git diff.
+    - The diff MUST start with the standard prefixes:
+      --- a/path/to/file.py
+      +++ b/path/to/file.py
+    - MUST include valid hunk headers with line numbers (e.g., @@ -15,4 +15,4 @@).
+    - Unchanged context lines in the diff MUST begin with exactly one space.
+    - Added lines MUST begin with a plus (+).
+    - Removed lines MUST begin with a minus (-).
     - Do NOT wrap the JSON in markdown or code fences.
     - Do NOT output any text outside the JSON object.
 
-    Example output:
-
+    Example Output:
     {
       "explanation": "Fix incorrect comparison operator in conditional logic.",
-      "code_diff": "--- example/utils.py\n+++ example/utils.py\n@@\n- if count > limit:\n+ if count >= limit:\n      raise ValueError(\"Limit exceeded\")"
+      "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
     }
 
   user: |
