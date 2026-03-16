@@ -1,7 +1,8 @@
 from src.utils.logger import log, get_loop_info
 import logging
-from src.core.state import EvaluationResult, SpadeState, get_loop_info, PatchCandidate
-from config.settings import M_INNER_LOOPS, V_PATIENCE
+from src.core.state import EvaluationResult, SpadeState, PatchCandidate
+from src.utils.logger import get_loop_info
+from src.core import settings
 from src.evaluation.swe_bench_lite_utils import run_evaluation_on_instance, cleanup_logs_and_results_for_run
 from src.core import settings
 from src.utils.db_logger import db_logger

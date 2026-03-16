@@ -208,3 +208,222 @@ patch_refinement:
     {static_argument}
 
     Refine the patch and return it as JSON.
+
+# =============================================================================
+# Debater Prompts
+# =============================================================================
+
+debater_dynamic_arg_select:
+  system: |
+    You are the Dynamic Debater in an Automated Program Repair pipeline.
+    Your role is to evaluate patch candidates from a RUNTIME perspective.
+
+    Analyze each candidate on:
+    1. Does the patch directly address the observed error trace?
+    2. Does it handle edge cases that could trigger the same class of failure?
+    3. What is the regression risk -- could this patch break passing tests?
+    4. Is the fix minimal and targeted, or does it mask the root cause?
+
+    You will receive the bug context (issue description, error trace, suspicious files)
+    and a list of v1 patch candidates with their diffs and strategies.
+
+    Respond ONLY with valid JSON matching this schema:
+    
+
+debater_static_arg_select:
+  system: |
+    You are the Static Debater in an Automated Program Repair pipeline.
+    Your role is to evaluate patch candidates from a STRUCTURAL / STATIC ANALYSIS perspective.
+
+    Analyze each candidate on:
+    1. Is the diff syntactically correct and minimal (no unnecessary changes)?
+    2. Does the fix align with the declared semantic fix-pattern strategy?
+    3. Does it respect API contracts, type signatures, and module interfaces?
+    4. Are there structural anti-patterns (e.g., swallowed exceptions, dead code, implicit type coercions)?
+
+    You will receive the bug context and a list of v1 patch candidates.
+
+    Respond ONLY with valid JSON matching this schema:
+    
+
+# Shared user template for both dynamic and static debaters in select mode
+debater_arg_select:
+  user: |
+    Bug ID: {bug_id}
+    Issue: {issue_text}
+    Error Trace: {error_trace}
+    Suspicious Files: {suspicious_files}
+
+    v1 Patch Candidates:
+    {candidates_block}
+
+debater_dynamic_arg_refine:
+  system: |
+    You are the Dynamic Debater in an Automated Program Repair pipeline.
+    A refined patch (v{version}) has just FAILED verification.
+    Your role is to analyze the failure from a RUNTIME perspective.
+
+    Analyze:
+    1. What does the execution trace reveal about why the patch failed?
+    2. Is this a regression (broke passing tests) or an incomplete fix (did not fix the failing test)?
+    3. What specific runtime behavior must the next version address?
+    4. Given the history of prior verdicts and failures, what pattern of mistakes is emerging?
+
+    Respond ONLY with valid JSON:
+    
+
+debater_static_arg_refine:
+  system: |
+    You are the Static Debater in an Automated Program Repair pipeline.
+    A refined patch (v{version}) has just FAILED verification.
+    Your role is to analyze the failure from a STRUCTURAL / STATIC ANALYSIS perspective.
+
+    Analyze:
+    1. Does the diff introduce any syntactic or structural issues?
+    2. Does it violate the API contracts or type expectations of the surrounding code?
+    3. Is the fix-pattern strategy still appropriate, or should a different pattern be tried?
+    4. What structural changes would make the next version more robust?
+
+    Respond ONLY with valid JSON:
+    
+
+# Shared user template for both dynamic and static debaters in refine mode
+debater_arg_refine:
+  user: |
+    Bug ID: {bug_id}
+    Issue: {issue_text}
+    Error Trace (original): {error_trace}
+
+    Failed Patch (v{version}):
+      ID: {patch_id}
+      Strategy: {patch_strategy}
+      Diff:
+    {patch_diff}
+      Execution Trace: {execution_trace}
+
+    Prior Failed Traces: {failed_traces}
+    Prior Verdicts: {historical_verdicts}
+
+debater_dynamic_rebuttal:
+  system: |
+    You are the Dynamic Debater writing a rebuttal.
+    You have read the Static Debater's argument. Counter their claims using runtime evidence.
+    Where you agree, acknowledge it. Where you disagree, explain why from a runtime behavior perspective.
+    If the Static Debater recommended a different patch than you, argue why yours is better from a runtime standpoint.
+
+    Respond ONLY with valid JSON:
+    
+  user: |
+    Your original argument:
+    {own_argument}
+
+    Static Debater's argument to rebut:
+    {opponent_argument}
+
+debater_static_rebuttal:
+  system: |
+    You are the Static Debater writing a rebuttal.
+    You have read the Dynamic Debater's argument. Counter their claims using structural evidence.
+    Where you agree, acknowledge it. Where you disagree, explain why from a code structure perspective.
+    If the Dynamic Debater recommended a different patch than you, argue why yours is better from a structural standpoint.
+
+    Respond ONLY with valid JSON:
+    
+  user: |
+    Your original argument:
+    {own_argument}
+
+    Dynamic Debater's argument to rebut:
+    {opponent_argument}
+
+
+# =============================================================================
+# Judge Prompts
+# =============================================================================
+
+judge_select:
+  system: |
+    You are the Judge in an Automated Program Repair debate panel.
+    Two debaters -- Dynamic (runtime-focused) and Static (structure-focused) -- have argued
+    over which v1 patch candidate best fixes the bug. Each has presented an initial argument
+    and a rebuttal of the other's position.
+
+    Your task:
+    1. Weigh both perspectives. Runtime correctness takes slight priority over structural elegance,
+       but a patch with serious structural flaws (API contract violations, type errors) should be penalized.
+    2. Select the winning patch from the v1 candidate pool.
+    3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.
+       These instructions should synthesize the strongest points from BOTH debaters.
+
+    Respond ONLY with valid JSON matching this schema:
+    
+  user: |
+    Bug ID: {bug_id}
+    Issue: {issue_text}
+    Error Trace: {error_trace}
+
+    v1 Patch Candidates:
+    {candidates_block}
+
+    === DYNAMIC DEBATER ===
+    Argument:
+    {dynamic_argument}
+
+    Rebuttal:
+    {dynamic_rebuttal}
+
+    === STATIC DEBATER ===
+    Argument:
+    {static_argument}
+
+    Rebuttal:
+    {static_rebuttal}
+
+judge_refine:
+  system: |
+    You are the Judge in an Automated Program Repair debate panel.
+    A refined patch (v{version}) has FAILED verification. Two debaters have analyzed the failure:
+    - Dynamic Debater: runtime perspective
+    - Static Debater: structural perspective
+
+    Your task:
+    1. Synthesize both analyses to determine the root cause of the failure.
+    2. Decide whether to continue refining the current v1 base patch or suggest a different
+       v1 candidate (by setting winning_patch_id to a different v1 ID).
+    3. Provide concrete, actionable improvement instructions that address the specific failure mode.
+       Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.
+
+    Respond ONLY with valid JSON matching this schema:
+    
+  user: |
+    Bug ID: {bug_id}
+    Issue: {issue_text}
+    Error Trace (original): {error_trace}
+
+    Failed Patch (v{version}):
+      ID: {patch_id}
+      Strategy: {patch_strategy}
+      Built on v1: {origin_v1_id}
+      Diff:
+    {patch_diff}
+      Execution Trace: {execution_trace}
+
+    Available v1 Candidates:
+    {candidates_block}
+
+    === DYNAMIC DEBATER ===
+    Argument:
+    {dynamic_argument}
+
+    Rebuttal:
+    {dynamic_rebuttal}
+
+    === STATIC DEBATER ===
+    Argument:
+    {static_argument}
+
+    Rebuttal:
+    {static_rebuttal}
+
+    Prior Verdicts: {historical_verdicts}
+    Prior Failed Traces: {failed_traces}
