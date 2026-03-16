@@ -305,9 +305,14 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	# Clean up the predictions file after the run to avoid cluttering the evaluation directory
 	delete_predictions_file(predictions_path)
 
-	print("Evaluation command output:")
-	print(run_result.stdout)
-	print(run_result.stderr)
+	# print("Evaluation command output:")
+	# print(run_result.stdout)
+	# print(run_result.stderr)
+
+	log(f"Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
+	log("Evaluation command output:", caller=CALLER, level=logging.DEBUG)
+	log(f"stdout: {run_result.stdout}", caller=CALLER, level=logging.DEBUG)
+	log(f"stderr: {run_result.stderr}", caller=CALLER, level=logging.DEBUG)
 
 	if run_result.returncode != 0:
 		log(f"Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
