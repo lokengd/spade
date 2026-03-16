@@ -80,6 +80,10 @@ def check_docker_installed_and_running() -> bool:
 		log("Failed to run Docker command.", caller=CALLER, level=logging.ERROR)
 		return False
 
+	if result.returncode != 0:
+		log("Docker issues, please ensure it is running.", caller=CALLER, level=logging.ERROR)
+		return False
+
 	log("Docker is installed and running.", caller=CALLER, level=logging.INFO)
 	return result.returncode == 0
 
