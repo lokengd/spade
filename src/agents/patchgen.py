@@ -1,51 +1,260 @@
-from src.utils.logger import log
+from src.utils.logger import log, get_loop_info
 import uuid
-from src.core.state import SpadeState, get_loop_info
+import yaml
+import logging
+from pydantic import BaseModel, Field
+from src.core.state import SpadeState, PatchCandidate, P_UNCONSTRAINED
+from src.core.llm_client import LLM_Client
+from src.utils.snippet_extractor import extract_snippet
+from src.core import settings
+from src.utils.db_logger import db_logger
 
-agent_name = "PatchGen"
+agent_base_name = "PatchGen"
+
+def load_prompts():
+    with open(settings.PROMPTS_CONFIG_PATH, "r") as f:
+        return yaml.safe_load(f)
+
+class PatchGenerationResponse(BaseModel):
+    explanation: str = Field(description="Brief explanation of the fix strategy.")
+    code_diff: str = Field(description="The generated patch in UNIFIED DIFF format.")
 
 def generate_v1_patch(state: SpadeState):
-    pattern = state.get("active_pattern", "unconstrained")
-    loop_info = get_loop_info(state, include_inner=False)
-    log(f"{loop_info} Working on strategy -> {pattern}", agent_name)
+    # active_pattern is passed via Send API in graph.py
+    active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
+    run_id = state.get("thread_id")
     
+    loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
+    
+    is_unconstrained = active_pattern == P_UNCONSTRAINED
+    
+    # Normalize pattern info for logging and prompting
+    if isinstance(active_pattern, dict):
+        pattern_str = f"{active_pattern.get('pattern_id')} ({active_pattern.get('scope')})"
+        strategy = active_pattern.get('pattern_id')
+    else:
+        pattern_str = str(active_pattern)
+        strategy = str(active_pattern)
+
+    log_prefix = "Unconstrained" if is_unconstrained else "Pattern-Guided"
+    # User requested format: [PatchGen] [PatternName]
+    specific_agent_name = f"{agent_base_name}] [{strategy}"
+    log(f"{loop_info_str} {log_prefix} PatchGen working on strategy -> {pattern_str}", specific_agent_name)
+
+    agent_config = settings.LLM_AGENTS["patchgen"]
+    client = LLM_Client(agent=specific_agent_name, **agent_config)
+    prompts_config = load_prompts()
+
+    # Extract suspicious code snippets
+    bug_context = state["bug_context"]
+    suspicious_snippets = ""
+    
+    # Always include local suspicious locations
+    if bug_context.edit_locations:
+        for loc in bug_context.edit_locations:
+            snippet = extract_snippet(
+                repo_path=bug_context.local_repo_path,
+                relative_file_path=loc.file,
+                target_lines=loc.lines,
+                function_name=loc.function
+            )
+            suspicious_snippets += f"\nFile: {loc.file}\n{snippet}\n"
+    elif bug_context.suspicious_files:
+        for file in bug_context.suspicious_files:
+            snippet = extract_snippet(
+                repo_path=bug_context.local_repo_path,
+                relative_file_path=file
+            )
+            suspicious_snippets += f"\nFile: {file}\n{snippet}\n"
+
+    # If pattern has GLOBAL scope and an upstream file, include it too
+    if isinstance(active_pattern, dict) and active_pattern.get("scope") == "GLOBAL" and active_pattern.get("upstream"):
+        upstream_file = active_pattern.get("upstream")
+        log(f"Including upstream context: {upstream_file}", specific_agent_name)
+        snippet = extract_snippet(
+            repo_path=bug_context.local_repo_path,
+            relative_file_path=upstream_file
+        )
+        suspicious_snippets += f"\nUpstream File Context: {upstream_file}\n{snippet}\n"
+
+    if not suspicious_snippets:
+        suspicious_snippets = "No code snippets available."
+
+    # Format prompts based on unconstrained flag
+    if is_unconstrained:
+        system_prompt = prompts_config["patch_generation_unconstrained"]["system"]
+        user_prompt = prompts_config["patch_generation_unconstrained"]["user"].format(
+            issue_text=bug_context.issue_text,
+            error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+            suspicious_snippets=suspicious_snippets
+        )
+    else:
+        system_prompt = prompts_config["patch_generation"]["system"].format(
+            active_pattern=pattern_str
+        )
+        user_prompt = prompts_config["patch_generation"]["user"].format(
+            issue_text=bug_context.issue_text,
+            error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+            suspicious_snippets=suspicious_snippets,
+            active_pattern=pattern_str
+        )
+
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
-            
-    patch = {
-        "id": patch_id, 
-        "code_diff": None, # Will be replaced by LLM code generation
-        "strategy": pattern,
-        "status": "pending"
-    }
+    code_diff = ""
+    metrics = {}
+    raw_telemetry = {}
+
+    try:
+        structured_response, metrics, raw_telemetry = client.generate_structured(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            response_model=PatchGenerationResponse,
+            loop_info=loop_info_dict
+        )
+        code_diff = structured_response.code_diff
+        log(f"Generated v1 patch: {patch_id} using {pattern_str}", specific_agent_name, level=logging.INFO)
+    except Exception as e:
+        log(f"Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
+        code_diff = f"# Error: {e}"
+
+    # Log Telemetry and Patch to DB
+    if run_id and raw_telemetry:
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_{strategy}", raw_telemetry)
+        db_logger.log_patch(
+            patch_id=patch_id,
+            run_id=run_id,
+            patch_version=1,
+            loop_n=state.get("outer_loop_count", 1),
+            loop_m=state.get("inner_loop_count", 1),
+            loop_v=1,
+            pattern=strategy,
+            diff=code_diff,
+            tests_passed=False
+        )
+
+    patch = PatchCandidate(
+        id=patch_id, 
+        code_diff=code_diff,
+        strategy=strategy,
+        origin_v1_id=patch_id, # v1 patch is its own origin
+        version=1,
+        status="pending"
+    )
     
-    # LangGraph's operator.add in SpadeState will merge this into the v1_patches list
-    return {"v1_patches": [patch]}
-
-# Generate version 2 (or higher)
-def generate_refined_patch(state: SpadeState):
-    v = state.get("current_patch_version", 1)
-    loop_info = get_loop_info(state, include_inner=True)
-
-    v_next = v # Incremented version is handled at test_agent._handle_fallback
-
-    # Retrieve the origin ID (the v1 patch we are building upon)
-    # This should be set by the Judge or a selection node earlier in the loop
-    origin_id = state.get("current_v1_id", "unknown_origin")
-
-    log(f"{loop_info} Improve previous patch {origin_id} and generate new patch v{v_next}...", agent_name)
-
-    patch_id = f"v{v_next}_{uuid.uuid4().hex[:6]}"
-
-    patch = {
-        "id": patch_id, 
-        "code_diff": None, # Will be replaced by LLM code
-        "strategy": f"refined_from_debate_v{v_next}",
-        "status": "pending",
-        "origin_v1_id": origin_id  # Link back to the original v1 candidate
+    return {
+        "v1_patches": [patch],
+        "total_metrics": metrics
     }
 
-    # Return the new patch AND the incremented version to update the global state
+def generate_refined_patch(state: SpadeState):
+    origin_id = state.get("current_v1_id", "unknown_origin")
+    refined_patches = state.get("refined_patches", [])
+    v1_patches = state.get("v1_patches", [])
+    run_id = state.get("thread_id")
+    
+    # Deciding lineage: Search for the most recent refinement of this winner
+    previous_patch = None
+    for p in reversed(refined_patches):
+        if p.origin_v1_id == origin_id:
+            previous_patch = p
+            break
+            
+    if previous_patch:
+        log(f"Resuming refinement chain for {origin_id} from v{previous_patch.version}...", agent_base_name)
+        previous_patch_diff = previous_patch.code_diff
+        active_pattern = previous_patch.strategy
+        v_now = previous_patch.version + 1
+    else:
+        # First time refining this specific winner
+        log(f"Starting refinement for {origin_id} (v2).", agent_base_name)
+        v_now = 2
+        previous_patch_diff = ""
+        active_pattern = P_UNCONSTRAINED
+        
+        # Find the v1 base
+        for p in v1_patches:
+            if p.id == origin_id:
+                previous_patch_diff = p.code_diff
+                active_pattern = p.strategy
+                break
+
+    # Update version before getting loop info
+    temp_state = state.copy()
+    temp_state["current_patch_version"] = v_now
+    loop_info_str, loop_info_dict = get_loop_info(temp_state, include_inner=True)
+    
+    specific_agent_name = f"{agent_base_name}] [{active_pattern}"
+    log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
+
+    agent_config = settings.LLM_AGENTS["patchgen"]
+    client = LLM_Client(agent=specific_agent_name, **agent_config)
+    prompts_config = load_prompts()
+
+    # Format prompts
+    system_prompt = prompts_config["patch_refinement"]["system"].format(
+        active_pattern=active_pattern
+    )
+    user_prompt = prompts_config["patch_refinement"]["user"].format(
+        issue_text=state["bug_context"].issue_text,
+        active_pattern=active_pattern,
+        version=v_now - 1, 
+        previous_patch_diff=previous_patch_diff,
+        verdict=state.get("verdict", "No verdict available."),
+        dynamic_argument=state.get("dynamic_argument", "No argument."),
+        static_argument=state.get("static_argument", "No argument.")
+    )
+
+    # Maintain lineage by using the same UUID suffix as the original v1 winner
+    if "_" in origin_id:
+        suffix = origin_id.split("_")[-1]
+    else:
+        suffix = uuid.uuid4().hex[:6] # Fallback if ID format is unexpected
+        
+    patch_id = f"v{v_now}_{suffix}"
+    code_diff = ""
+    metrics = {}
+    raw_telemetry = {}
+
+    try:
+        structured_response, metrics, raw_telemetry = client.generate_structured(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            response_model=PatchGenerationResponse,
+            loop_info=loop_info_dict
+        )
+        code_diff = structured_response.code_diff
+        log(f"Generated refined patch: {patch_id}", specific_agent_name, level=logging.INFO)
+    except Exception as e:
+        log(f"Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
+        code_diff = f"# Error: {e}"
+
+    # Log Telemetry and Patch to DB
+    if run_id and raw_telemetry:
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_refined_{active_pattern}", raw_telemetry)
+        db_logger.log_patch(
+            patch_id=patch_id,
+            run_id=run_id,
+            patch_version=v_now,
+            loop_n=state.get("outer_loop_count", 1),
+            loop_m=state.get("inner_loop_count", 1),
+            loop_v=v_now,
+            pattern=active_pattern,
+            diff=code_diff,
+            tests_passed=False,
+            feedback=state.get("verdict")
+        )
+
+    patch = PatchCandidate(
+        id=patch_id, 
+        code_diff=code_diff,
+        strategy=active_pattern,
+        origin_v1_id=origin_id,
+        version=v_now,
+        status="pending"
+    )
+
     return {
-        "current_refined_patch": patch,
-        "current_patch_version": v_next 
+        "refined_patches": [patch],
+        "current_patch_version": v_now, # Sync the global state counter
+        "total_metrics": metrics
     }

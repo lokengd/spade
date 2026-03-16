@@ -1,9 +1,10 @@
 import json
 from pydantic import BaseModel
-from src.core.state import SpadeState, get_loop_info
+from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
-from src.utils.logger import log
-from config.settings import LLM_AGENTS
+from src.utils.logger import log, get_loop_info
+from src.core import settings
+from src.utils.db_logger import db_logger
 import logging
 
 agent_name = "Judge"
@@ -37,11 +38,11 @@ _JUDGE_SELECT_SYSTEM = (
     "3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.\n"
     "   These instructions should synthesize the strongest points from BOTH debaters.\n\n"
     "Respond ONLY with valid JSON matching this schema:\n"
-    '{\n'
+    "{{\n"
     '  "winning_patch_id": "<id of the selected v1 patch>",\n'
     '  "improvement_instructions": "<specific, actionable instructions for PatchGen to improve this patch>",\n'
     '  "justification": "<your reasoning, referencing specific debater arguments>"\n'
-    '}'
+    "}}"
 )
 
 _JUDGE_SELECT_USER = (
@@ -70,11 +71,11 @@ _JUDGE_REFINE_SYSTEM = (
     "3. Provide concrete, actionable improvement instructions that address the specific failure mode.\n"
     "   Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.\n\n"
     "Respond ONLY with valid JSON matching this schema:\n"
-    '{\n'
+    "{{\n"
     '  "winning_patch_id": "<id of the v1 patch to continue building on (can change from current)>",\n'
     '  "improvement_instructions": "<specific instructions for the next patch version>",\n'
     '  "justification": "<your reasoning, referencing debater arguments and failure history>"\n'
-    '}'
+    "}}"
 )
 
 _JUDGE_REFINE_USER = (
@@ -181,11 +182,12 @@ def _validate_winning_patch_id(verdict: JudgeVerdict, v1_patches: list) -> str:
 # ---------------------------------------------------------------------------
 
 def run(state: SpadeState):
-    loop_info = get_loop_info(state, include_inner=True)
+    loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
     v1_patches = state.get("v1_patches", [])
     candidates_block = _format_candidates_block(v1_patches)
+    run_id = state.get("thread_id")
 
     # Shared debate context
     debate_kwargs = {
@@ -196,7 +198,7 @@ def run(state: SpadeState):
     }
 
     if v == 1:
-        log(f"{loop_info} Selecting winner from v1 pool and issuing improvement instructions.", agent_name)
+        log(f"{loop_info_str} Selecting winner from v1 pool and issuing improvement instructions.", agent_name)
         system_prompt = _JUDGE_SELECT_SYSTEM
         user_prompt = _JUDGE_SELECT_USER.format(
             candidates_block=candidates_block,
@@ -204,8 +206,9 @@ def run(state: SpadeState):
             **debate_kwargs,
         )
     else:
-        log(f"{loop_info} Evaluating failed v{v} patch. Issuing refinement verdict.", agent_name)
-        pf = _get_patch_fields(state.get("current_refined_patch"))
+        log(f"{loop_info_str} Evaluating failed v{v} patch. Issuing refinement verdict.", agent_name)
+        refined_patches = state.get("refined_patches", [])
+        pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = _JUDGE_REFINE_SYSTEM.format(version=v)
         user_prompt = _JUDGE_REFINE_USER.format(
             version=v,
@@ -222,16 +225,22 @@ def run(state: SpadeState):
         )
 
     # Call LLM with structured output
-    agent_config = LLM_AGENTS["judge"]
+    agent_config = settings.LLM_AGENTS["judge"]
     client = LLM_Client(agent=agent_name, **agent_config)
     metrics = {}
+    raw_telemetry = {}
 
     try:
-        verdict, metrics = client.generate_structured(
+        verdict, metrics, raw_telemetry = client.generate_structured(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=JudgeVerdict,
+            loop_info=loop_info_dict
         )
+        # Log to DB
+        if run_id and raw_telemetry:
+            db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
+
     except Exception as e:
         log(f"Judge LLM call failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
         fallback_id = "unknown"
@@ -248,7 +257,7 @@ def run(state: SpadeState):
     validated_id = _validate_winning_patch_id(verdict, v1_patches)
     verdict_str = verdict.model_dump_json()
 
-    log(f"{loop_info} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
+    log(f"{loop_info_str} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
 
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.

@@ -1,6 +1,8 @@
 from src.utils.logger import log
 from src.core.state import SpadeState
 from src.evaluation.swe_bench_lite_utils import run_evaluation_with_no_patch, cleanup_logs_and_results_for_run
+from src.utils.db_logger import db_logger
+
 
 agent_name = "Reproduction"
 

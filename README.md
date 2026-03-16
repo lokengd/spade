@@ -6,9 +6,9 @@ SPADE is an LLM-based multi-agent framework designed for Automated Program Repai
 
 ---
 
-## Quick Start
+## 1. Quick Start
 
-### 1. Environment Setup
+### 1.1. Environment Setup
 Clone the repository and run the setup script to initialize the virtual environment and install dependencies.
 ```bash
 # Make the script executable 
@@ -18,7 +18,19 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-### 2. Run the Evaluation
+### 1.2. LLM Setup
+
+By default, SPADE runs locally and free using `qwen2.5-coder:latest`.
+
+* Download and install Ollama from [ollama.com](https://ollama.com/).
+* Download the model:
+```bash
+ollama pull qwen2.5-coder:latest
+```
+* Start the Server: Ensure the Ollama application is running in the background. The server runs locally on http://localhost:11434.
+
+
+### 1.3. Run the Evaluation
 ```bash
 # Activate the virtual environment (if setup.sh doesn't do it automatically)
 source .venv/bin/activate
@@ -27,9 +39,13 @@ source .venv/bin/activate
 python main.py
 ```
 
-## LLM Configuration
+## 2. LLM Configuration
 
-You can setup LLM models, adjust temperatures, and configure endpoints for specific agents without modifying the source code. Simply edit the config/llm.yaml file:
+By default, SPADE uses `qwen2.5-coder:latest` for all agents.
+
+### 2.1. Overriding Defaults
+
+You can override LLM models, adjust temperatures, and configure endpoints for specific agents without modifying the source code. Simply edit the `config/llm.yaml` file, for example:
 ```yaml
 agents:
   pattern_selection:
@@ -42,26 +58,40 @@ agents:
     provider: "openai"
     model: "gpt-4o"
     temperature: 0.0
+    base_url: null
     api_key_env: "OPENAI_API_KEY"
 ```
 
-Depending on the cloud providers, you must set the corresponding environment variables before running the evaluation. You can export them directly in your terminal:
+Depending on the cloud providers, you must set the corresponding environment variables before running the evaluation.
 
 ```bash
 export OPENAI_API_KEY="[your-openai-api-key]"
 export GEMINI_API_KEY="[your-gemini-api-key]"
 ```
 
-_Note: If using local models via Ollama, ensure your instance is running on http://localhost:11434 prior to execution._
+### 2.2. Tracking cost 
 
+SPADE includes a built-in cost tracking to automatically calculates total cost based on token usage. Add or update the costs block in `config/llm.yaml` file, for example.
+```yaml
+# Cost per 1,000,000 (1 Million) tokens in USD
+costs:
+  qwen2.5-coder:latest:
+    input: 0.0
+    output: 0.0
+  gpt-4o:
+    input: 2.50
+    output: 10.00
+  gemini-2.5-flash:
+    input: 0.075
+    output: 0.30
+```
 
-
-## SPADE Orchestration
+## 3. SPADE Orchestration
 
 ![SPADE Architecture](spade_graph.png)
 
-## Tips & Troubleshooting
-### 1. Resetting Agent Memory
+## 4. Tips & Troubleshooting
+### 4.1. Resetting Agent Memory
 
 SPADE uses a local SQLite checkpointer to persist agent state and memory across runs. To completely clear the memory and start fresh:
 
@@ -70,5 +100,10 @@ SPADE uses a local SQLite checkpointer to persist agent state and memory across 
 rm data/checkpoints.sqlite*
 ```
 
-### 2. Viewing Execution Traces
+### 4.2. Viewing Execution Traces
 Detailed, timestamped execution logs, including token consumption and reasoning traces, are automatically saved to the data/logs/ directory for every run.
+
+## 5. Acknowledgement
+
+- [SWE-bench-Lite](https://www.swebench.com/lite.html)
+- [LangGraph](https://github.com/langchain-ai/langgraph)

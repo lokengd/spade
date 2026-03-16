@@ -1,10 +1,10 @@
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.constants import Send
 import logging
 
-from src.core.state import SpadeState
-from config.settings import K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS
+from src.core.state import SpadeState, P_UNCONSTRAINED
+from src.core import settings
+from src.utils.logger import log
 from src.agents import (
     fl_ensemble, reproduction, pattern_selection, patchgen, debaters, judge, test_agent
 )
@@ -19,47 +19,71 @@ def activate_patchgen_agents(state: SpadeState):
     current_n = state.get("outer_loop_count", 1)
     current_m = state.get("inner_loop_count", 1)
     current_v = state.get("current_patch_version", 1)
+    thread_id = state.get("thread_id")
+    experiment_id = state.get("experiment_id")
 
     # Activate K agents
-    for pattern in state.get("selected_patterns", [])[:K_PATTERNS]:
-        sends.append(Send("generate_v1_patch", {
-            "active_pattern": f"pattern: {pattern}",
-            "bug_context": state["bug_context"],
-            "outer_loop_count": current_n,
-            "inner_loop_count": current_m,
-            "current_patch_version": current_v
-        }))
+    if settings.K_PATTERNS > 0:
+        for pattern in state.get("selected_patterns", [])[:settings.K_PATTERNS]:
+            sends.append(Send("generate_v1_patch", {
+                "active_pattern": pattern,
+                "bug_context": state["bug_context"],
+                "outer_loop_count": current_n,
+                "inner_loop_count": current_m,
+                "current_patch_version": current_v,
+                "thread_id": thread_id,
+                "experiment_id": experiment_id
+            }))
         
-    # Activate the +1 unconstrained LLM agent
+    # Activate the +1 Unconstrained LLM agent
     sends.append(Send("generate_v1_patch", {
-        "active_pattern": "unconstrained",
+        "active_pattern": P_UNCONSTRAINED,
         "bug_context": state["bug_context"],
         "outer_loop_count": current_n,
         "inner_loop_count": current_m,
-        "current_patch_version": current_v
+        "current_patch_version": current_v,
+        "thread_id": thread_id,
+        "experiment_id": experiment_id
     }))
     
     return sends
 
+def route_after_reproduction(state: SpadeState):
+    if settings.K_PATTERNS == 0:
+        log("K=0: Skipping Pattern Selection, proceeding to Unconstrained PatchGen.", "Orchestrator")
+        return activate_patchgen_agents(state)
+    return "pattern_selection"
+
 def route_after_v1(state: SpadeState):
-    return "end" if state["resolution_status"] == "resolved" else "debate_panel"
+    if state["resolution_status"] == "resolved":
+        return "end"
+    
+    if settings.M_INNER_LOOPS == 0:
+        log("M=0: Skipping Debate Loop.", "Orchestrator")
+        if state["resolution_status"] == "failed":
+            return "hard_stop"
+        # If we are transitioning to a new outer loop, we should respect the K=0 setting
+        return route_after_reproduction(state)
+
+    return "debate_panel"
 
 def route_after_refined(state: SpadeState):
     # Success! Exit the graph.
     if state["resolution_status"] == "resolved":
         return "end"
         
-    # Hard Stop check
-    if state.get("outer_loop_count", 1) > N_OUTER_LOOPS:        
-        logger.warning(f"MAX OUTER LOOPS N={N_OUTER_LOOPS} REACHED. Hard Stop!")
+    # Hard Stop check - if test_agent signaled failure or counters exceed limit
+    if state["resolution_status"] == "failed" or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
+        log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
-    # Hard Reset check - number of inner loops for debate iterations
-    if state.get("inner_loop_count", 1) > M_INNER_LOOPS:
-        # Hit the inner limit, go back to Pattern Selection
+    # Case 1: Transition to new Outer Loop (N+1)
+    if state["resolution_status"].startswith("N") and state["resolution_status"].endswith("_failed"):
+        log("Transitioning to new Outer Loop (Pattern Selection).", "Orchestrator")
         return "pattern_selection"
 
-    # If not hitting any limits yet, continue the debate to generate v3, v4, etc.
+    # Case 2: Backtracking (pick new winner) or Iterative Refinement (v+1)
+    # Both stay in the debate panel.
     return "debate_panel"
 
 
@@ -87,7 +111,14 @@ def build_graph():
     # Add edges
     graph.add_edge(START, "fl_ensemble")
     graph.add_edge("fl_ensemble", "reproduction")
-    graph.add_edge("reproduction", "pattern_selection")
+    
+    # Conditional edge from reproduction
+    graph.add_conditional_edges(
+        "reproduction",
+        route_after_reproduction,
+        ["pattern_selection", "generate_v1_patch"]
+    )
+
     # Fan-Out to K+1 PatchGen agents using the dynamic Send API
     graph.add_conditional_edges(
         "pattern_selection", 
@@ -99,7 +130,9 @@ def build_graph():
     # Conditional route to Debate Setup
     graph.add_conditional_edges("initial_verification", route_after_v1, {
         "end": END, 
-        "debate_panel": "debate_panel"
+        "debate_panel": "debate_panel",
+        "pattern_selection": "pattern_selection",
+        "hard_stop": END
     })
     
     # Debate panel edges
