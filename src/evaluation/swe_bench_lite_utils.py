@@ -14,6 +14,8 @@ from src.evaluation.constants import (
 	EVAL_DIR,
 	SWE_BENCH_REPO_NAME,
 	SWE_BENCH_REPO_URL,
+	SWE_BENCH_DEPTH_TO_CLONE,
+	SWE_BENCH_BRANCH_TO_CLONE,
 	VALIDATION_INSTANCE_ID,
 	VALIDATION_MAX_WORKERS,
 	VALIDATION_PREDICTIONS_PATH,
@@ -97,7 +99,7 @@ def clone_and_install_swe_bench() -> bool:
 
 	if not repo_dir.exists():
 		clone_result = subprocess.run(
-			["git", "clone", SWE_BENCH_REPO_URL],
+			["git", "clone", "--depth", SWE_BENCH_DEPTH_TO_CLONE, "--branch", SWE_BENCH_BRANCH_TO_CLONE, SWE_BENCH_REPO_URL],
 			cwd=eval_dir,
 			capture_output=True,
 			text=True,
