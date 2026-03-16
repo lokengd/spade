@@ -106,20 +106,3 @@ class SpadeState(TypedDict):
     reproduction_evaluation_result: NotRequired[EvaluationResult] # Populated after reproduction step
     v1_patches_evaluation_result: NotRequired[List[EvaluationResult]] # Populated after running on proposed patch
     refined_patch_evaluation_result: NotRequired[EvaluationResult] # Populated after running on proposed patch
-
-def get_loop_info(state: SpadeState, include_inner: bool = True):
-    """
-    Centralized helper to extract N, M, V values.
-    """
-    from config.settings import N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE
-    
-    n = state.get("outer_loop_count", 1)
-    m = state.get("inner_loop_count", 1)
-    v = state.get("current_patch_version", 1)
-    
-    if include_inner:
-        info_str = f"[N={n}/{N_OUTER_LOOPS}] [M={m}/{M_INNER_LOOPS}] [V={v}/{V_PATIENCE}]"
-    else:
-        info_str = f"[N={n}/{N_OUTER_LOOPS}]"
-    
-    return info_str
