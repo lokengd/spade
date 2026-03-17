@@ -48,6 +48,12 @@ def activate_patchgen_agents(state: SpadeState):
     
     return sends
 
+def route_after_fl(state: SpadeState):
+    if state.get("resolution_status") == "fl_failed":
+        log("Fault Localization failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+    return "reproduction"
+
 def route_after_reproduction(state: SpadeState):
     if state.get("resolution_status") == "reproduction_failed":
         log(f"Reproduction failed ({state.get('resolution_status')}). Hard Stop!", "Orchestrator", level=logging.WARNING)
@@ -128,7 +134,16 @@ def build_graph():
 
     # Add edges
     graph.add_edge(START, "fl_ensemble")
-    graph.add_edge("fl_ensemble", "reproduction")
+    
+    # Conditional edge from fl_ensemble
+    graph.add_conditional_edges(
+        "fl_ensemble",
+        route_after_fl,
+        {
+            "reproduction": "reproduction",
+            "hard_stop": END
+        }
+    )
     
     # Conditional edge from reproduction
     graph.add_conditional_edges(

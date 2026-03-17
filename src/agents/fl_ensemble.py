@@ -9,18 +9,20 @@ from src.core import settings
 
 agent_name = "FL_Ensemble"
 
-def load_mock_fl_data(bug_id: str):
-    """Loads Fault Localization data from the sample results JSONL file."""
-    # This path is relative to the project root
-    fl_file = "results/afl-qwen2.5_32b_sample.jsonl"
+def load_fl_data(bug_id: str):
+    """Loads Fault Localization data from the results JSONL file defined in settings.FL_RESULTSET."""
+    fl_file = settings.FL_RESULTSET
     if not os.path.exists(fl_file):
         log(f"Warning: FL results file {fl_file} not found.", agent_name, level=logging.WARNING)
-        return [], {}, []
+        return None
     
     with open(fl_file, "r") as f:
         for line in f:
-            data = json.loads(line)
-            if data["instance_id"] == bug_id:
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if data.get("instance_id") == bug_id:
                 suspicious_files = data.get("found_files", [])
                 
                 # Parse related functions
@@ -47,7 +49,10 @@ def load_mock_fl_data(bug_id: str):
                             if part.startswith('function: '):
                                 function_name = part.replace('function: ', '').strip()
                             elif part.startswith('line: '):
-                                lines.append(int(part.replace('line: ', '').strip()))
+                                try:
+                                    lines.append(int(part.replace('line: ', '').strip()))
+                                except ValueError:
+                                    continue
                         
                         edit_locations.append(EditLocation(
                             file=file,
@@ -56,18 +61,26 @@ def load_mock_fl_data(bug_id: str):
                         ))
                 
                 return suspicious_files, related_functions, edit_locations
-    return [], {}, []
+    return None
 
 def run(state: SpadeState):
     log("Running analysis...", agent_name)
     
     bug_context: BugContext = state["bug_context"]
     
-    # MOCK FL: Load pre-calculated FL data from sample file
-    log(f"Loading mock FL data for {bug_context.bug_id}...", agent_name)
-    suspicious_files, related_functions, edit_locations = load_mock_fl_data(bug_context.bug_id)
+    # FL data: Load pre-calculated FL data from result file
+    log(f"Loading FL data for {bug_context.bug_id} from {settings.FL_RESULTSET}...", agent_name)
+    fl_data = load_fl_data(bug_context.bug_id)
+    
+    if fl_data is None:
+        log(f"Error: No FL data found for {bug_context.bug_id} in fl resultset.", agent_name, level=logging.ERROR)
+        return {
+            "resolution_status": "fl_failed"
+        }
 
-    # Inject mock data into context
+    suspicious_files, related_functions, edit_locations = fl_data
+
+    # Inject fl data into context
     bug_context.suspicious_files = suspicious_files
     bug_context.related_functions = related_functions
     bug_context.edit_locations = edit_locations

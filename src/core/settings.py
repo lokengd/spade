@@ -18,6 +18,7 @@ N_OUTER_LOOPS = 2
 M_INNER_LOOPS = 1
 V_PATIENCE = 2
 SNIPPET_CONTEXT_LINES = 15
+FL_RESULTSET = ""
 
 # Default Configuration Paths
 DEFAULT_LLM_CONFIG_PATH = BASE_DIR / "config" / "llm.yaml"
@@ -41,7 +42,7 @@ def load_llm_config(config_path: pathlib.Path):
 
 def update_orchestration_settings(experiment_id: str):
     """Updates global orchestration constants and config paths based on the experiment_id."""
-    global K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE, SNIPPET_CONTEXT_LINES
+    global K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE, SNIPPET_CONTEXT_LINES, FL_RESULTSET
     global LLM_CONFIG_PATH, PROMPTS_CONFIG_PATH
 
     exp = EXPERIMENTS.get(experiment_id)
@@ -49,7 +50,7 @@ def update_orchestration_settings(experiment_id: str):
         print(f"FATAL ERROR: Experiment '{experiment_id}' not found in experiments.yaml.")
         sys.exit(1)
 
-    required_params = ["k_patterns", "n_outer_loops", "m_inner_loops", "v_patience", "bug_list", "snippet_context_lines"]
+    required_params = ["k_patterns", "n_outer_loops", "m_inner_loops", "v_patience", "bug_list", "snippet_context_lines", "fl_resultset"]
     for param in required_params:
         if param not in exp:
             print(f"FATAL ERROR: Missing parameter '{param}' in experiment '{experiment_id}'.")
@@ -60,6 +61,7 @@ def update_orchestration_settings(experiment_id: str):
     M_INNER_LOOPS = exp["m_inner_loops"]
     V_PATIENCE = exp["v_patience"]
     SNIPPET_CONTEXT_LINES = exp["snippet_context_lines"]
+    FL_RESULTSET = exp["fl_resultset"]
 
     # Handle LLM and Prompts config overrides
     llm_cfg = exp.get("llm_config")

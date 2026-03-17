@@ -104,7 +104,7 @@ def verify_v1(state: SpadeState):
             }
         else:
             log(f"M=0: All outer loops exhausted (N={curr_n}/{settings.N_OUTER_LOOPS}).", agent_name)
-            return {"resolution_status": "failed"}
+            return {"resolution_status": "v1_failed"}
 
     log("All v1 candidates failed. Moving to debate panel.", agent_name)
     return {"resolution_status": "v1_failed"}
@@ -196,7 +196,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
             status="failed"
         )
     return {
-        "resolution_status": "failed",
+        "resolution_status": f"N{curr_n}_failed",
         "current_patch_version": current_v,
         "inner_loop_count": curr_m,
         "outer_loop_count": curr_n,

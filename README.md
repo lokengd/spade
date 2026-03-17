@@ -38,7 +38,7 @@ ollama pull qwen2.5-coder:latest
 source .venv/bin/activate
 
 # Start the evaluation
-python main.py
+python3 main.py
 ```
 
 ## 2. LLM Configuration
