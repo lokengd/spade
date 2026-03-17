@@ -1,5 +1,7 @@
 import logging
 import uuid
+import json
+import os
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
@@ -8,6 +10,25 @@ from src.evaluation import cleanup_evaluation_dir, setup_evaluation_environment,
 from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
 from src.utils.db_logger import db_logger
 from src.core import settings
+
+def resolve_bugs_from_fl_resultset(fl_resultset_file: str):
+    """Resolves the list of bug instance IDs from the FL resultset file."""
+    bug_ids = set()
+    if not os.path.isfile(fl_resultset_file):
+        print(f"Warning: FL result file {fl_resultset_file} not found.")
+        return []
+    try:
+        with open(fl_resultset_file, "r") as f:
+            for line in f:
+                try:
+                    data = json.loads(line)
+                    if "instance_id" in data:
+                        bug_ids.add(data["instance_id"])
+                except json.JSONDecodeError:
+                    continue
+    except Exception as e:
+        print(f"Error reading FL result file {fl_resultset_file}: {e}")
+    return list(bug_ids)
 
 def run_spade(task: dict, config: dict, experiment_id: str):
 
@@ -92,16 +113,18 @@ if __name__ == "__main__":
     for experiment_id in settings.ACTIVE_EXPERIMENTS:
         exp_config = settings.update_orchestration_settings(experiment_id)
         experiment_desc = exp_config.get("description", "No description provided")
-        bug_list = exp_config.get("bug_list", [])
+        bug_list_config = exp_config.get("bug_list", [])
 
         print(f"\n--- Starting Experiment: {experiment_id} ---")
         print(f"Description: {experiment_desc}")
 
         # Filter dataset based on bug_list
-        if bug_list == "all":
-            test_data = all_test_data
+        if bug_list_config == "*":
+            resolved_bug_ids = resolve_bugs_from_fl_resultset(settings.FL_RESULTSET)
+            print(f"Resolved {len(resolved_bug_ids)} bugs from FL resultset: {settings.FL_RESULTSET}")
+            test_data = [t for t in all_test_data if t['instance_id'] in resolved_bug_ids]
         else:
-            test_data = [t for t in all_test_data if t['instance_id'] in bug_list]
+            test_data = [t for t in all_test_data if t['instance_id'] in bug_list_config]
         
         print(f"Bugs to process: {len(test_data)}")
 
