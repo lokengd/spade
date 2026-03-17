@@ -95,7 +95,7 @@ class SpadeState(TypedDict):
     outer_loop_count: int
     inner_loop_count: int
     current_patch_version: int  
-    resolution_status: str # 'resolved', 'open', 'failed'    
+    resolution_status: str # 'resolved', 'open', different scenario of 'failed': e.g. v1_failed, reproduction_failed, patchgen_failed pattern_selection_failed etc
 
     # Telemetry
     total_metrics: Annotated[dict, add_metrics]

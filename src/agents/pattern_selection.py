@@ -112,7 +112,11 @@ def run(state: SpadeState):
             log(f"Selected {len(final_selection)} patterns: {selected_ids}", agent_name, level=logging.INFO)
 
     except Exception as e:
-        log(f"LLM Connection or Parsing Error: {e}. Proceeding with K=0.", agent_name, level=logging.ERROR)
+        log(f"Pattern Selection captured an exception: {e}.", agent_name, level=logging.ERROR)
+        return {
+            "resolution_status": "pattern_selection_failed",
+            "total_metrics": metrics
+        }
 
     return {
         "selected_patterns": final_selection,

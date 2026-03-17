@@ -115,7 +115,10 @@ def generate_v1_patch(state: SpadeState):
         log(f"Generated v1 patch: {patch_id} using {pattern_str}", specific_agent_name, level=logging.INFO)
     except Exception as e:
         log(f"Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
-        code_diff = f"# Error: {e}"
+        return {
+            "resolution_status": "patchgen_failed",
+            "total_metrics": metrics
+        }
 
     # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
@@ -226,7 +229,10 @@ def generate_refined_patch(state: SpadeState):
         log(f"Generated refined patch: {patch_id}", specific_agent_name, level=logging.INFO)
     except Exception as e:
         log(f"Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
-        code_diff = f"# Error: {e}"
+        return {
+            "resolution_status": "patchgen_failed",
+            "total_metrics": metrics
+        }
 
     # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:

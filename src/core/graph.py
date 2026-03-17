@@ -49,14 +49,28 @@ def activate_patchgen_agents(state: SpadeState):
     return sends
 
 def route_after_reproduction(state: SpadeState):
+    if state.get("resolution_status") == "reproduction_failed":
+        log(f"Reproduction failed ({state.get('resolution_status')}). Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+
     if settings.K_PATTERNS == 0:
         log("K=0: Skipping Pattern Selection, proceeding to Unconstrained PatchGen.", "Orchestrator")
         return activate_patchgen_agents(state)
     return "pattern_selection"
 
+def route_after_pattern_selection(state: SpadeState):
+    if state.get("resolution_status") == "pattern_selection_failed":
+        log("Pattern Selection failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+    return activate_patchgen_agents(state)
+
 def route_after_v1(state: SpadeState):
     if state["resolution_status"] == "resolved":
         return "end"
+    
+    if state.get("resolution_status") == "patchgen_failed":
+        log("PatchGen failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
     
     if settings.M_INNER_LOOPS == 0:
         log("M=0: Skipping Debate Loop.", "Orchestrator")
@@ -71,6 +85,10 @@ def route_after_refined(state: SpadeState):
     # Success! Exit the graph.
     if state["resolution_status"] == "resolved":
         return "end"
+    
+    if state.get("resolution_status") == "patchgen_failed" or state.get("resolution_status") == "test_agent_failed":
+        log(f"Critical error ({state.get('resolution_status')}). Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
         
     # Hard Stop check - if test_agent signaled failure or counters exceed limit
     if state["resolution_status"] == "failed" or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
@@ -116,14 +134,21 @@ def build_graph():
     graph.add_conditional_edges(
         "reproduction",
         route_after_reproduction,
-        ["pattern_selection", "generate_v1_patch"]
+        {
+            "pattern_selection": "pattern_selection",
+            "generate_v1_patch": "generate_v1_patch",
+            "hard_stop": END
+        }
     )
 
     # Fan-Out to K+1 PatchGen agents using the dynamic Send API
     graph.add_conditional_edges(
         "pattern_selection", 
-        activate_patchgen_agents, 
-        ["generate_v1_patch"] # The node we are sending to
+        route_after_pattern_selection, 
+        {
+            "generate_v1_patch": "generate_v1_patch",
+            "hard_stop": END
+        }
     )
     # Fan-In: Wait for all K+1 patches, then go to verification
     graph.add_edge("generate_v1_patch", "initial_verification")

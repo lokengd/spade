@@ -22,26 +22,32 @@ def run(state: SpadeState):
         if not evaluation_result.evaluation_ran_successfully:
             log(f"Reproduction failed: Evaluation did not run successfully. Error: {evaluation_result.evaluation_error_message}", caller=agent_name)
             return {
-                "resolution_status": "evaluation_failed", # TODO complete the logic at graph.py
+                "resolution_status": "reproduction_failed",
+                "reproduction_evaluation_result": evaluation_result
             }
+        
         if evaluation_result.bug_resolved:
             log(f"Reproduction failed: Bug appears to be resolved without any patch. Check the test environment and test cases.", caller=agent_name)
             return {
-                "resolution_status": "evaluation_failed",
+                "resolution_status": "reproduction_failed",
+                "reproduction_evaluation_result": evaluation_result
             }
 
         log(f"Reproduction successful: Bug is reproducible and test environment is working as expected.", caller=agent_name)
         
-        state["reproduction_evaluation_result"] = evaluation_result # Store the evaluation result in the state for future reference
-
-        cleanup_logs_and_results_for_run(run_id=eval_run_id) # Clean up logs and results to save space, since we have the evaluation result stored in the state
+        cleanup_logs_and_results_for_run(run_id=eval_run_id) # Clean up logs and results to save space
 
         bug_context = state["bug_context"]
         bug_context.error_trace = evaluation_result.test_output
+        
         return {
             "bug_context": bug_context,
+            "reproduction_evaluation_result": evaluation_result,
+            "resolution_status": "open"
         }
     
     except Exception as e:
         log(f"Reproduction captured an exception: {str(e)}", caller=agent_name)
-        raise
+        return {
+            "resolution_status": "reproduction_failed",
+        }

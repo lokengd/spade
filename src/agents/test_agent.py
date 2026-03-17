@@ -116,7 +116,7 @@ def verify_refined(state: SpadeState):
     refined_patches = state.get("refined_patches", [])
     if not refined_patches:
         log("No refined patch found to verify.", agent_name, level=logging.ERROR)
-        return {"resolution_status": "error"}
+        return {"resolution_status": "test_agent_failed"}
 
     patch = refined_patches[-1]
     run_id = state.get("thread_id")
