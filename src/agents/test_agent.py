@@ -30,7 +30,7 @@ def _run_evaluation_on_patch(bug_id: str, run_id: str, patch_code_diff: str) -> 
         return EvaluationResult(evaluation_ran_successfully=False, bug_resolved=False, evaluation_error_message=str(e))
 
 def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCandidate:
-    log(f"Evaluating patch {patch.id} (v{patch.version})...", agent_name)
+    log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
     
     bug_id = state["bug_context"].bug_id
     run_id = state.get("thread_id")

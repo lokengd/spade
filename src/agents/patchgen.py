@@ -36,7 +36,7 @@ def generate_v1_patch(state: SpadeState):
         pattern_str = str(active_pattern)
         strategy = str(active_pattern)
 
-    log_prefix = "Unconstrained" if is_unconstrained else "Pattern-Guided"
+    log_prefix = "Unconstrained" if is_unconstrained else pattern_str
     # User requested format: [PatchGen] [PatternName]
     specific_agent_name = f"{agent_base_name}] [{strategy}"
     log(f"{loop_info_str} {log_prefix} PatchGen working on strategy -> {pattern_str}", specific_agent_name)
@@ -70,7 +70,7 @@ def generate_v1_patch(state: SpadeState):
     # If pattern has GLOBAL scope and an upstream file, include it too
     if isinstance(active_pattern, dict) and active_pattern.get("scope") == "GLOBAL" and active_pattern.get("upstream"):
         upstream_file = active_pattern.get("upstream")
-        log(f"Including upstream context: {upstream_file}", specific_agent_name)
+        log(f"{loop_info_str} {log_prefix} Including upstream context: {upstream_file}", specific_agent_name)
         snippet = extract_snippet(
             repo_path=bug_context.local_repo_path,
             relative_file_path=upstream_file
@@ -89,14 +89,14 @@ def generate_v1_patch(state: SpadeState):
             suspicious_snippets=suspicious_snippets
         )
     else:
-        system_prompt = prompts_config["patch_generation"]["system"].format(
-            active_pattern=pattern_str
-        )
+        pattern_description = prompts_config.get("pattern_taxonomy", {}).get(strategy, "")
+        system_prompt = prompts_config["patch_generation"]["system"]
         user_prompt = prompts_config["patch_generation"]["user"].format(
             issue_text=bug_context.issue_text,
             error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
             suspicious_snippets=suspicious_snippets,
-            active_pattern=pattern_str
+            active_pattern=pattern_str,
+            active_pattern_description=pattern_description
         )
 
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
@@ -112,9 +112,9 @@ def generate_v1_patch(state: SpadeState):
             loop_info=loop_info_dict
         )
         code_diff = structured_response.code_diff
-        log(f"Generated v1 patch: {patch_id} using {pattern_str}", specific_agent_name, level=logging.INFO)
+        log(f"{loop_info_str} {log_prefix} Generated v1 patch: {patch_id} using {pattern_str}", specific_agent_name, level=logging.INFO)
     except Exception as e:
-        log(f"Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
+        log(f"{loop_info_str} {log_prefix} Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
         return {
             "resolution_status": "patchgen_failed",
             "total_metrics": metrics
@@ -194,12 +194,12 @@ def generate_refined_patch(state: SpadeState):
     prompts_config = load_prompts()
 
     # Format prompts
-    system_prompt = prompts_config["patch_refinement"]["system"].format(
-        active_pattern=active_pattern
-    )
+    system_prompt = prompts_config["patch_refinement"]["system"]
+    pattern_description = prompts_config.get("pattern_taxonomy", {}).get(active_pattern, "")
     user_prompt = prompts_config["patch_refinement"]["user"].format(
         issue_text=state["bug_context"].issue_text,
         active_pattern=active_pattern,
+        active_pattern_description=pattern_description,
         version=v_now - 1, 
         previous_patch_diff=previous_patch_diff,
         verdict=state.get("verdict", "No verdict available."),
@@ -226,9 +226,9 @@ def generate_refined_patch(state: SpadeState):
             loop_info=loop_info_dict
         )
         code_diff = structured_response.code_diff
-        log(f"Generated refined patch: {patch_id}", specific_agent_name, level=logging.INFO)
+        log(f"{loop_info_str} Generated refined patch: {patch_id}", specific_agent_name, level=logging.INFO)
     except Exception as e:
-        log(f"Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
+        log(f"{loop_info_str} Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
         return {
             "resolution_status": "patchgen_failed",
             "total_metrics": metrics

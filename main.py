@@ -2,6 +2,7 @@ import logging
 import uuid
 import json
 import os
+import traceback
 from langgraph.checkpoint.sqlite import SqliteSaver
 from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
@@ -50,47 +51,60 @@ def run_spade(task: dict, config: dict, experiment_id: str):
 
         state_snapshot = app.get_state(config)
         
-        if not state_snapshot.values:
-            # No memory found
-            log(f"NEW run for {bug_id}. Loading dataset...")
-            
-            loader = DatasetLoader()
-            test_data = loader.load_data()
-            # filter the dataset to find that exact bug_id
-            task = next(item for item in test_data if item["instance_id"] == bug_id)
+        try:
+            if not state_snapshot.values:
+                # No memory found
+                log(f"NEW run for {bug_id}. Loading dataset...")
+                
+                loader = DatasetLoader()
+                test_data = loader.load_data()
+                # filter the dataset to find that exact bug_id
+                task = next(item for item in test_data if item["instance_id"] == bug_id)
 
-            repo_path = loader.load_repo(task)
-            
-            initial_state = {
-                "thread_id": thread_id,  
-                "experiment_id": experiment_id,
-                "bug_context": BugContext(
-                    bug_id=task["instance_id"],
-                    issue_text=task["problem_statement"],
-                    local_repo_path=str(repo_path),
-                    base_commit=task["base_commit"],
-                    resolution_status="open"
-                ),
-                "outer_loop_count": 1,
-                "inner_loop_count": 1,
-                "current_patch_version": 1,
-                "resolution_status": "open"
-            }
+                repo_path = loader.load_repo(task)
+                
+                initial_state = {
+                    "thread_id": thread_id,  
+                    "experiment_id": experiment_id,
+                    "bug_context": BugContext(
+                        bug_id=task["instance_id"],
+                        issue_text=task["problem_statement"],
+                        local_repo_path=str(repo_path),
+                        base_commit=task["base_commit"],
+                        resolution_status="open"
+                    ),
+                    "outer_loop_count": 1,
+                    "inner_loop_count": 1,
+                    "current_patch_version": 1,
+                    "resolution_status": "open"
+                }
 
-            for event in app.stream(initial_state, config=config):
-                for node_name, state_update in event.items():
-                    pass
-            
-        else:
-            # Memory found
-            log(f"Memory found! Resuming run for {bug_id} from exact last step...")
-            
-            for event in app.stream(None, config=config):
-                for node_name, state_update in event.items():
-                    pass
+                for event in app.stream(initial_state, config=config):
+                    for node_name, state_update in event.items():
+                        pass
+                
+            else:
+                # Memory found
+                log(f"Memory found! Resuming run for {bug_id} from exact last step...")
+                
+                for event in app.stream(None, config=config):
+                    for node_name, state_update in event.items():
+                        pass
 
-        memory_state = app.get_state(config).values
-        log(get_memory_state(memory_state))
+            memory_state = app.get_state(config).values
+            log(get_memory_state(memory_state))
+
+        except Exception as e:
+            # Capture state and traceback on failure
+            log(f"Exception during run_spade execution: {e}", caller="run_spade", level=logging.ERROR)
+            log(traceback.format_exc(), caller="run_spade", level=logging.ERROR)
+            try:
+                state = app.get_state(config).values
+                log("Current SpadeState at time of failure:", caller="run_spade", level=logging.ERROR)
+                log(get_memory_state(state), caller="run_spade", level=logging.ERROR)
+            except Exception as state_err:
+                log(f"Could not retrieve SpadeState: {state_err}", caller="run_spade", level=logging.ERROR)
+            raise e
 
 if __name__ == "__main__":
 
@@ -143,6 +157,7 @@ if __name__ == "__main__":
                 run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=db_experiment_id) 
             except Exception as e:
                 log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
+                # log(traceback.format_exc(), caller="Main", level=logging.ERROR)
             
             # Clean up any leftover Docker images after each run to save space and avoid conflicts
             cleanup_sweb_docker_images()

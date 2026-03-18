@@ -38,11 +38,11 @@ pattern_selection:
     **Bug Issue Description:**
     {issue_text}
 
-    **Error Trace:**
-    {error_trace}
-
     **Suspicious Locations:**
     {suspicious_locations}
+
+    **Error Trace:**
+    {error_trace}
 
     Analyze the provided context, apply the decision logic, and return your pattern selections as JSON.
   
@@ -111,7 +111,7 @@ patch_generation:
 
     **Instructions:**
     1. Analyze the bug description, error trace, and suspicious code snippets.
-    2. Apply the requested Fix-Pattern: {active_pattern}
+    2. Apply the target fix-pattern
     3. Do NOT include any explanations or conversational text. 
 
     Return EXACTLY one JSON object with ONLY these keys:
@@ -120,7 +120,7 @@ patch_generation:
       "explanation": string,
       "code_diff": string
     }
-
+      
     Rules:
     - Do NOT output any keys other than "explanation" and "code_diff".
     - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
@@ -153,6 +153,7 @@ patch_generation:
 
     **Target Fix-Pattern:**
     {active_pattern}
+    {active_pattern_description}
 
     Generate the best patch as JSON.
 
@@ -212,7 +213,7 @@ patch_refinement:
 
     **Instructions:**
     1. Analyze the original bug context and the previous patch candidate.
-    2. Review the Target Fix-Pattern (if any): {active_pattern}
+    2. Review the target fix-pattern (if any)
     3. Review the Debate Verdict and the arguments from both sides.
     4. Generate an improved patch in unified git diff format that addresses the weaknesses identified in the debate.
     5. Do NOT include any explanations or conversational text. 
@@ -250,6 +251,7 @@ patch_refinement:
 
     **Target Fix-Pattern:**
     {active_pattern}
+    {active_pattern_description}
 
     **Previous Patch (v{version}):**
     {previous_patch_diff}
