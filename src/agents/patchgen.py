@@ -99,6 +99,9 @@ def generate_v1_patch(state: SpadeState):
             active_pattern_description=pattern_description
         )
 
+    log(f"{loop_info_str} System prompt: {system_prompt}", specific_agent_name)
+    log(f"{loop_info_str} User prompt: {user_prompt}", specific_agent_name)
+
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
     code_diff = ""
     metrics = {}

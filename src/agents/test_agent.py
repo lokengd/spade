@@ -37,7 +37,7 @@ def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCand
 
     evaluation_result = _run_evaluation_on_patch(bug_id, run_id, patch.code_diff)
     
-    log(f"evaluation_result: {evaluation_result}", agent_name)
+    log(f"evaluation_result: {evaluation_result}", agent_name, level=logging.DEBUG)
 
     if state.get("v1_patches_evaluation_result") is None:
         state["v1_patches_evaluation_result"] = []
