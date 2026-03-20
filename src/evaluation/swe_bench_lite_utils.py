@@ -391,7 +391,19 @@ def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patche
 			for i, patch in enumerate(patches)
 		}
 		for future in as_completed(futures):
-			counter, result = future.result()
+			try:
+				counter, result = future.result()
+			except Exception as exc:
+				# Ensure we still return an EvaluationResult for this patch even if the
+				# worker raised, and do not abort the entire parallel run.
+				index = futures[future]
+				log(
+					f"Parallel evaluation failed for patch index {index + 1}: {exc}",
+					caller=CALLER,
+					level=logging.ERROR,
+				)
+				counter = index + 1
+				result = EvaluationResult(evaluation_ran_successfully=False)
 			results[counter - 1] = result
 	
 	cleanup_logs_dir()
