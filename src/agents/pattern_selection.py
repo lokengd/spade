@@ -59,7 +59,7 @@ def run(state: SpadeState):
         locations_str += "\n"
         
     if bug_context.related_functions:
-        locations_str += "--- Related Functions ---\n"
+        locations_str += "\n--- Related Functions ---\n"
         for file, funcs in bug_context.related_functions.items():
             locations_str += f"- {file}: {', '.join(funcs)}\n"
         locations_str += "\n"
