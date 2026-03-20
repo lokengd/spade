@@ -89,7 +89,7 @@ def verify_v1(state: SpadeState):
             break 
             
     if any_passed:
-        return {"resolution_status": "resolved"}
+        return {"resolution_status": ["resolved"]}
     
     if settings.M_INNER_LOOPS == 0:
         log("All v1 candidates failed. M=0: Skipping debate loop.", agent_name)
@@ -97,17 +97,17 @@ def verify_v1(state: SpadeState):
         if curr_n < settings.N_OUTER_LOOPS:
             log(f"M=0: Preparing for next Outer Loop (N={curr_n + 1}).", agent_name)
             return {
-                "resolution_status": "v1_failed",
+                "resolution_status": ["v1_failed"],
                 "outer_loop_count": curr_n + 1,
                 "inner_loop_count": 1,
                 "current_patch_version": 1
             }
         else:
             log(f"M=0: All outer loops exhausted (N={curr_n}/{settings.N_OUTER_LOOPS}).", agent_name)
-            return {"resolution_status": "v1_failed"}
+            return {"resolution_status": ["v1_failed"]}
 
     log("All v1 candidates failed. Moving to debate panel.", agent_name)
-    return {"resolution_status": "v1_failed"}
+    return {"resolution_status": ["v1_failed"]}
 
 def verify_refined(state: SpadeState):
     """
@@ -116,7 +116,7 @@ def verify_refined(state: SpadeState):
     refined_patches = state.get("refined_patches", [])
     if not refined_patches:
         log("No refined patch found to verify.", agent_name, level=logging.ERROR)
-        return {"resolution_status": "test_agent_failed"}
+        return {"resolution_status": ["test_agent_failed"]}
 
     patch = refined_patches[-1]
     run_id = state.get("thread_id")
@@ -139,7 +139,7 @@ def verify_refined(state: SpadeState):
                 is_resolved=True,
                 status="success"
             )
-        return {"resolution_status": "resolved"}
+        return {"resolution_status": ["resolved"]}
     
     # Otherwise, trigger the fallback policy
     return _handle_fallback(state, patch.version, patch)
@@ -172,7 +172,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         next_v = current_v + 1
         log(f"Patch v{current_v} failed. Iteratively refining to v{next_v} (Version {next_v}/{settings.V_PATIENCE}).", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": _update_db_status(f"v{current_v}_failed"), 
+            "resolution_status": [_update_db_status(f"v{current_v}_failed")], 
             "current_patch_version": next_v,
             "failed_traces": [failed_trace_log]
         }
@@ -182,7 +182,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         log(f"V_PATIENCE={settings.V_PATIENCE} REACHED for winner {failed_patch.origin_v1_id}. "
             f"Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{settings.M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": _update_db_status(f"v{current_v}_failed"), 
+            "resolution_status": [_update_db_status(f"v{current_v}_failed")], 
             "inner_loop_count": curr_m + 1,
             "current_patch_version": 1, 
             "failed_traces": [failed_trace_log]
@@ -192,7 +192,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
     if curr_n < settings.N_OUTER_LOOPS:
         log(f"INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Resetting to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": _update_db_status(f"N{curr_n}_failed"), 
+            "resolution_status": [_update_db_status(f"N{curr_n}_failed")], 
             "inner_loop_count": 1, # Reset M
             "outer_loop_count": curr_n + 1, # Increment N
             "current_patch_version": 1, # Reset v
@@ -202,7 +202,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
     # Case 4: All limits hit -> Hard Stop
     log(f"MAX LIMITS REACHED (N={curr_n}/{settings.N_OUTER_LOOPS}, M={curr_m}/{settings.M_INNER_LOOPS}). Hard stop.", agent_name, level=logging.WARNING)
     return {
-        "resolution_status": _update_db_status("hit_max_limit"), 
+        "resolution_status": [_update_db_status("hit_max_limit")], 
         "current_patch_version": current_v,
         "inner_loop_count": curr_m,
         "outer_loop_count": curr_n,

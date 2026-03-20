@@ -76,7 +76,7 @@ def run(state: SpadeState):
     if fl_data is None:
         log(f"Error: No FL data found for {bug_context.bug_id} in fl resultset.", agent_name, level=logging.ERROR)
         return {
-            "resolution_status": "fl_failed"
+            "resolution_status": ["fl_failed"]
         }
 
     suspicious_files, related_functions, edit_locations = fl_data

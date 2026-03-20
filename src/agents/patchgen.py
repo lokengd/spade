@@ -82,16 +82,20 @@ def generate_v1_patch(state: SpadeState):
 
     # Format prompts based on unconstrained flag
     if is_unconstrained:
-        system_prompt = prompts_config["patch_generation_unconstrained"]["system"]
-        user_prompt = prompts_config["patch_generation_unconstrained"]["user"].format(
+        system_prompt = prompts_config["patch_generation"]["unconstrained"]["system"]
+        # Append json_response with one shot prompt
+        system_prompt += "\n" + prompts_config["patch_generation"]["json_response_one_shot"]
+        user_prompt = prompts_config["patch_generation"]["unconstrained"]["user"].format(
             issue_text=bug_context.issue_text,
             error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
             suspicious_snippets=suspicious_snippets
         )
     else:
         pattern_description = prompts_config.get("pattern_taxonomy", {}).get(strategy, "")
-        system_prompt = prompts_config["patch_generation"]["system"]
-        user_prompt = prompts_config["patch_generation"]["user"].format(
+        system_prompt = prompts_config["patch_generation"]["pattern_guided"]["system"]
+        # Append json_response with one shot prompt
+        system_prompt += "\n" + prompts_config["patch_generation"]["json_response_one_shot"]
+        user_prompt = prompts_config["patch_generation"]["pattern_guided"]["user"].format(
             issue_text=bug_context.issue_text,
             error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
             suspicious_snippets=suspicious_snippets,
@@ -116,7 +120,7 @@ def generate_v1_patch(state: SpadeState):
     except Exception as e:
         log(f"{loop_info_str} {log_prefix} Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
         return {
-            "resolution_status": "patchgen_failed",
+            "resolution_status": ["patchgen_failed"],
             "total_metrics": metrics
         }
 
@@ -195,9 +199,11 @@ def generate_refined_patch(state: SpadeState):
     prompts_config = load_prompts()
 
     # Format prompts
-    system_prompt = prompts_config["patch_refinement"]["system"]
+    system_prompt = prompts_config["patch_generation"]["refinement"]["system"]
+    # Append json_response with one shot prompt
+    system_prompt += "\n" + prompts_config["patch_generation"]["json_response_one_shot"]
     pattern_description = prompts_config.get("pattern_taxonomy", {}).get(active_pattern, "")
-    user_prompt = prompts_config["patch_refinement"]["user"].format(
+    user_prompt = prompts_config["patch_generation"]["refinement"]["user"].format(
         issue_text=state["bug_context"].issue_text,
         active_pattern=active_pattern,
         active_pattern_description=pattern_description,
@@ -231,7 +237,7 @@ def generate_refined_patch(state: SpadeState):
     except Exception as e:
         log(f"{loop_info_str} Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
         return {
-            "resolution_status": "patchgen_failed",
+            "resolution_status": ["patchgen_failed"],
             "total_metrics": metrics
         }
 

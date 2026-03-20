@@ -55,7 +55,7 @@ class LLM_Client:
             f"calls_{self.model_name}": 1
         }
 
-    def _save_trajectory(self, system_prompt: str, user_prompt: str, response: Any, metrics: dict, is_structured: bool = False, loop_info: Optional[dict] = None) -> dict:
+    def _save_trajectory(self, system_prompt: str, user_prompt: str, response: Any, metrics: dict, loop_info: Optional[dict] = None) -> dict:
         """Appends the LLM interaction to a JSON file and a pretty-printed TXT file within the thread's log directory."""
         log_dir = get_current_log_dir()
         
@@ -64,7 +64,6 @@ class LLM_Client:
             "loop_info": loop_info, # Includes n, m, v
             "model": self.model_name,
             "provider": self.provider,
-            "is_structured": is_structured,
             "prompts": {
                 "system": system_prompt,
                 "user": user_prompt
@@ -149,7 +148,7 @@ class LLM_Client:
             text_response = response.choices[0].message.content
             metrics = self._calculate_metrics(response.usage, duration)
 
-            telemetry = self._save_trajectory(system_prompt, user_prompt, text_response, metrics, is_structured=False, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, text_response, metrics, loop_info=loop_info)
             
             log(f"LLM response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)
@@ -186,7 +185,7 @@ class LLM_Client:
             raw_json = response.choices[0].message.content
             metrics = self._calculate_metrics(response.usage, duration)
 
-            telemetry = self._save_trajectory(system_prompt, user_prompt, json.loads(raw_json), metrics, is_structured=True, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, json.loads(raw_json), metrics, loop_info=loop_info)
             parsed_data = response_model.model_validate_json(raw_json)
             log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)
