@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import json
 from src.utils.logger import log
@@ -357,6 +358,34 @@ def run_evaluation_with_no_patch(instance_id: str, run_id: str, max_workers: int
 	no_change_patch = "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n"
 
 	return run_evaluation_on_instance(instance_id=instance_id, run_id=run_id, patch=no_change_patch, max_workers=max_workers)
+
+
+def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patches: list[str]) -> list[EvaluationResult]:
+	"""Run SWE-bench evaluation on a specific instance for each patch in parallel.
+
+	Each patch gets a unique run_id formed by appending a counter (e.g. run_id_1, run_id_2, ...).
+	Returns a list of EvaluationResult objects in the same order as the input patches.
+	"""
+	results: list[EvaluationResult | None] = [None] * len(patches)
+
+	def _run(counter: int, patch: str) -> tuple[int, EvaluationResult]:
+		unique_run_id = f"{run_id}_{counter}"
+		return counter, run_evaluation_on_instance(
+			instance_id=instance_id,
+			run_id=unique_run_id,
+			patch=patch,
+		)
+
+	with ThreadPoolExecutor(max_workers=len(patches)) as executor:
+		futures = {
+			executor.submit(_run, i + 1, patch): i
+			for i, patch in enumerate(patches)
+		}
+		for future in as_completed(futures):
+			counter, result = future.result()
+			results[counter - 1] = result
+
+	return results
 
 
 def test_installation() -> bool:
