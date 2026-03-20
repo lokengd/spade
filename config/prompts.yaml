@@ -324,7 +324,13 @@ debater_dynamic_arg_refine:
     3. What specific runtime behavior must the next version address?
     4. Given the history of prior verdicts and failures, what pattern of mistakes is emerging?
 
-    Respond ONLY with valid JSON:
+    Respond ONLY with valid JSON matching this schema:
+    {
+      "failure_diagnosis": "<what the execution trace reveals about why this patch failed>",
+      "failure_type": "<regression|incomplete_fix|wrong_location|malformed_diff>",
+      "runtime_requirements": "<specific runtime behavior the next version must achieve>",
+      "recurring_mistakes": "<patterns from prior failures that must be avoided>"
+    }
     
 debater_static_arg_refine:
   system: |
@@ -338,7 +344,13 @@ debater_static_arg_refine:
     3. Is the fix-pattern strategy still appropriate, or should a different pattern be tried?
     4. What structural changes would make the next version more robust?
 
-    Respond ONLY with valid JSON:
+    Respond ONLY with valid JSON matching this schema:
+    {
+      "structural_issues": "<syntactic or structural problems in the failed diff>",
+      "api_violations": "<any contract, type, or interface violations introduced>",
+      "pattern_reassessment": "<is the current fix-pattern still appropriate, or should a different one be tried?>",
+      "structural_recommendations": "<concrete structural changes for the next version>"
+    }
 
 # Shared user template for both dynamic and static debaters in refine mode
 debater_arg_refine:
@@ -364,8 +376,12 @@ debater_dynamic_rebuttal:
     Where you agree, acknowledge it. Where you disagree, explain why from a runtime behavior perspective.
     If the Static Debater recommended a different patch than you, argue why yours is better from a runtime standpoint.
 
-    Respond ONLY with valid JSON:
-    
+    Respond ONLY with valid JSON matching this schema:
+    {
+      "agreements": "<points from the Static Debater you accept>",
+      "rebuttals": "<points you disagree with, countered with runtime evidence>",
+      "final_recommendation": "<your final patch pick and why, incorporating the exchange>"
+    }    
   user: |
     Your original argument:
     {own_argument}
@@ -380,7 +396,12 @@ debater_static_rebuttal:
     Where you agree, acknowledge it. Where you disagree, explain why from a code structure perspective.
     If the Dynamic Debater recommended a different patch than you, argue why yours is better from a structural standpoint.
 
-    Respond ONLY with valid JSON:
+    Respond ONLY with valid JSON matching this schema:
+    {
+      "agreements": "<points from the Dynamic Debater you accept>",
+      "rebuttals": "<points you disagree with, countered with structural evidence>",
+      "final_recommendation": "<your final patch pick and why, incorporating the exchange>"
+    }
     
   user: |
     Your original argument:
