@@ -202,7 +202,7 @@ patch_generation:
 
       Generate the best patch as JSON.
 
-patch_generation_unconstrained:
+unconstrained:
     system: |
       You are an expert Software Engineer specializing in Automated Program Repair (APR).
       Your goal is to generate a code patch to fix a bug.
