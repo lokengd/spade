@@ -1,7 +1,7 @@
 """Test script to validate the setup and functionality of SWE-bench for evaluation purposes."""
 
 from src.evaluation.swe_bench_lite_utils import *
-from src.evaluation.constants import NO_CHANGE_PATCH, VALIDATION_INSTANCE_ID
+from src.evaluation.constants import NO_CHANGE_PATCH, VALIDATION_INSTANCE_ID, DEFAULT_PREDICTIONS_PATH
 
 print("Starting SWE-bench setup validation...")
 
@@ -53,9 +53,8 @@ RUN_ID = "test_no_patch_run"
 evaluation_result = run_evaluation_with_no_patch(instance_id=INSTANCE_ID, run_id=RUN_ID)
 assert evaluation_result.evaluation_ran_successfully, f"Evaluation with no patch did not run successfully: {evaluation_result.evaluation_error_message}"
 assert not evaluation_result.bug_resolved, "Bug should not be resolved when running evaluation with no patch."
-# assert evaluation_result.test_output.split("\n")[0].__contains__("test process starts"), "Start Test output does not contain expected content."
-# assert evaluation_result.test_output.split("\n")[-1].__contains__("tests finished:"), "End Test output does not contain expected content."
-# assert evaluation_result.test_output.split("\n")[0].__contains__("==="), "Start Test output does not contain expected content."
+assert evaluation_result.test_output.split("\n")[2].__contains__("test process starts"), "Start Test output does not contain expected content."
+
 print("Evaluation with no patch completed successfully. ✅")
 
 print("Cleaning up logs and results for the run with no patch...")
@@ -69,9 +68,20 @@ RUN_ID = "parallel_test_run"
 evaluation_results = run_evaluation_on_instance_in_parallel(instance_id=INSTANCE_ID, run_id=RUN_ID, patches=EXAMPLE_PATCHES)
 
 assert len(evaluation_results) == len(EXAMPLE_PATCHES), "Number of evaluation results does not match number of patches."
+
 for idx, result in enumerate(evaluation_results):
     assert result.evaluation_ran_successfully, f"Evaluation {idx} did not run successfully: {result.evaluation_error_message}"
     assert not result.bug_resolved, f"Bug should not be resolved in evaluation {idx} with no patch."
+    assert result.test_output.split("\n")[2].__contains__("test process starts"), "Start Test output does not contain expected content."
+
+# Assert no json file contaiing DEFAULT_PREDICTIONS_PATH in name exists (DEFAULT_PREDICTIONS_PATH is "spade" as defined in constants.py)
+eval_dir = get_eval_dir_path()
+json_files = list(eval_dir.glob(f"{DEFAULT_PREDICTIONS_PATH}*.json"))
+assert len(json_files) == 0, f"Expected no JSON files in evaluation directory after parallel evaluation, but found: {[str(f) for f in json_files]}"
+
+# Assert no dir called logs exist in eval dir
+logs_dir = get_logs_dir_path()
+assert not logs_dir.exists(), f"Expected no logs directory in evaluation directory after parallel evaluation, but found: {logs_dir}"
 
 print("Parallel evaluation with no patches completed successfully. ✅")
 
