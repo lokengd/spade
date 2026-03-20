@@ -86,6 +86,12 @@ def route_after_pattern_selection(state: SpadeState):
         return "hard_stop"
     return activate_patchgen_agents(state)
 
+def route_after_judge(state: SpadeState):
+    if check_status(state, ["judge_failed"]):
+        log("Judge could not find a winning patch. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+    return "generate_refined_patch"
+
 def route_after_v1(state: SpadeState):
     if check_status(state, ["resolved"]):
         return "end"
@@ -216,7 +222,14 @@ def build_graph():
     graph.add_edge("generate_static_rebuttal", "judge_verdict")
     
     # Judge to select winner to generate next version for re-verification
-    graph.add_edge("judge_verdict", "generate_refined_patch")
+    graph.add_conditional_edges(
+        "judge_verdict",
+        route_after_judge,
+        {
+            "generate_refined_patch": "generate_refined_patch",
+            "hard_stop": END
+        }
+    )
     graph.add_edge("generate_refined_patch", "verify_refined")
     
     graph.add_conditional_edges("verify_refined", route_after_refined, {

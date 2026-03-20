@@ -190,6 +190,11 @@ def run(state: SpadeState):
 
     log(f"{loop_info_str} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
 
+    # If no winner was found even after fallback, signal failure to skip refinement
+    resolution_status = []
+    if validated_id == "unknown":
+        resolution_status = ["judge_failed"]
+
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.
     return {
@@ -197,4 +202,5 @@ def run(state: SpadeState):
         "historical_verdicts": [verdict_str],
         "current_v1_id": validated_id,
         "total_metrics": metrics,
+        "resolution_status": resolution_status
     }
