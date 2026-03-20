@@ -88,8 +88,24 @@ def route_after_pattern_selection(state: SpadeState):
 
 def route_after_judge(state: SpadeState):
     if check_status(state, ["judge_failed"]):
-        log("Judge could not find a winning patch. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        curr_m = state.get("inner_loop_count", 1)
+        curr_n = state.get("outer_loop_count", 1)
+        
+        # We need to look at the previous counters before the increment in Judge._handle_judge_failure
+        # Actually, Judge returns the NEW counters. 
+        # So we just check if it's still within limits.
+        
+        if curr_m > 1 and curr_m <= settings.M_INNER_LOOPS:
+             log(f"Judge failed. Backtracking to pick a NEW winner (M={curr_m}).", "Orchestrator")
+             return "debate_panel"
+             
+        if curr_n > 1 and curr_n <= settings.N_OUTER_LOOPS:
+             log(f"Judge failed and M reached limit. Transitioning to new Outer Loop (N={curr_n}).", "Orchestrator")
+             return "pattern_selection"
+
+        log("Judge failed and all limits hit. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
+        
     return "generate_refined_patch"
 
 def route_after_v1(state: SpadeState):

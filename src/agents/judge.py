@@ -191,9 +191,8 @@ def run(state: SpadeState):
     log(f"{loop_info_str} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
 
     # If no winner was found even after fallback, signal failure to skip refinement
-    resolution_status = []
     if validated_id == "unknown":
-        resolution_status = ["judge_failed"]
+        return _handle_judge_failure(state, metrics)
 
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.
@@ -202,5 +201,53 @@ def run(state: SpadeState):
         "historical_verdicts": [verdict_str],
         "current_v1_id": validated_id,
         "total_metrics": metrics,
-        "resolution_status": resolution_status
+    }
+
+def _handle_judge_failure(state: SpadeState, metrics: dict):
+    """
+    Handles Judge failure by deciding whether to try another winner (M+1) or new patterns (N+1).
+    Matches the logic in test_agent._handle_fallback.
+    """
+    run_id = state.get("thread_id")
+    curr_m = state.get("inner_loop_count", 1)
+    curr_n = state.get("outer_loop_count", 1)
+
+    # Inner helper to update the DB
+    def _update_db_status(status: str = "failed"):
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=False, 
+                is_resolved=False,
+                status=status
+            )
+            return status
+        return "failed"
+
+    # Case 1: Try next winner (pick a new one in next Debate)?
+    if curr_m < settings.M_INNER_LOOPS:
+        log(f"Judge failed to find winner. Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{settings.M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status("judge_failed")], 
+            "inner_loop_count": curr_m + 1,
+            "current_patch_version": 1,
+            "total_metrics": metrics
+        }
+
+    # Case 2: Try next patterns?
+    if curr_n < settings.N_OUTER_LOOPS:
+        log(f"Judge failed and M={settings.M_INNER_LOOPS} hit. Resetting to Pattern Selection (N={curr_n + 1}).", agent_name, level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status("judge_failed")], 
+            "inner_loop_count": 1,
+            "outer_loop_count": curr_n + 1,
+            "current_patch_version": 1,
+            "total_metrics": metrics
+        }
+
+    # Case 3: All limits hit
+    log(f"Judge failed and all limits hit (N={curr_n}, M={curr_m}). Hard stop.", agent_name, level=logging.WARNING)
+    return {
+        "resolution_status": [_update_db_status("judge_failed")],
+        "total_metrics": metrics
     }
