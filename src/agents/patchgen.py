@@ -56,7 +56,7 @@ def generate_v1_patch(state: SpadeState):
                 repo_path=bug_context.local_repo_path,
                 relative_file_path=loc.file,
                 target_lines=loc.lines,
-                function_name=loc.function
+                function_names=loc.get_all_functions(), # combine main function and related functions for the extractor
             )
             suspicious_snippets += f"\nFile: {loc.file}\n{snippet}\n"
     elif bug_context.suspicious_files:
@@ -141,7 +141,8 @@ def generate_v1_patch(state: SpadeState):
         strategy=strategy,
         origin_v1_id=patch_id, # v1 patch is its own origin
         version=1,
-        status="pending"
+        status="pending",
+        execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available."
     )
     
     return {

@@ -57,7 +57,8 @@ def load_fl_data(bug_id: str):
                         edit_locations.append(EditLocation(
                             file=file,
                             function=function_name,
-                            lines=lines if lines else None
+                            lines=lines if lines else None,
+                            related_functions=related_functions.get(file, [])
                         ))
                 
                 return suspicious_files, related_functions, edit_locations
@@ -89,12 +90,11 @@ def run(state: SpadeState):
     for loc in bug_context.edit_locations:
         # Store the extracted snippet back in the edit location 
         if not loc.snippet:
-            log(f"Extracting snippet for {loc.file} at {loc.function or 'lines ' + str(loc.lines)}", agent_name)
             loc.snippet = extract_snippet(
                 repo_path=bug_context.local_repo_path,
                 relative_file_path=loc.file,
                 target_lines=loc.lines,
-                function_name=loc.function,
+                function_names=loc.get_all_functions(), # combine main function and related functions for the extractor
                 margin=settings.SNIPPET_CONTEXT_LINES
             )
 

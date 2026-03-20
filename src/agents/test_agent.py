@@ -148,9 +148,22 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
     """
     Policy Method: Records the test failure and decides the next step.
     """
-    failed_trace_log = f"v{current_v} ({failed_patch.id}) Failed: {failed_patch.execution_trace[:50]}..."
+    failed_trace_log = failed_patch.execution_trace
     run_id = state.get("thread_id")
-    
+
+    # Inner helper to update the DB for the current scenario
+    def _update_db_status(status: str = "failed"):
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=False, 
+                is_resolved=False,
+                status=status
+            )
+            return status
+        else:
+            return None  
+
     curr_m = state.get("inner_loop_count", 1)
     curr_n = state.get("outer_loop_count", 1)
 
@@ -159,7 +172,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         next_v = current_v + 1
         log(f"Patch v{current_v} failed. Iteratively refining to v{next_v} (Version {next_v}/{settings.V_PATIENCE}).", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": f"v{current_v}_failed", 
+            "resolution_status": _update_db_status(f"v{current_v}_failed"), 
             "current_patch_version": next_v,
             "failed_traces": [failed_trace_log]
         }
@@ -169,7 +182,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         log(f"V_PATIENCE={settings.V_PATIENCE} REACHED for winner {failed_patch.origin_v1_id}. "
             f"Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{settings.M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": f"v{current_v}_failed", 
+            "resolution_status": _update_db_status(f"v{current_v}_failed"), 
             "inner_loop_count": curr_m + 1,
             "current_patch_version": 1, 
             "failed_traces": [failed_trace_log]
@@ -179,7 +192,7 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
     if curr_n < settings.N_OUTER_LOOPS:
         log(f"INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Resetting to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
         return {
-            "resolution_status": f"N{curr_n}_failed", 
+            "resolution_status": _update_db_status(f"N{curr_n}_failed"), 
             "inner_loop_count": 1, # Reset M
             "outer_loop_count": curr_n + 1, # Increment N
             "current_patch_version": 1, # Reset v
@@ -187,16 +200,9 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
         }
 
     # Case 4: All limits hit -> Hard Stop
-    log(f"MAX LIMITS REACHED (N={curr_n}/{settings.N_OUTER_LOOPS}, M={curr_m}/{settings.M_INNER_LOOPS}). Hard stop.", agent_name, level=logging.ERROR)
-    if run_id:
-        db_logger.update_repair_run(
-            run_id=run_id,
-            fl_match=False, 
-            is_resolved=False,
-            status="failed"
-        )
+    log(f"MAX LIMITS REACHED (N={curr_n}/{settings.N_OUTER_LOOPS}, M={curr_m}/{settings.M_INNER_LOOPS}). Hard stop.", agent_name, level=logging.WARNING)
     return {
-        "resolution_status": f"N{curr_n}_failed",
+        "resolution_status": _update_db_status("hit_max_limit"), 
         "current_patch_version": current_v,
         "inner_loop_count": curr_m,
         "outer_loop_count": curr_n,

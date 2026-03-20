@@ -10,7 +10,24 @@ class EditLocation(BaseModel):
     file: str
     function: Optional[str] = None
     lines: Optional[List[int]] = None
+    related_functions: List[Optional[str]] = None
     snippet: Optional[str] = None
+    
+    def get_all_functions(self) -> List[str]:
+        """Returns a combined, deduplicated list of all associated functions."""
+        all_funcs = []
+        
+        # Add the primary function if it exists
+        if self.function: 
+            all_funcs.append(self.function)
+            
+        # Add related functions, filtering out Nones and duplicates
+        if self.related_functions:
+            for rf in self.related_functions:
+                if rf and rf not in all_funcs:
+                    all_funcs.append(rf)
+        
+        return all_funcs
 
 class BugContext(BaseModel):
     bug_id: str

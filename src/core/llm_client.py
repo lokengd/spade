@@ -170,8 +170,6 @@ class LLM_Client:
             log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
             # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
             # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
-
-            schema_instruction = f"\n\nYou MUST return ONLY valid JSON matching this schema:\n{response_model.model_json_schema()}"
             
             start_time = time.time()
             response = self.client.chat.completions.create(
@@ -179,7 +177,7 @@ class LLM_Client:
                 temperature=self.temperature,
                 response_format={"type": "json_object"},
                 messages=[
-                    {"role": "system", "content": system_prompt + schema_instruction},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ]
             )
@@ -188,7 +186,7 @@ class LLM_Client:
             raw_json = response.choices[0].message.content
             metrics = self._calculate_metrics(response.usage, duration)
 
-            telemetry = self._save_trajectory(system_prompt + schema_instruction, user_prompt, json.loads(raw_json), metrics, is_structured=True, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, json.loads(raw_json), metrics, is_structured=True, loop_info=loop_info)
             parsed_data = response_model.model_validate_json(raw_json)
             log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.agent_name)
             log(f"LLM response metrics: {metrics}", caller=self.agent_name)

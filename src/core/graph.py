@@ -97,7 +97,7 @@ def route_after_refined(state: SpadeState):
         return "hard_stop"
         
     # Hard Stop check - if test_agent signaled failure or counters exceed limit
-    if state["resolution_status"] == "failed" or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
+    if state["resolution_status"] == "hit_max_limit" or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
         log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         

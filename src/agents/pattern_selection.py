@@ -53,6 +53,17 @@ def run(state: SpadeState):
     # Format the User Prompt from BugContext (returned by FL Ensemble)
     bug_context = state["bug_context"]
     locations_str = ""
+    if bug_context.suspicious_files:
+        locations_str += "--- Suspicious Files ---\n"
+        locations_str += "\n".join([f"- {f}" for f in bug_context.suspicious_files])
+        locations_str += "\n"
+        
+    if bug_context.related_functions:
+        locations_str += "--- Related Functions ---\n"
+        for file, funcs in bug_context.related_functions.items():
+            locations_str += f"- {file}: {', '.join(funcs)}\n"
+        locations_str += "\n"
+            
     if bug_context.edit_locations:
         locations_str += "--- Edit Locations ---\n"
         for loc in bug_context.edit_locations:
@@ -62,18 +73,7 @@ def run(state: SpadeState):
             # Inject code snippet if available
             if loc.snippet:
                 locations_str += f"{loc.snippet}\n\n"
-    
-    if bug_context.related_functions:
-        locations_str += "--- Related Functions ---\n"
-        for file, funcs in bug_context.related_functions.items():
-            locations_str += f"- {file}: {', '.join(funcs)}\n"
-        locations_str += "\n"
-            
-    if not bug_context.edit_locations and bug_context.suspicious_files:
-        locations_str += "--- Suspicious Files ---\n"
-        locations_str += "\n".join([f"- {f}" for f in bug_context.suspicious_files])
-        locations_str += "\n"
-        
+
     if not locations_str.strip():
         locations_str = "No specific locations identified by Fault Localization."
 
@@ -83,7 +83,8 @@ def run(state: SpadeState):
     user_prompt = user_template.format(
         issue_text=bug_context.issue_text,
         error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-        suspicious_locations=locations_str.strip()
+        suspicious_locations=locations_str.strip(),
+        k=settings.K_PATTERNS
     )
 
     # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
