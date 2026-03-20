@@ -98,8 +98,8 @@ def get_log_header(experiment_id: str) -> str:
     return "\n".join(lines)
 
 
-def get_memory_state(shared_memory_state: dict) -> str:
-    """Returns the shared memory state as a formatted string for logging."""
+def save_memory_state(shared_memory_state: dict) -> str:
+    """Saves the shared memory state as a formatted string to a separate file and returns a message with the path."""
     from src.utils.state_printer import StatePrinter
     import io
     from contextlib import redirect_stdout
@@ -108,4 +108,20 @@ def get_memory_state(shared_memory_state: dict) -> str:
     with redirect_stdout(f):
         printer = StatePrinter()
         printer.print_state(shared_memory_state)
-    return f.getvalue()
+    
+    state_str = f.getvalue()
+    
+    # Get filename based on state
+    n = shared_memory_state.get("outer_loop_count", 0)
+    m = shared_memory_state.get("inner_loop_count", 0)
+    v = shared_memory_state.get("current_patch_version", 0)
+    filename = f"memory_state_N{n}_M{m}_V{v}.txt"
+    
+    global _current_log_dir
+    if _current_log_dir:
+        file_path = _current_log_dir / filename
+    else:
+        file_path = Path(filename)
+        
+    file_path.write_text(state_str, encoding='utf-8')
+    return f"Shared memory state saved to: {file_path}"

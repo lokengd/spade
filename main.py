@@ -8,7 +8,7 @@ from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
 from src.evaluation import cleanup_evaluation_dir, setup_evaluation_environment, cleanup_sweb_docker_images
-from src.utils.logger import log, setup_logger, get_log_header, get_memory_state
+from src.utils.logger import log, setup_logger, get_log_header, save_memory_state
 from src.utils.db_logger import db_logger
 from src.core import settings
 
@@ -92,7 +92,8 @@ def run_spade(task: dict, config: dict, experiment_id: str):
                         pass
 
             memory_state = app.get_state(config).values
-            log(get_memory_state(memory_state))
+            log(save_memory_state(memory_state))
+            log("Saving SpadeState memory into file","Main", level=logging.INFO)
 
         except Exception as e:
             # Capture state and traceback on failure
@@ -101,7 +102,7 @@ def run_spade(task: dict, config: dict, experiment_id: str):
             try:
                 state = app.get_state(config).values
                 log("Current SpadeState at time of failure:", caller="run_spade", level=logging.ERROR)
-                log(get_memory_state(state), caller="run_spade", level=logging.ERROR)
+                log(save_memory_state(state), caller="run_spade", level=logging.ERROR)
             except Exception as state_err:
                 log(f"Could not retrieve SpadeState: {state_err}", caller="run_spade", level=logging.ERROR)
             raise e
@@ -109,8 +110,8 @@ def run_spade(task: dict, config: dict, experiment_id: str):
 if __name__ == "__main__":
 
     # Reset any stale evaluation artifacts from previous runs, then initialize SWE-bench Lite evaluation environment
-    setup_logger("evaluation")
-    log("Setting up Docker environment for evaluation...", "evaluation", level=logging.INFO)
+    setup_logger("init")
+    log("Setting up Docker environment for evaluation...", "init", level=logging.INFO)
     cleanup_evaluation_dir()
 
     if not setup_evaluation_environment():
@@ -166,4 +167,5 @@ if __name__ == "__main__":
 
         # Update final aggregated experiment metrics
         db_logger.update_experiment_metrics(db_experiment_id)
-        log(f"Experiment {db_experiment_id} finished. Metrics updated in database.", caller="Main")
+        log(f"Metrics updated in database.", caller="Main")
+        log(f"Experiment {db_experiment_id} finished.", caller="Main")
