@@ -381,7 +381,11 @@ def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patche
 
 		return counter, result
 
-	with ThreadPoolExecutor(max_workers=len(patches)) as executor:
+	if len(patches) == 0:
+		log("No patches provided for parallel evaluation.", caller=CALLER, level=logging.WARNING)
+		return []
+
+	with ThreadPoolExecutor(max_workers=min(5, len(patches))) as executor:
 		futures = {
 			executor.submit(_run, i + 1, patch): i
 			for i, patch in enumerate(patches)
@@ -475,10 +479,6 @@ def cleanup_results_file_for_run(run_id: str) -> bool:
 def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 	"""Remove logs and results generated for a specific run."""
 	log(f"Cleaning up logs and results for run ID {run_id}...", caller=CALLER, level=logging.INFO)
-
-	eval_dir = get_eval_dir_path()
-	logs_dir = get_logs_dir_path()
-	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
 
 	cleanup_logs_dir()
 
