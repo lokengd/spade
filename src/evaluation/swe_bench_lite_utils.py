@@ -370,11 +370,16 @@ def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patche
 
 	def _run(counter: int, patch: str) -> tuple[int, EvaluationResult]:
 		unique_run_id = f"{run_id}_{counter}"
-		return counter, run_evaluation_on_instance(
+
+		result = run_evaluation_on_instance(
 			instance_id=instance_id,
 			run_id=unique_run_id,
 			patch=patch,
 		)
+
+		cleanup_results_file_for_run(unique_run_id)
+
+		return counter, result
 
 	with ThreadPoolExecutor(max_workers=len(patches)) as executor:
 		futures = {
@@ -384,6 +389,8 @@ def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patche
 		for future in as_completed(futures):
 			counter, result = future.result()
 			results[counter - 1] = result
+	
+	cleanup_logs_dir()
 
 	return results
 
@@ -434,6 +441,37 @@ def test_installation() -> bool:
 	return logs_dir.exists() and logs_dir.is_dir() and gold_logs_dir.exists() and gold_logs_dir.is_dir() and results_file.exists() and results_file.is_file() and evaluation_result.evaluation_ran_successfully and evaluation_result.bug_resolved
 
 
+def cleanup_logs_dir() -> bool:
+	"""Remove the logs directory inside EVAL_DIR."""
+	log("Cleaning up logs directory...", caller=CALLER, level=logging.INFO)
+
+	logs_dir = get_logs_dir_path()
+
+	if logs_dir.exists() and logs_dir.is_dir():
+		shutil.rmtree(logs_dir)
+		log("Logs directory cleaned up successfully.", caller=CALLER, level=logging.INFO)
+		return True
+	else:
+		log("Logs directory does not exist or is not a directory.", caller=CALLER, level=logging.WARNING)
+		return False
+
+
+def cleanup_results_file_for_run(run_id: str) -> bool:
+	"""Remove the results file generated for a specific run."""
+	log(f"Cleaning up results file for run ID {run_id}...", caller=CALLER, level=logging.INFO)
+
+	eval_dir = get_eval_dir_path()
+	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
+
+	if results_file.exists() and results_file.is_file():
+		results_file.unlink()
+		log(f"Results file for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
+		return True
+	else:
+		log(f"Results file for run ID {run_id} does not exist or is not a file.", caller=CALLER, level=logging.WARNING)
+		return False
+
+
 def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 	"""Remove logs and results generated for a specific run."""
 	log(f"Cleaning up logs and results for run ID {run_id}...", caller=CALLER, level=logging.INFO)
@@ -442,11 +480,9 @@ def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 	logs_dir = get_logs_dir_path()
 	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
 
-	if logs_dir.exists() and logs_dir.is_dir():
-		shutil.rmtree(logs_dir)
+	cleanup_logs_dir()
 
-	if results_file.exists() and results_file.is_file():
-		results_file.unlink()
+	cleanup_results_file_for_run(run_id)
 
 	log(f"Logs and results for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
 
