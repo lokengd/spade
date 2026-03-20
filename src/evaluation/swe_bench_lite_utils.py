@@ -217,7 +217,7 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 		return VALIDATION_PREDICTIONS_PATH
 
 
-	with open(get_eval_dir_path() / f"predictions_{instance_id}.jsonl", "w") as f:
+	with open(get_eval_dir_path() / f"predictions_{instance_id}_{run_id}.jsonl", "w") as f:
 		json_line = json.dumps({
 			"instance_id": instance_id,
 			"model_patch": patch,
@@ -225,7 +225,7 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 		})
 		f.write(json_line + "\n")
 
-	return f"predictions_{instance_id}.jsonl"
+	return f"predictions_{instance_id}_{run_id}.jsonl"
 
 
 def delete_predictions_file(predictions_file_path: str) -> None:
@@ -264,16 +264,16 @@ def _get_filtered_test_output(test_output: str) -> str:
 
 def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_workers: int = 1) -> EvaluationResult:
 	"""Run SWE-bench evaluation on a specific instance and verify logs."""
-	log(f"Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
 
 	eval_dir = get_eval_dir_path()
 
 	if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
-		log("SWE-bench repo not found in evaluation directory.", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: SWE-bench repo not found in evaluation directory.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="SWE-bench repo not found in evaluation directory.")
 
 	if not check_docker_installed_and_running():
-		log("Docker is not installed or running.", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Docker is not installed or running.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="Docker is not installed or running.")
 	
 	# Generate predictions file for the given patch and instance
@@ -303,13 +303,13 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	# print(run_result.stdout)
 	# print(run_result.stderr)
 
-	log(f"Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
-	log("Evaluation command output:", caller=CALLER, level=logging.DEBUG)
-	log(f"stdout: {run_result.stdout}", caller=CALLER, level=logging.DEBUG)
-	log(f"stderr: {run_result.stderr}", caller=CALLER, level=logging.DEBUG)
+	log(f"{run_id}: Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: Evaluation command output:", caller=CALLER, level=logging.DEBUG)
+	log(f"{run_id}: stdout: {run_result.stdout}", caller=CALLER, level=logging.DEBUG)
+	log(f"{run_id}: stderr: {run_result.stderr}", caller=CALLER, level=logging.DEBUG)
 
 	if run_result.returncode != 0:
-		log(f"Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=f"Evaluation failed.\n Log:{run_result.stdout} \nError:{run_result.stderr}")
 
 	# logs_dir = get_logs_dir_path()
@@ -320,18 +320,18 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	test_output_data = get_test_output_file(get_test_output_path(instance_id, run_id, predictions_path))
 
 	if not report_file_data["method_success"]:
-		log(f"Failed to get report file data: {report_file_data.get('error')}", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Failed to get report file data: {report_file_data.get('error')}", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=report_file_data.get("error", "Unknown error while reading report file."))
 	
 	if not test_output_data["method_success"]:
-		log(f"Failed to get test output file data: {test_output_data.get('error')}", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Failed to get test output file data: {test_output_data.get('error')}", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=test_output_data.get("error", "Unknown error while reading test output file."))
 
 	# bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
 	test_output = _get_filtered_test_output(test_output_data["test_output"])
 
-	log(f"Evaluation completed for instance {instance_id} with run ID {run_id}. Bug resolved: {test_case_results['bug_resolved']}.", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: Evaluation completed for instance {instance_id} with run ID {run_id}. Bug resolved: {test_case_results['bug_resolved']}.", caller=CALLER, level=logging.INFO)
 
 	# return {"method_success": True, "logs_dir": logs_dir, "instance_logs_dir": instance_logs_dir, "results_file": results_file}
 	return EvaluationResult(
