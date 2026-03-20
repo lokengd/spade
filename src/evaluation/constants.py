@@ -12,3 +12,5 @@ VALIDATION_INSTANCE_ID = "sympy__sympy-20590"
 VALIDATION_RUN_ID = "validate-gold"
 
 DEFAULT_PREDICTIONS_PATH = "spade"
+
+NO_CHANGE_PATCH = "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n"
