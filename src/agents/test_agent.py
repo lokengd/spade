@@ -3,46 +3,61 @@ from src.core.state import SpadeState, PatchCandidate, EvaluationResult
 from src.core import settings
 from src.utils.logger import log, get_loop_info
 from src.utils.db_logger import db_logger
-from src.evaluation.swe_bench_lite_utils import run_evaluation_on_instance, cleanup_logs_and_results_for_run
+from src.evaluation.swe_bench_lite_utils import run_evaluation_on_instance, cleanup_logs_and_results_for_run, run_evaluation_on_instance_in_parallel
 
 agent_name = "Test_Agent"
 
-def _run_evaluation_on_patch(bug_id: str, run_id: str, patch_code_diff: str) -> EvaluationResult:
-    """
-    Trigger a Docker container to run tests.
-    """
-    try:
-        evaluation_result = run_evaluation_on_instance(
-            instance_id=bug_id,
-            run_id=run_id,
-            patch=patch_code_diff
-        )
+# def _run_evaluation_on_patch(bug_id: str, run_id: str, patch_code_diff: str) -> EvaluationResult:
+#     """
+#     Trigger a Docker container to run tests.
+#     """
+#     try:
+#         evaluation_result = run_evaluation_on_instance(
+#             instance_id=bug_id,
+#             run_id=run_id,
+#             patch=patch_code_diff
+#         )
 
-        if not evaluation_result.evaluation_ran_successfully:
-            log(f"Evaluation did not run successfully for patch. Error: {evaluation_result.evaluation_error_message}", caller=agent_name)
+#         if not evaluation_result.evaluation_ran_successfully:
+#             log(f"Evaluation did not run successfully for patch. Error: {evaluation_result.evaluation_error_message}", caller=agent_name)
         
-        cleanup_logs_and_results_for_run(run_id=run_id) # Clean up logs and results to save space, since we have the evaluation result stored in the state
+#         cleanup_logs_and_results_for_run(run_id=run_id) # Clean up logs and results to save space, since we have the evaluation result stored in the state
 
-        return evaluation_result
+#         return evaluation_result
 
-    except Exception as e:
-        log(f"Evaluation captured an exception for patch: {str(e)}", caller=agent_name, level=logging.ERROR)
-        return EvaluationResult(evaluation_ran_successfully=False, bug_resolved=False, evaluation_error_message=str(e))
+#     except Exception as e:
+#         log(f"Evaluation captured an exception for patch: {str(e)}", caller=agent_name, level=logging.ERROR)
+#         return EvaluationResult(evaluation_ran_successfully=False, bug_resolved=False, evaluation_error_message=str(e))
 
-def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCandidate:
+
+# def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCandidate:
+#     log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
+    
+#     bug_id = state["bug_context"].bug_id
+#     run_id = state.get("thread_id")
+
+#     evaluation_result = _run_evaluation_on_patch(bug_id, run_id, patch.code_diff)
+    
+#     log(f"evaluation_result: {evaluation_result}", agent_name, level=logging.DEBUG)
+
+#     if state.get("v1_patches_evaluation_result") is None:
+#         state["v1_patches_evaluation_result"] = []
+
+#     state["v1_patches_evaluation_result"].append(evaluation_result) # Store each evaluation result in the state for future reference
+
+#     if evaluation_result.bug_resolved:
+#         log(f">>> v1 PATCH {patch.id} Resolved Issue <<<", caller=agent_name)
+#         patch.status = "passed"
+#     else:
+#         patch.status = "failed"
+#         log(f"v1 PATCH {patch.id} failed to resolve the issue.", caller=agent_name)
+        
+#     return patch
+
+def _update_patch_status(patch: PatchCandidate, evaluation_result: EvaluationResult) -> PatchCandidate:
     log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
     
-    bug_id = state["bug_context"].bug_id
-    run_id = state.get("thread_id")
-
-    evaluation_result = _run_evaluation_on_patch(bug_id, run_id, patch.code_diff)
-    
     log(f"evaluation_result: {evaluation_result}", agent_name, level=logging.DEBUG)
-
-    if state.get("v1_patches_evaluation_result") is None:
-        state["v1_patches_evaluation_result"] = []
-
-    state["v1_patches_evaluation_result"].append(evaluation_result) # Store each evaluation result in the state for future reference
 
     if evaluation_result.bug_resolved:
         log(f">>> v1 PATCH {patch.id} Resolved Issue <<<", caller=agent_name)
@@ -63,12 +78,24 @@ def verify_v1(state: SpadeState):
     run_id = state.get("thread_id")
     v1_patches = state.get("v1_patches", [])
     any_passed = False
+
+    v1_patches_code_diff = [patch.code_diff for patch in v1_patches]
+    evaluation_results = run_evaluation_on_instance_in_parallel(
+        instance_id=state["bug_context"].bug_id,
+        run_id=run_id,
+        patches=v1_patches_code_diff
+    )
+
+    if state.get("v1_patches_evaluation_result") is None:
+        state["v1_patches_evaluation_result"] = []
     
-    for patch in v1_patches:
+    state["v1_patches_evaluation_result"].extend(evaluation_results)
+    
+    for index, patch in enumerate(v1_patches):
         if patch.status != "pending":
             continue
 
-        patch = _execute_and_evaluate(patch, state)
+        patch = _update_patch_status(patch, evaluation_results[index])
 
         # Explicitly check for passed status when updating the DB
         is_passed = (patch.status == "passed")
