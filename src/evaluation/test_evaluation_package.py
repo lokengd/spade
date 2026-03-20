@@ -76,7 +76,7 @@ for idx, result in enumerate(evaluation_results):
     assert not result.bug_resolved, f"Bug should not be resolved in evaluation {idx} with no patch."
     assert result.test_output.split("\n")[2].__contains__("test process starts"), "Start Test output does not contain expected content."
 
-# Assert no json file contaiing DEFAULT_PREDICTIONS_PATH in name exists (DEFAULT_PREDICTIONS_PATH is "spade" as defined in constants.py)
+# Assert no json file containing DEFAULT_PREDICTIONS_PATH in name exists (DEFAULT_PREDICTIONS_PATH is "spade" as defined in constants.py)
 eval_dir = get_eval_dir_path()
 json_files = list(eval_dir.glob(f"{DEFAULT_PREDICTIONS_PATH}*.json"))
 assert len(json_files) == 0, f"Expected no JSON files in evaluation directory after parallel evaluation, but found: {[str(f) for f in json_files]}"
