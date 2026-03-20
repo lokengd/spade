@@ -123,6 +123,8 @@ if __name__ == "__main__":
     loader = DatasetLoader()
     all_test_data = loader.load_data()
     print(f"\nDataset Loaded. Found {len(all_test_data)} task instances.")
+    # if all_test_data:
+    #     print(f"Available task keys: {list(all_test_data[0].keys())}")
 
     for experiment_id in settings.ACTIVE_EXPERIMENTS:
         exp_config = settings.update_orchestration_settings(experiment_id)
@@ -148,6 +150,7 @@ if __name__ == "__main__":
             
         for task in test_data:
             bug_id = task.get('instance_id', 'unknown_bug')
+            
             thread_id = f"{db_experiment_id}_{bug_id}"        
             
             setup_logger(thread_id)
@@ -157,7 +160,6 @@ if __name__ == "__main__":
                 run_spade(task, config={"configurable": {"thread_id": thread_id}}, experiment_id=db_experiment_id) 
             except Exception as e:
                 log(f"FATAL: Evaluation failed for {bug_id}. Error: {e}", caller="Main", level=logging.ERROR)
-                # log(traceback.format_exc(), caller="Main", level=logging.ERROR)
             
             # Clean up any leftover Docker images after each run to save space and avoid conflicts
             cleanup_sweb_docker_images()

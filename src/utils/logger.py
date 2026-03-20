@@ -100,23 +100,12 @@ def get_log_header(experiment_id: str) -> str:
 
 def get_memory_state(shared_memory_state: dict) -> str:
     """Returns the shared memory state as a formatted string for logging."""
-    width = 40
-    lines = [
-        "",
-        "=" * width,
-        "SHARED MEMORY STATE",
-        "-" * width
-    ]
+    from src.utils.state_printer import StatePrinter
+    import io
+    from contextlib import redirect_stdout
 
-    for key, value in shared_memory_state.items():
-        # Special handling for metrics to make them look nice
-        if key == "total_metrics" and isinstance(value, dict):
-            lines.append(f"{key}:")
-            for m_key, m_val in value.items():
-                lines.append(f" {m_key}: {m_val}")
-        else:
-            lines.append(f"{key}: {value}")
-
-    lines.append("=" * width)
-    lines.append("")
-    return "\n".join(lines)
+    f = io.StringIO()
+    with redirect_stdout(f):
+        printer = StatePrinter()
+        printer.print_state(shared_memory_state)
+    return f.getvalue()

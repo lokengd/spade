@@ -86,9 +86,6 @@ def run(state: SpadeState):
         suspicious_locations=locations_str.strip()
     )
 
-    log(f"{loop_info_str} System prompt: {system_prompt}", agent_name)
-    log(f"{loop_info_str} User prompt: {user_prompt}", agent_name)
-
     # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
     metrics = {}
     final_selection = []

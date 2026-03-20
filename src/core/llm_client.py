@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 from src.core import settings
 from src.utils.logger import log, get_current_log_dir
+from src.utils.state_printer import pretty_print_state
 import logging
 
 T = TypeVar('T', bound=BaseModel)
@@ -55,7 +56,7 @@ class LLM_Client:
         }
 
     def _save_trajectory(self, system_prompt: str, user_prompt: str, response: Any, metrics: dict, is_structured: bool = False, loop_info: Optional[dict] = None) -> dict:
-        """Appends the LLM interaction to a JSON file within the thread's log directory."""
+        """Appends the LLM interaction to a JSON file and a pretty-printed TXT file within the thread's log directory."""
         log_dir = get_current_log_dir()
         
         entry = {
@@ -72,6 +73,20 @@ class LLM_Client:
             "metrics": metrics
         }
 
+        # Generate pretty-printed output
+        import io
+        from contextlib import redirect_stdout
+        f = io.StringIO()
+        try:
+            with redirect_stdout(f):
+                pretty_print_state([entry])
+            pretty_output = f.getvalue()
+            # Print to console for immediate feedback
+            print(pretty_output)
+        except Exception as e:
+            log(f"Failed to pretty print trajectory: {e}", caller=self.agent_name, level=logging.WARNING)
+            pretty_output = None
+
         if not log_dir:
             return entry
 
@@ -79,15 +94,16 @@ class LLM_Client:
         clean_agent_name = self.agent_name.replace("] [", "_").replace("[", "").replace("]", "").replace(" ", "_")
         filename = f"{log_dir.name}_{clean_agent_name}_traj.json"
         filepath = log_dir / filename
+        txt_filepath = filepath.with_suffix(".txt")
 
-        # Load existing data if file exists
+        # Save to JSON (Append to list)
         data = []
         if filepath.exists():
             try:
-                with open(filepath, "r", encoding="utf-8") as f:
-                    data = json.load(f)
+                with open(filepath, "r", encoding="utf-8") as f_json:
+                    data = json.load(f_json)
                     if not isinstance(data, list):
-                        data = [data] # Migrate old format
+                        data = [data]
             except Exception as e:
                 log(f"Failed to load existing trajectory: {e}", caller=self.agent_name, level=logging.WARNING)
                 data = []
@@ -95,9 +111,16 @@ class LLM_Client:
         data.append(entry)
 
         try:
-            with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
-            log(f"Trajectory saved to {filepath}", caller=self.agent_name, level=logging.DEBUG)
+            with open(filepath, "w", encoding="utf-8") as f_json:
+                json.dump(data, f_json, indent=2)
+            
+            # Save to TXT (Append pretty output)
+            if pretty_output:
+                with open(txt_filepath, "a", encoding="utf-8") as f_txt:
+                    f_txt.write(pretty_output)
+                    f_txt.write("\n" + "="*80 + "\n\n") # Separator between interactions
+
+            log(f"Trajectory saved to {filepath} and {txt_filepath}", caller=self.agent_name, level=logging.DEBUG)
         except Exception as e:
             log(f"Failed to save trajectory: {e}", caller=self.agent_name, level=logging.ERROR)
             
@@ -106,8 +129,8 @@ class LLM_Client:
     def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict, dict]:
         """Returns a simple, unstructured Python string (str), metrics, and raw telemetry."""
 
-        # log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
-        # log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+        log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
+        log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
         # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
         # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
@@ -143,8 +166,8 @@ class LLM_Client:
         """
         raw_json = "No response received"
         try:
-            # log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
-            # log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
+            log(f"System Prompt: <see trajectory>", caller=self.agent_name)    
+            log(f"User Prompt: <see trajectory>", caller=self.agent_name)    
             # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
             # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
