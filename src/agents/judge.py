@@ -112,6 +112,21 @@ def _validate_winning_patch_id(verdict: JudgeVerdict, v1_patches: list) -> str:
 # Main Judge Node
 # ---------------------------------------------------------------------------
 
+def _parse_verdict_from_text(raw_text: str) -> JudgeVerdict:
+    """Parse a JudgeVerdict from raw LLM text output. 
+    Strips markdown fences and attempts JSON parsing."""
+    cleaned = raw_text.strip()
+    # Strip markdown code fences if present
+    if cleaned.startswith("```"):
+        # Remove opening fence (```json or ```)
+        first_newline = cleaned.index("\n")
+        cleaned = cleaned[first_newline + 1:]
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3].strip()
+    
+    parsed = json.loads(cleaned)
+    return JudgeVerdict(**parsed)
+
 def run(state: SpadeState):
     prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
@@ -163,17 +178,18 @@ def run(state: SpadeState):
     raw_telemetry = {}
 
     try:
-        verdict, metrics, raw_telemetry = client.generate_structured(
+        raw_text, metrics, raw_telemetry = client.generate_text(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
         if run_id and raw_telemetry:
             db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
 
+        verdict = _parse_verdict_from_text(raw_text)
+
     except Exception as e:
-        log(f"Judge LLM call failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
+        log(f"Judge LLM call or parse failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
         fallback_id = "unknown"
         if v1_patches:
             fallback_id = (v1_patches[0].get("id", "unknown")

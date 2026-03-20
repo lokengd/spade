@@ -419,7 +419,12 @@ judge_select:
     3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.
        These instructions should synthesize the strongest points from BOTH debaters.
 
-    Respond ONLY with valid JSON matching this schema:
+    Respond ONLY with valid JSON matching this schema (do NOT return the schema itself -- fill in the values):
+    {{
+      "winning_patch_id": "<the ID of the best v1 candidate, e.g. v1_abc123>",
+      "improvement_instructions": "<concrete, specific instructions for improving this patch>",
+      "justification": "<your reasoning for selecting this patch, referencing both debaters' arguments>"
+    }}
     
   user: |
     Bug ID: {bug_id}
@@ -457,7 +462,12 @@ judge_refine:
     3. Provide concrete, actionable improvement instructions that address the specific failure mode.
        Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.
 
-    Respond ONLY with valid JSON matching this schema:
+    Respond ONLY with valid JSON matching this schema (do NOT return the schema itself -- fill in the values):
+        {{
+          "winning_patch_id": "<the v1 candidate ID to base the next refinement on>",
+          "improvement_instructions": "<concrete, actionable instructions addressing the specific failure>",
+          "justification": "<your reasoning, referencing both debaters' analyses and prior failure history>"
+        }}
     
   user: |
     Bug ID: {bug_id}
