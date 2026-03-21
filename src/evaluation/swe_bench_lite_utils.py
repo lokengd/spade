@@ -50,6 +50,10 @@ def get_instance_logs_dir(instance_id: str, run_id: str, predictions_path: str) 
 		# For validation run, logs are always stored under "gold" directory to be able to verify the results.
 		return logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / instance_id
 
+	if predictions_path == GOLD_PREDICITONS_PATH:
+		# For gold patch, logs are also stored under "gold" directory to be able to verify the results.
+		return logs_dir / "run_evaluation" / run_id / GOLD_PREDICITONS_PATH / instance_id
+
 	instance_logs_dir = logs_dir / "run_evaluation" / run_id / DEFAULT_PREDICTIONS_PATH / instance_id
 	return instance_logs_dir
 
@@ -310,9 +314,9 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	# print(run_result.stderr)
 
 	log(f"{run_id}: Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
-	log(f"{run_id}: Evaluation command output:", caller=CALLER, level=logging.DEBUG)
-	log(f"{run_id}: stdout: {run_result.stdout}", caller=CALLER, level=logging.DEBUG)
-	log(f"{run_id}: stderr: {run_result.stderr}", caller=CALLER, level=logging.DEBUG)
+	log(f"{run_id}: Evaluation command output:", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: stdout: {run_result.stdout}", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: stderr: {run_result.stderr}", caller=CALLER, level=logging.INFO)
 
 	if run_result.returncode != 0:
 		log(f"{run_id}: Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
