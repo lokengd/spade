@@ -4,19 +4,42 @@
 pattern_selection:
   system: |
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your goal is to map a bug to its root cause using a semantic fix-pattern or a combination of patterns for a successful repair.
+    Your goal is to map {k} fix-pattern(s) to the root cause of the bug for a successful repair.
 
     **Pattern Taxonomy**
     {pattern_taxonomy}
 
     **Instructions**
     1. Analyze the provided bug issue, error trace, and suspicious locations to determine the root cause.    
-    2. Select the top {k} most suitable fix strategies. A strategy is a matching pattern from the taxonomy.    
-    3. Do NOT invent or modify patterns; strictly adhere to the provided taxonomy definitions.
+    2. Select the top {k} most suitable fix strategies from the Taxonomy above.
+    3. STRICT RULE: Do NOT invent or modify patterns. You must use the exact P1-P6 patterns provided.
     4. Determine the scope of the bug (LOCAL vs. GLOBAL): 
        - LOCAL: The fix can be applied directly within the suspicious location.
        - GLOBAL: The error originates elsewhere (e.g., bad upstream data, incorrect defaults, or mismatched cross-file contracts).
     5. If the scope is GLOBAL, you MUST identify the specific upstream dependencies or files that need to be fixed.    
+
+    Respond ONLY with a valid JSON object matching this schema:
+    ```json
+    {{
+      "selected_count": {k},
+      "selections": [
+        {{
+          "pattern_id": string,
+          "scope": string,
+          "upstream": string or null,
+          "rationale": string
+        }}
+      ],
+      "overall_rationale": string or null
+    }}
+    ```
+
+    Rules:
+    - Do NOT output any keys other than "selected_count", "selections", and optionally "overall_rationale".    
+    - The "selections" array must contain exactly {k} patterns matching "selected_count".
+    - Provide a specific "rationale" inside each selection explaining why that pattern and scope were chosen.
+    - If no matching fix-patterns apply, return "selected_count": 0, an empty "selections" array [], and provide an "overall_rationale" explaining why.
+
 
   user: |
     **Bug Issue Description:**
@@ -27,6 +50,7 @@ pattern_selection:
 
     **Error Trace:**
     {error_trace}
+
 
   json_response_zero_shot: | # to be concatenated into system and user prompt
     Respond ONLY with a valid JSON object matching this schema:
@@ -100,7 +124,6 @@ pattern_taxonomy:
     - Moving a buggy statement to a new position.
     - Deleting entirely the buggy statement from the program.
     Scope: Usually LOCAL
-
   P2_guard_insertion: |      # Validation Level, TBar: FP1 (Insert Cast Checker), FP2 (Insert Null Pointer Checker), FP3 (Insert Range Checker) <-- NOTE: FP1 not applied to Python, so, modify fix-patterns to suit Python
     The logic of the program is mostly correct, but it fails because the code assumes the data state is valid.
     Insert guard conditions before executing the statement to prevent runtime exceptions and allows safe execution:
@@ -109,7 +132,6 @@ pattern_taxonomy:
     - Valid index or collection bounds
     - Existence of keys or attributes
     Scope: Usually LOCAL
-
   P3_logic_mutation: |         # Control Flow Level, TBar: FP6 (Mutate Conditional Expression), FP11 (Mutate Operators)
     The program executes successfully but produces incorrect results because the logical conditions or operators are faulty.
     Possible fixes by modifying conditional expressions or mutating operators:
@@ -118,7 +140,6 @@ pattern_taxonomy:
     - Adjusting operator precedence
     - Adding or removing subconditions
     Scope: Usually LOCAL
-
   P4_data_semantics_correction: | # Data Validity Level, TBar: FP7 (Mutate Data Type), FP8 (Mutate Integer Division Operation) <-- NOTE: FP7 not applied to Python, so, modify fix-patterns to suit Python
     The program executes but produces incorrect results because values are interpreted or computed incorrectly.
     Possible fixes:
@@ -126,7 +147,6 @@ pattern_taxonomy:
     - fixing numeric operations (e.g., integer division vs. float division, precision loss)
     - adjusting data transformations or aggregations
     Scope: LOCAL
-
   P5_data_substitution: |      # Data Flow Level, TBar: FP9 (Mutate Literal Expression), FP12 (Mutate Return Statement), FP13 (Mutate Variable)
     The procedural logic is correct, but the wrong data value is being used, returned, or propagated.
     Possible fixes:
@@ -134,9 +154,8 @@ pattern_taxonomy:
     - Changing a literal value to a different constant
     - Modifying the return statement to return a different expression
     Scope: LOCAL or GLOBAL (if the bad data originates elsewhere, then set scope to GLOBAL and target the upstream source file)
-
   P6_api_synchronization: |    # Interface Level, TBar: FP10 (Mutate Method Invocation Expression) <--  NOTE: FP5 not applied to Python (removed)
-    The program logic is correct but interacts incorrectly with an API, library function, or cross-file object interface.
+    The program logic is correct but interacts incorrectly with an API, library function, or cross-file object interface / method / function.
     Repair incorrect method invocations by adjusting:
     - method names
     - argument values
@@ -196,12 +215,16 @@ patch_generation:
       **Suspicious Code Snippets:**
       {suspicious_snippets}
 
-      **Target Fix-Pattern:**
-      {active_pattern}
-      {active_pattern_description}
+      **Fix-Pattern:**
+      Name: {active_pattern}
+      Description: {active_pattern_description}
+      Rationale: {active_pattern_rationale}
 
-      Generate the best patch as JSON.
-
+      Apply the fix-pattern provided above to repair the bug.
+      You must base your fix *exclusively* on the provided pattern, description, and rationale. 
+      Do not apply external logic, alternative patterns, or make unrelated code changes or improvements.       
+      Return your final patch strictly as a single, valid JSON object. 
+      
   unconstrained:
     system: |
       You are an expert Software Engineer specializing in Automated Program Repair (APR).
@@ -240,9 +263,10 @@ patch_generation:
       **Original Bug Issue:**
       {issue_text}
 
-      **Target Fix-Pattern:**
-      {active_pattern}
-      {active_pattern_description}
+      **Fix-Pattern:**
+      Name: {active_pattern}
+      Description: {active_pattern_description}
+      Rationale: {active_pattern_rationale}
 
       **Previous Patch (v{version}):**
       {previous_patch_diff}

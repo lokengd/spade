@@ -69,6 +69,7 @@ class PatchCandidate(BaseModel):
     id: str
     code_diff: str
     strategy: str # K+1 patterns: p1, p2, p1+p2, + 1 Unconstrained: pX
+    rationale: Optional[str] = None
     version: int = 1 # Version number (1 for v1, 2 for v2, etc.)
     origin_v1_id: Optional[str] = None # Link back to the original v1 candidate
     status: str = "pending" # pending, passed, failed

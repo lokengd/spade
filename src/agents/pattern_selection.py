@@ -14,7 +14,7 @@ def load_prompts():
     with open(settings.PROMPTS_CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
 
-class PatternScoutSelection(BaseModel):
+class PatternSelection(BaseModel):
     pattern_id: str = Field(description="The pattern ID (e.g., P1_statement_modification)")
     scope: str = Field(description="LOCAL if fix is in local file, GLOBAL if cross-file.")
     upstream: Optional[str] = Field(description="Path to upstream file if GLOBAL, else null.")
@@ -22,7 +22,7 @@ class PatternScoutSelection(BaseModel):
 
 class PatternSelectionResponse(BaseModel):
     selected_count: int = Field(description="Number of patterns selected")
-    selections: List[PatternScoutSelection] = Field(description="Top K most viable patterns and scout targets.", default_factory=list)
+    selections: List[PatternSelection] = Field(description="Top K most viable patterns and scout targets.", default_factory=list)
     overall_rationale: Optional[str] = None
 
 def run(state: SpadeState):
@@ -88,7 +88,7 @@ def run(state: SpadeState):
 
     # Append json_response with one shot prompt
     json_response_template = prompts_config["pattern_selection"]["json_response_zero_shot"] 
-    system_prompt += "\n" + json_response_template
+    # system_prompt += "\n" + json_response_template
     user_prompt += "\n" + json_response_template
 
     # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
