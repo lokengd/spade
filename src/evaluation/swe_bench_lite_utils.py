@@ -13,6 +13,8 @@ from src.core.state import EvaluationResult
 
 from src.evaluation.constants import (
 	EVAL_DIR,
+	GOLD_PATCH,
+	GOLD_PREDICITONS_PATH,
 	SWE_BENCH_REPO_NAME,
 	SWE_BENCH_REPO_URL,
 	SWE_BENCH_DEPTH_TO_CLONE,
@@ -216,6 +218,9 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 	if run_id == VALIDATION_RUN_ID:
 		# For validation run, we want to use the same predictions path and file to be able to verify the results.
 		return VALIDATION_PREDICTIONS_PATH
+
+	if patch == GOLD_PATCH:
+		return GOLD_PREDICITONS_PATH
 
 
 	with open(get_eval_dir_path() / f"predictions_{instance_id}_{run_id}.jsonl", "w") as f:
