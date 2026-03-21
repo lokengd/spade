@@ -23,7 +23,7 @@ class PatternScoutSelection(BaseModel):
 class PatternSelectionResponse(BaseModel):
     selected_count: int = Field(description="Number of patterns selected")
     selections: List[PatternScoutSelection] = Field(description="Top K most viable patterns and scout targets.", default_factory=list)
-
+    overall_rationale: Optional[str] = None
 
 def run(state: SpadeState):
 
@@ -83,9 +83,13 @@ def run(state: SpadeState):
     user_prompt = user_template.format(
         issue_text=bug_context.issue_text,
         error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-        suspicious_locations=locations_str.strip(),
-        k=settings.K_PATTERNS
+        suspicious_locations=locations_str.strip()
     )
+
+    # Append json_response with one shot prompt
+    json_response_template = prompts_config["pattern_selection"]["json_response_zero_shot"] 
+    system_prompt += "\n" + json_response_template
+    user_prompt += "\n" + json_response_template
 
     # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
     metrics = {}
@@ -115,7 +119,7 @@ def run(state: SpadeState):
     except Exception as e:
         log(f"Pattern Selection captured an exception: {e}.", agent_name, level=logging.ERROR)
         return {
-            "resolution_status": "pattern_selection_failed",
+            "resolution_status": ["pattern_selection_failed"],
             "total_metrics": metrics
         }
 

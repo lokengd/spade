@@ -112,6 +112,21 @@ def _validate_winning_patch_id(verdict: JudgeVerdict, v1_patches: list) -> str:
 # Main Judge Node
 # ---------------------------------------------------------------------------
 
+def _parse_verdict_from_text(raw_text: str) -> JudgeVerdict:
+    """Parse a JudgeVerdict from raw LLM text output. 
+    Strips markdown fences and attempts JSON parsing."""
+    cleaned = raw_text.strip()
+    # Strip markdown code fences if present
+    if cleaned.startswith("```"):
+        # Remove opening fence (```json or ```)
+        first_newline = cleaned.index("\n")
+        cleaned = cleaned[first_newline + 1:]
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3].strip()
+    
+    parsed = json.loads(cleaned)
+    return JudgeVerdict(**parsed)
+
 def run(state: SpadeState):
     prompts = _load_prompts()
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
@@ -163,17 +178,18 @@ def run(state: SpadeState):
     raw_telemetry = {}
 
     try:
-        verdict, metrics, raw_telemetry = client.generate_structured(
+        raw_text, metrics, raw_telemetry = client.generate_text(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
         if run_id and raw_telemetry:
             db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
 
+        verdict = _parse_verdict_from_text(raw_text)
+
     except Exception as e:
-        log(f"Judge LLM call failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
+        log(f"Judge LLM call or parse failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
         fallback_id = "unknown"
         if v1_patches:
             fallback_id = (v1_patches[0].get("id", "unknown")
@@ -190,6 +206,10 @@ def run(state: SpadeState):
 
     log(f"{loop_info_str} Verdict: winner={validated_id}, instructions={verdict.improvement_instructions[:80]}...", agent_name)
 
+    # If no winner was found even after fallback, signal failure to skip refinement
+    if validated_id == "unknown":
+        return _handle_judge_failure(state, metrics)
+
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.
     return {
@@ -197,4 +217,53 @@ def run(state: SpadeState):
         "historical_verdicts": [verdict_str],
         "current_v1_id": validated_id,
         "total_metrics": metrics,
+    }
+
+def _handle_judge_failure(state: SpadeState, metrics: dict):
+    """
+    Handles Judge failure by deciding whether to try another winner (M+1) or new patterns (N+1).
+    Matches the logic in test_agent._handle_fallback.
+    """
+    run_id = state.get("thread_id")
+    curr_m = state.get("inner_loop_count", 1)
+    curr_n = state.get("outer_loop_count", 1)
+
+    # Inner helper to update the DB
+    def _update_db_status(status: str = "failed"):
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=False, 
+                is_resolved=False,
+                status=status
+            )
+            return status
+        return "failed"
+
+    # Case 1: Try next winner (pick a new one in next Debate)?
+    if curr_m < settings.M_INNER_LOOPS:
+        log(f"Judge failed to find winner. Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{settings.M_INNER_LOOPS}).", agent_name, level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status("judge_failed")], 
+            "inner_loop_count": curr_m + 1,
+            "current_patch_version": 1,
+            "total_metrics": metrics
+        }
+
+    # Case 2: Try next patterns?
+    if curr_n < settings.N_OUTER_LOOPS:
+        log(f"Judge failed and M={settings.M_INNER_LOOPS} hit. Resetting to Pattern Selection (N={curr_n + 1}).", agent_name, level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status("judge_failed")], 
+            "inner_loop_count": 1,
+            "outer_loop_count": curr_n + 1,
+            "current_patch_version": 1,
+            "total_metrics": metrics
+        }
+
+    # Case 3: All limits hit
+    log(f"Judge failed and all limits hit (N={curr_n}, M={curr_m}). Hard stop.", agent_name, level=logging.WARNING)
+    return {
+        "resolution_status": [_update_db_status("judge_failed")],
+        "total_metrics": metrics
     }

@@ -25,14 +25,14 @@ def run(state: SpadeState):
         if not evaluation_result.evaluation_ran_successfully:
             log(f"Reproduction failed: Evaluation did not run successfully. Error: {evaluation_result.evaluation_error_message}", caller=agent_name)
             return {
-                "resolution_status": "reproduction_failed",
+                "resolution_status": ["reproduction_failed"],
                 "reproduction_evaluation_result": evaluation_result
             }
         
         if evaluation_result.bug_resolved:
             log(f"Reproduction failed: Bug appears to be resolved without any patch. Check the test environment and test cases.", caller=agent_name)
             return {
-                "resolution_status": "reproduction_failed",
+                "resolution_status": ["reproduction_failed"],
                 "reproduction_evaluation_result": evaluation_result
             }
 
@@ -43,6 +43,7 @@ def run(state: SpadeState):
         bug_context.error_trace = evaluation_result.test_output
 
         # TEMP TEST - retrive pre-run error trace to speed up 
+        # SKIP error trace 
         # trace_file = f"fl_results/swe_bench_lite_gold_patch/astropy__astropy/{bug_id}_error_trace.txt"
         # if os.path.exists(trace_file):
         #     log(f"TEMP FIX: Reading error trace from {trace_file}", caller=agent_name)
@@ -51,7 +52,6 @@ def run(state: SpadeState):
         #         bug_context.error_trace = test_output
         
         return {
-            "resolution_status": "open",
             "bug_context": bug_context,
             "reproduction_evaluation_result": evaluation_result
         }
@@ -59,5 +59,5 @@ def run(state: SpadeState):
     except Exception as e:
         log(f"Reproduction captured an exception: {str(e)}", caller=agent_name, level=logging.ERROR)
         return {
-            "resolution_status": "reproduction_failed",
+            "resolution_status": ["reproduction_failed"],
         }

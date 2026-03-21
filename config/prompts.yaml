@@ -9,30 +9,14 @@ pattern_selection:
     **Pattern Taxonomy**
     {pattern_taxonomy}
 
-    **Decision Logic**
-    1. Look into the provided bug issue, error trace, and suspicious locations to perform a root casue analysis.
-    2. Determine the scope of the bug problem (LOCAL vs GLOBAL): 
-       - If the fix can be applied directly within the suspicious location, the scope is LOCAL.
-       - If the crash is caused by bad data, incorrect defaults, or mismatched contracts originating from another file, the scope is GLOBAL.
-    3. If the scope is GLOBAL, you MUST identify the upstream dependencies or files that need to be fixed.
-    4. Select the top {k} most suitable fix-patterns from the pattern taxonomy for this bug.
-
-    Respond ONLY with a valid JSON object matching this schema:
-    ```json
-    {{
-      "selected_count": {k},
-      "selections": [
-        {{
-          "pattern_id": "<PATTERN_ID_FROM_TAXONOMY>",
-          "scope": "LOCAL or GLOBAL",
-          "upstream": "path/to/upstream_file.py or null",
-          "rationale": "Explanation of why this pattern fits and why the scope was chosen."
-        }}
-      ]
-    }}
-    ```
-    *Note: The "selections" array should contain exactly {k} objects if patterns are found.* 
-    If no matching fix-patterns apply, return "selected_count": 0 and provide a "rationale" explaining why.
+    **Instructions**
+    1. Analyze the provided bug issue, error trace, and suspicious locations to determine the root cause.    
+    2. Select the top {k} most suitable fix strategies. A strategy is a matching pattern from the taxonomy.    
+    3. Do NOT invent or modify patterns; strictly adhere to the provided taxonomy definitions.
+    4. Determine the scope of the bug (LOCAL vs. GLOBAL): 
+       - LOCAL: The fix can be applied directly within the suspicious location.
+       - GLOBAL: The error originates elsewhere (e.g., bad upstream data, incorrect defaults, or mismatched cross-file contracts).
+    5. If the scope is GLOBAL, you MUST identify the specific upstream dependencies or files that need to be fixed.    
 
   user: |
     **Bug Issue Description:**
@@ -44,8 +28,68 @@ pattern_selection:
     **Error Trace:**
     {error_trace}
 
-    Analyze the provided context, apply the decision logic, and return your pattern selections as JSON.
-  
+  json_response_zero_shot: | # to be concatenated into system and user prompt
+    Respond ONLY with a valid JSON object matching this schema:
+    {
+      "selected_count": number,
+      "selections": [
+        {
+          "pattern_id": string,
+          "scope": string,
+          "upstream": string or null,
+          "rationale": string
+        }
+      ],
+      "overall_rationale": string or null
+    }
+
+    Rules:
+    - Do NOT output any keys other than "selected_count", "selections", and optionally "overall_rationale".    
+    - The "selections" array must contain exactly the number of objects specified in "selected_count".
+    - Provide a specific "rationale" inside each selection explaining why that pattern and scope were chosen.
+    - If no matching fix-patterns apply, return "selected_count": 0, an empty "selections" array [], and provide an "overall_rationale" explaining why.
+
+  json_response_one_shot: | # to be concatenated into system and user prompt
+    Respond ONLY with a valid JSON object matching this schema:
+    {
+      "selected_count": number,
+      "selections": [
+        {
+          "pattern_id": string,
+          "scope": string,
+          "upstream": string or null,
+          "rationale": string
+        }
+      ],
+      "overall_rationale": string or null
+    }
+
+    Rules:
+    - Do NOT output any keys other than "selected_count", "selections", and optionally "overall_rationale".    
+    - The "selections" array must contain exactly the number of objects specified in "selected_count".
+    - Provide a specific "rationale" inside each selection explaining why that pattern and scope were chosen.
+    - If no matching fix-patterns apply, return "selected_count": 0, an empty "selections" array [], and provide an "overall_rationale" explaining why.
+
+    Example Output:
+    {
+      "selected_count": 2,
+      "selections": [
+        {
+          "pattern_id": "P1_statement_modification",
+          "scope": "LOCAL",
+          "upstream": null,
+          "rationale": "The error trace indicates a missing initialization step before the loop execution. Inserting the required assignment statement corrects the execution flow."
+        },
+        {
+          "pattern_id": "P3_logic_mutation",
+          "scope": "LOCAL",
+          "upstream": null,
+          "rationale": "The bug is caused by a faulty boolean check in the if-statement. Changing '==' to '!=' resolves the issue locally."
+        }
+      ],
+      "overall_rationale": null
+    }
+
 # Semantic Fix-Patterns are derived based on TBar. Total 14 out of 15 fix-patterns (FP), some fix-patterns are modified to suit Python where necessary 
 # Adaptation to SPADE: TBar FP5 removed, FP1 and FP7 adjusted for semantic fit
 pattern_taxonomy: 
@@ -105,15 +149,7 @@ pattern_taxonomy:
 # Patch Generation Prompts
 # =============================================================================
 patch_generation:
-  system: |
-    You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your goal is to generate a precise code patch (unified git diff) to fix a bug based on a provided fix-pattern and bug context.
-
-    **Instructions:**
-    1. Analyze the bug description, error trace, and suspicious code snippets.
-    2. Apply the target fix-pattern
-    3. Do NOT include any explanations or conversational text. 
-
+  json_response_one_shot: | # to be concatenated into system and user prompt
     Return EXACTLY one JSON object with ONLY these keys:
 
     {
@@ -140,132 +176,87 @@ patch_generation:
       "explanation": "Fix incorrect comparison operator in conditional logic.",
       "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
     }
+  pattern_guided:
+    system: |
+      You are an expert Software Engineer specializing in Automated Program Repair (APR).
+      Your goal is to generate a precise code patch (unified git diff) to fix a bug based on a provided fix-pattern and bug context.
 
-  user: |
-    **Bug Issue Description:**
-    {issue_text}
+      **Instructions:**
+      1. Analyze the bug description, error trace, and suspicious code snippets.
+      2. Apply the target fix-pattern
+      3. Do NOT include any explanations or conversational text. 
 
-    **Error Trace:**
-    {error_trace}
+    user: |
+      **Bug Issue Description:**
+      {issue_text}
 
-    **Suspicious Code Snippets:**
-    {suspicious_snippets}
+      **Error Trace:**
+      {error_trace}
 
-    **Target Fix-Pattern:**
-    {active_pattern}
-    {active_pattern_description}
+      **Suspicious Code Snippets:**
+      {suspicious_snippets}
 
-    Generate the best patch as JSON.
+      **Target Fix-Pattern:**
+      {active_pattern}
+      {active_pattern_description}
 
-patch_generation_unconstrained:
-  system: |
-    You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your goal is to generate a code patch to fix a bug.
-    
-    **Instructions:**
-    1. Analyze the bug issue description, error trace, and suspicious code snippets.
-    2. Use your own expert judgment to generate the patch.
-    3. Do NOT include any explanations or conversational text. 
+      Generate the best patch as JSON.
 
-    Return EXACTLY one JSON object with ONLY these keys:
+unconstrained:
+    system: |
+      You are an expert Software Engineer specializing in Automated Program Repair (APR).
+      Your goal is to generate a code patch to fix a bug.
+      
+      **Instructions:**
+      1. Analyze the bug issue description, error trace, and suspicious code snippets.
+      2. Use your own expert judgment to generate the patch.
+      3. Do NOT include any explanations or conversational text. 
 
-    {
-      "explanation": string,
-      "code_diff": string
-    }
+    user: |
+      **Bug Issue Description:**
+      {issue_text}
 
-    Rules:
-    - Do NOT output any keys other than "explanation" and "code_diff".
-    - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
-    - The "code_diff" MUST be a valid, strictly formatted unified git diff.
-    - The diff MUST start with the standard prefixes:
-      --- a/path/to/file.py
-      +++ b/path/to/file.py
-    - MUST include valid hunk headers with line numbers (e.g., @@ -15,4 +15,4 @@).
-    - Unchanged context lines in the diff MUST begin with exactly one space.
-    - Added lines MUST begin with a plus (+).
-    - Removed lines MUST begin with a minus (-).
-    - Do NOT wrap the JSON in markdown or code fences.
-    - Do NOT output any text outside the JSON object.
+      **Error Trace:**
+      {error_trace}
 
-    Example Output:
-    {
-      "explanation": "Fix incorrect comparison operator in conditional logic.",
-      "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
-    }
+      **Suspicious Code Snippets:**
+      {suspicious_snippets}
 
-  user: |
-    **Bug Issue Description:**
-    {issue_text}
+      Generate the best patch as JSON.
 
-    **Error Trace:**
-    {error_trace}
+  refinement:
+    system: |
+      You are an expert Software Engineer specializing in Automated Program Repair (APR).
+      Your goal is to refine an existing patch based on feedback from a debate between static and dynamic analysis agents.
 
-    **Suspicious Code Snippets:**
-    {suspicious_snippets}
+      **Instructions:**
+      1. Analyze the original bug context and the previous patch candidate.
+      2. Review the target fix-pattern (if any)
+      3. Review the Debate Verdict and the arguments from both sides.
+      4. Generate an improved patch in unified git diff format that addresses the weaknesses identified in the debate.
+      5. Do NOT include any explanations or conversational text. 
 
-    Generate the best patch as JSON.
+    user: |
+      **Original Bug Issue:**
+      {issue_text}
 
-patch_refinement:
-  system: |
-    You are an expert Software Engineer specializing in Automated Program Repair (APR).
-    Your goal is to refine an existing patch based on feedback from a debate between static and dynamic analysis agents.
+      **Target Fix-Pattern:**
+      {active_pattern}
+      {active_pattern_description}
 
-    **Instructions:**
-    1. Analyze the original bug context and the previous patch candidate.
-    2. Review the target fix-pattern (if any)
-    3. Review the Debate Verdict and the arguments from both sides.
-    4. Generate an improved patch in unified git diff format that addresses the weaknesses identified in the debate.
-    5. Do NOT include any explanations or conversational text. 
-    
-    Return EXACTLY one JSON object with ONLY these keys:
+      **Previous Patch (v{version}):**
+      {previous_patch_diff}
 
-    {
-      "explanation": string,
-      "code_diff": string
-    }
+      **Debate Verdict:**
+      {verdict}
 
-    Rules:
-    - Do NOT output any keys other than "explanation" and "code_diff".
-    - Do NOT return keys such as: file, hunks, content, start, old_lines, new_lines.
-    - The "code_diff" MUST be a valid, strictly formatted unified git diff.
-    - The diff MUST start with the standard prefixes:
-      --- a/path/to/file.py
-      +++ b/path/to/file.py
-    - MUST include valid hunk headers with line numbers (e.g., @@ -15,4 +15,4 @@).
-    - Unchanged context lines in the diff MUST begin with exactly one space.
-    - Added lines MUST begin with a plus (+).
-    - Removed lines MUST begin with a minus (-).
-    - Do NOT wrap the JSON in markdown or code fences.
-    - Do NOT output any text outside the JSON object.
+      **Dynamic Analysis Argument:**
+      {dynamic_argument}
 
-    Example Output:
-    {
-      "explanation": "Fix incorrect comparison operator in conditional logic.",
-      "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
-    }
+      **Static Analysis Argument:**
+      {static_argument}
 
-  user: |
-    **Original Bug Issue:**
-    {issue_text}
-
-    **Target Fix-Pattern:**
-    {active_pattern}
-    {active_pattern_description}
-
-    **Previous Patch (v{version}):**
-    {previous_patch_diff}
-
-    **Debate Verdict:**
-    {verdict}
-
-    **Dynamic Analysis Argument:**
-    {dynamic_argument}
-
-    **Static Analysis Argument:**
-    {static_argument}
-
-    Refine the patch and return the best patch as JSON.
+      Refine the patch and return the best patch as JSON.
 
 # =============================================================================
 # Debater Prompts
@@ -428,7 +419,12 @@ judge_select:
     3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.
        These instructions should synthesize the strongest points from BOTH debaters.
 
-    Respond ONLY with valid JSON matching this schema:
+    Respond ONLY with valid JSON matching this schema (do NOT return the schema itself -- fill in the values):
+    {{
+      "winning_patch_id": "<the ID of the best v1 candidate, e.g. v1_abc123>",
+      "improvement_instructions": "<concrete, specific instructions for improving this patch>",
+      "justification": "<your reasoning for selecting this patch, referencing both debaters' arguments>"
+    }}
     
   user: |
     Bug ID: {bug_id}
@@ -466,7 +462,12 @@ judge_refine:
     3. Provide concrete, actionable improvement instructions that address the specific failure mode.
        Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.
 
-    Respond ONLY with valid JSON matching this schema:
+    Respond ONLY with valid JSON matching this schema (do NOT return the schema itself -- fill in the values):
+        {{
+          "winning_patch_id": "<the v1 candidate ID to base the next refinement on>",
+          "improvement_instructions": "<concrete, actionable instructions addressing the specific failure>",
+          "justification": "<your reasoning, referencing both debaters' analyses and prior failure history>"
+        }}
     
   user: |
     Bug ID: {bug_id}

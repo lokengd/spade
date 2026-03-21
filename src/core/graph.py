@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.constants import Send
 import logging
-
+from typing import Optional, List, Any
 from src.core.state import SpadeState, P_UNCONSTRAINED
 from src.core import settings
 from src.utils.logger import log
@@ -48,39 +48,77 @@ def activate_patchgen_agents(state: SpadeState):
     
     return sends
 
+def check_status(state: dict, critical_statuses: list[str]) -> Optional[str]:
+    statuses = state.get("resolution_status", [])
+    # Check if the list has items AND if the very last (most recent) status    
+    if statuses and statuses[-1] in critical_statuses:
+        log(f"Status ({statuses[-1]}) hit!", caller="Orchestrator", level=logging.WARNING)
+        return True
+        
+    return False
+
 def route_after_fl(state: SpadeState):
-    if state.get("resolution_status") == "fl_failed":
+
+    if check_status(state, ["patchgen_failed", "test_agent_failed"]):
+        log(f"Agent error. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+
+    if check_status(state, ["fl_failed"]):
         log("Fault Localization failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
+    
     return "reproduction"
 
 def route_after_reproduction(state: SpadeState):
-    if state.get("resolution_status") == "reproduction_failed":
-        log(f"Reproduction failed ({state.get('resolution_status')}). Hard Stop!", "Orchestrator", level=logging.WARNING)
+    if check_status(state, ["reproduction_failed"]):
+        log(f"Reproduction failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
 
     if settings.K_PATTERNS == 0:
         log("K=0: Skipping Pattern Selection, proceeding to Unconstrained PatchGen.", "Orchestrator")
         return activate_patchgen_agents(state)
+    
     return "pattern_selection"
 
 def route_after_pattern_selection(state: SpadeState):
-    if state.get("resolution_status") == "pattern_selection_failed":
+    if check_status(state, ["pattern_selection_failed"]):
         log("Pattern Selection failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
     return activate_patchgen_agents(state)
 
+def route_after_judge(state: SpadeState):
+    if check_status(state, ["judge_failed"]):
+        curr_m = state.get("inner_loop_count", 1)
+        curr_n = state.get("outer_loop_count", 1)
+        
+        # We need to look at the previous counters before the increment in Judge._handle_judge_failure
+        # Actually, Judge returns the NEW counters. 
+        # So we just check if it's still within limits.
+        
+        if curr_m > 1 and curr_m <= settings.M_INNER_LOOPS:
+             log(f"Judge failed. Backtracking to pick a NEW winner (M={curr_m}).", "Orchestrator")
+             return "debate_panel"
+             
+        if curr_n > 1 and curr_n <= settings.N_OUTER_LOOPS:
+             log(f"Judge failed and M reached limit. Transitioning to new Outer Loop (N={curr_n}).", "Orchestrator")
+             return "pattern_selection"
+
+        log("Judge failed and all limits hit. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+        
+    return "generate_refined_patch"
+
 def route_after_v1(state: SpadeState):
-    if state["resolution_status"] == "resolved":
+    if check_status(state, ["resolved"]):
         return "end"
     
-    if state.get("resolution_status") == "patchgen_failed":
+    if check_status(state, ["patchgen_failed"]):
         log("PatchGen failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
     
     if settings.M_INNER_LOOPS == 0:
         log("M=0: Skipping Debate Loop.", "Orchestrator")
-        if state["resolution_status"] == "failed":
+        if check_status(state, ["hit_max_limit"]):
             return "hard_stop"
         # If we are transitioning to a new outer loop, we should respect the K=0 setting
         return route_after_reproduction(state)
@@ -89,23 +127,30 @@ def route_after_v1(state: SpadeState):
 
 def route_after_refined(state: SpadeState):
     # Success! Exit the graph.
-    if state["resolution_status"] == "resolved":
+    if check_status(state, ["resolved"]):
         return "end"
     
-    if state.get("resolution_status") == "patchgen_failed" or state.get("resolution_status") == "test_agent_failed":
-        log(f"Critical error ({state.get('resolution_status')}). Hard Stop!", "Orchestrator", level=logging.WARNING)
+    if check_status(state, ["patchgen_failed", "test_agent_failed"]):
+        log(f"Agent error. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
     # Hard Stop check - if test_agent signaled failure or counters exceed limit
-    if state["resolution_status"] == "hit_max_limit" or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
+    if check_status(state, ["hit_max_limit"]) or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
         log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
-    # Case 1: Transition to new Outer Loop (N+1)
-    if state["resolution_status"].startswith("N") and state["resolution_status"].endswith("_failed"):
-        log("Transitioning to new Outer Loop (Pattern Selection).", "Orchestrator")
-        return "pattern_selection"
 
+    # Case 1: Transition to new Outer Loop (N+1)
+    """
+    Checks if the latest status indicates an N-th pattern failure 
+    (e.g., 'N1_failed', 'N2_failed') requiring an outer loop transition.
+    """
+    statuses = state.get("resolution_status", [])        
+    # Check if list has items AND matches the dynamic N..._failed pattern
+    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_failed"):
+        log(f"Dynamic failure ({statuses[-1]}). Transitioning to new Outer Loop (Pattern Selection).", caller="Orchestrator")
+        return "pattern_selection"
+        
     # Case 2: Backtracking (pick new winner) or Iterative Refinement (v+1)
     # Both stay in the debate panel.
     return "debate_panel"
@@ -193,7 +238,14 @@ def build_graph():
     graph.add_edge("generate_static_rebuttal", "judge_verdict")
     
     # Judge to select winner to generate next version for re-verification
-    graph.add_edge("judge_verdict", "generate_refined_patch")
+    graph.add_conditional_edges(
+        "judge_verdict",
+        route_after_judge,
+        {
+            "generate_refined_patch": "generate_refined_patch",
+            "hard_stop": END
+        }
+    )
     graph.add_edge("generate_refined_patch", "verify_refined")
     
     graph.add_conditional_edges("verify_refined", route_after_refined, {
