@@ -176,7 +176,7 @@ def generate_refined_patch(state: SpadeState):
         log(f"Resuming refinement chain for {origin_id} from v{previous_patch.version}...", agent_base_name)
         previous_patch_diff = previous_patch.code_diff
         active_pattern = previous_patch.strategy
-        active_pattern_rationale = previous_patch.rationale or ""
+        pattern_rationale = previous_patch.rationale or ""
         v_now = previous_patch.version + 1
     else:
         # First time refining this specific winner
@@ -190,7 +190,7 @@ def generate_refined_patch(state: SpadeState):
             if p.id == origin_id:
                 previous_patch_diff = p.code_diff
                 active_pattern = p.strategy
-                active_pattern_rationale = p.rationale or ""
+                pattern_rationale = p.rationale or ""
                 break
 
     # Update version before getting loop info
