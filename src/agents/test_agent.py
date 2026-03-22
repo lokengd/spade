@@ -134,7 +134,7 @@ def verify_v1(state: SpadeState):
             }
         else:
             log(f"M=0: All outer loops exhausted (N={curr_n}/{settings.N_OUTER_LOOPS}).", agent_name)
-            return {"resolution_status": ["v1_failed"]}
+            return {"resolution_status": ["hit_max_limit"]}
 
     log("All v1 candidates failed. Moving to debate panel.", agent_name)
     return {"resolution_status": ["v1_failed"]}

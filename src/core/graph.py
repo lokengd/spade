@@ -119,6 +119,7 @@ def route_after_v1(state: SpadeState):
     if settings.M_INNER_LOOPS == 0:
         log("M=0: Skipping Debate Loop.", "Orchestrator")
         if check_status(state, ["hit_max_limit"]):
+            log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
             return "hard_stop"
         # If we are transitioning to a new outer loop, we should respect the K=0 setting
         return route_after_reproduction(state)
