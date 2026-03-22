@@ -275,7 +275,39 @@ debater_dynamic_arg_select:
     You will receive the bug context (issue description, error trace, suspicious files)
     and a list of v1 patch candidates with their diffs and strategies.
 
-    Respond ONLY with valid JSON matching this schema:
+    Respond ONLY with valid JSON matching this schema (fill in the values, do NOT return booleans or scores -- write explanations):
+    {{
+      "recommended_patch_id": "<id of the best candidate>",
+      "analysis": [
+        {{
+          "patch_id": "<candidate id>",
+          "addresses_error_trace": "<how/whether the diff fixes the observed failure>",
+          "regression_risk": "<low|medium|high -- explain why>",
+          "edge_cases": "<unhandled edge cases this patch misses>"
+        }}
+      ],
+      "justification": "<why your recommended patch is the best from a runtime perspective>"
+    }}
+
+    Example (do NOT copy these values -- analyze the actual candidates):
+    {{
+      "recommended_patch_id": "v1_abc123",
+      "analysis": [
+        {{
+          "patch_id": "v1_abc123",
+          "addresses_error_trace": "Adds the missing parameter to __init__, directly fixing the TypeError in the trace.",
+          "regression_risk": "low -- only adds a new optional parameter with a default value",
+          "edge_cases": "Does not validate the type of the new parameter"
+        }},
+        {{
+          "patch_id": "v1_def456",
+          "addresses_error_trace": "Modifies the wrong function; the error originates in __init__ not fit().",
+          "regression_risk": "high -- changes return type which breaks downstream callers",
+          "edge_cases": "N/A since the patch targets the wrong location"
+        }}
+      ],
+      "justification": "v1_abc123 directly addresses the TypeError by adding the missing parameter, with minimal regression risk."
+    }}
 
 debater_static_arg_select:
   system: |
@@ -290,7 +322,39 @@ debater_static_arg_select:
 
     You will receive the bug context and a list of v1 patch candidates.
 
-    Respond ONLY with valid JSON matching this schema:
+    Respond ONLY with valid JSON matching this schema (fill in the values, do NOT return booleans or scores -- write explanations):
+    {{
+      "recommended_patch_id": "<id of the best candidate>",
+      "analysis": [
+        {{
+          "patch_id": "<candidate id>",
+          "diff_correctness": "<is the diff syntactically valid and minimal? specific issues if not>",
+          "pattern_alignment": "<does the fix match its declared strategy? explain>",
+          "api_contract_violations": "<any type, signature, or interface violations>"
+        }}
+      ],
+      "justification": "<why your recommended patch is the best from a structural perspective>"
+    }}
+
+    Example (do NOT copy these values -- analyze the actual candidates):
+    {{
+      "recommended_patch_id": "v1_abc123",
+      "analysis": [
+        {{
+          "patch_id": "v1_abc123",
+          "diff_correctness": "Valid unified diff, adds one parameter and one line in super().__init__. Minimal change.",
+          "pattern_alignment": "Matches api_synchronization -- fixes a missing constructor parameter.",
+          "api_contract_violations": "None. The new parameter follows the same pattern as the parent class _BaseRidgeCV."
+        }},
+        {{
+          "patch_id": "v1_def456",
+          "diff_correctness": "Malformed hunk header -- line numbers don't match the target file.",
+          "pattern_alignment": "Claims logic_mutation but the change is adding a parameter, not fixing logic.",
+          "api_contract_violations": "Breaks super().__init__() call by removing existing arguments."
+        }}
+      ],
+      "justification": "v1_abc123 is a clean, minimal diff that correctly extends the constructor signature."
+    }}
 
 # Shared user template for both dynamic and static debaters in select mode
 debater_arg_select:
@@ -419,12 +483,22 @@ judge_select:
     3. Provide concrete improvement instructions for the PatchGen agent to refine the winner.
        These instructions should synthesize the strongest points from BOTH debaters.
 
-    Respond ONLY with valid JSON matching this schema (do NOT return the schema itself -- fill in the values):
-    {{
-      "winning_patch_id": "<the ID of the best v1 candidate, e.g. v1_abc123>",
-      "improvement_instructions": "<concrete, specific instructions for improving this patch>",
-      "justification": "<your reasoning for selecting this patch, referencing both debaters' arguments>"
-    }}
+    Respond ONLY with valid JSON. Do NOT return the schema -- fill in actual values.
+        IMPORTANT: The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
+        Do NOT use "winning_patch", "winner", "patch_id", or any other variation.
+
+        {{
+          "winning_patch_id": "<the exact ID of the best v1 candidate, e.g. v1_abc123>",
+          "improvement_instructions": "<concrete, specific instructions for improving this patch>",
+          "justification": "<your reasoning for selecting this patch, referencing both debaters' arguments>"
+        }}
+
+        Example (do NOT copy these values):
+        {{
+          "winning_patch_id": "v1_abc123",
+          "improvement_instructions": "Add store_cv_values as a parameter in __init__ with default False, and pass it to super().__init__(). Ensure the parameter is documented in the docstring.",
+          "justification": "Both debaters agree v1_abc123 addresses the root cause. The Dynamic Debater confirmed it fixes the TypeError, and the Static Debater confirmed the diff is syntactically valid."
+        }}
     
   user: |
     Bug ID: {bug_id}
@@ -462,11 +536,21 @@ judge_refine:
     3. Provide concrete, actionable improvement instructions that address the specific failure mode.
        Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.
 
-    Respond ONLY with valid JSON matching this schema (do NOT return the schema itself -- fill in the values):
+    Respond ONLY with valid JSON. Do NOT return the schema -- fill in actual values.
+        IMPORTANT: The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
+        Do NOT use "winning_patch", "winner", "patch_id", or any other variation.
+
         {{
-          "winning_patch_id": "<the v1 candidate ID to base the next refinement on>",
+          "winning_patch_id": "<the exact v1 candidate ID to base the next refinement on>",
           "improvement_instructions": "<concrete, actionable instructions addressing the specific failure>",
           "justification": "<your reasoning, referencing both debaters' analyses and prior failure history>"
+        }}
+
+        Example (do NOT copy these values):
+        {{
+          "winning_patch_id": "v1_abc123",
+          "improvement_instructions": "The v2 patch failed because it did not add store_cv_values to the function signature. The next version must add it as a keyword argument with default=False in both __init__ and the super() call.",
+          "justification": "The Dynamic Debater identified the root cause as an incomplete fix. The Static Debater confirmed the diff structure was otherwise sound. Continuing with v1_abc123 as the base."
         }}
     
   user: |
