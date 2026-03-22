@@ -168,3 +168,6 @@ if __name__ == "__main__":
         db_logger.update_experiment_metrics(db_experiment_id)
         log(f"Metrics updated in database.", caller="Main")
         log(f"Experiment {db_experiment_id} finished.", caller="Main")
+
+    cleanup_evaluation_dir()
+    log("All experiments completed. Evaluation environment cleaned up.", "Main", level=logging.INFO)

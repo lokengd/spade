@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import json
 from src.utils.logger import log
@@ -12,6 +13,8 @@ from src.core.state import EvaluationResult
 
 from src.evaluation.constants import (
 	EVAL_DIR,
+	GOLD_PATCH,
+	GOLD_PREDICITONS_PATH,
 	SWE_BENCH_REPO_NAME,
 	SWE_BENCH_REPO_URL,
 	SWE_BENCH_DEPTH_TO_CLONE,
@@ -46,6 +49,10 @@ def get_instance_logs_dir(instance_id: str, run_id: str, predictions_path: str) 
 	if predictions_path == VALIDATION_PREDICTIONS_PATH and run_id == VALIDATION_RUN_ID:
 		# For validation run, logs are always stored under "gold" directory to be able to verify the results.
 		return logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / instance_id
+
+	if predictions_path == GOLD_PREDICITONS_PATH:
+		# For gold patch, logs are also stored under "gold" directory to be able to verify the results.
+		return logs_dir / "run_evaluation" / run_id / GOLD_PREDICITONS_PATH / instance_id
 
 	instance_logs_dir = logs_dir / "run_evaluation" / run_id / DEFAULT_PREDICTIONS_PATH / instance_id
 	return instance_logs_dir
@@ -216,8 +223,11 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 		# For validation run, we want to use the same predictions path and file to be able to verify the results.
 		return VALIDATION_PREDICTIONS_PATH
 
+	if patch == GOLD_PATCH:
+		return GOLD_PREDICITONS_PATH
 
-	with open(get_eval_dir_path() / f"predictions_{instance_id}.jsonl", "w") as f:
+
+	with open(get_eval_dir_path() / f"predictions_{instance_id}_{run_id}.jsonl", "w") as f:
 		json_line = json.dumps({
 			"instance_id": instance_id,
 			"model_patch": patch,
@@ -225,7 +235,7 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 		})
 		f.write(json_line + "\n")
 
-	return f"predictions_{instance_id}.jsonl"
+	return f"predictions_{instance_id}_{run_id}.jsonl"
 
 
 def delete_predictions_file(predictions_file_path: str) -> None:
@@ -264,16 +274,16 @@ def _get_filtered_test_output(test_output: str) -> str:
 
 def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_workers: int = 1) -> EvaluationResult:
 	"""Run SWE-bench evaluation on a specific instance and verify logs."""
-	log(f"Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
 
 	eval_dir = get_eval_dir_path()
 
 	if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
-		log("SWE-bench repo not found in evaluation directory.", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: SWE-bench repo not found in evaluation directory.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="SWE-bench repo not found in evaluation directory.")
 
 	if not check_docker_installed_and_running():
-		log("Docker is not installed or running.", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Docker is not installed or running.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message="Docker is not installed or running.")
 	
 	# Generate predictions file for the given patch and instance
@@ -303,13 +313,13 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	# print(run_result.stdout)
 	# print(run_result.stderr)
 
-	log(f"Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
-	log("Evaluation command output:", caller=CALLER, level=logging.DEBUG)
-	log(f"stdout: {run_result.stdout}", caller=CALLER, level=logging.DEBUG)
-	log(f"stderr: {run_result.stderr}", caller=CALLER, level=logging.DEBUG)
+	log(f"{run_id}: Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: Evaluation command output:", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: stdout: {run_result.stdout}", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: stderr: {run_result.stderr}", caller=CALLER, level=logging.INFO)
 
 	if run_result.returncode != 0:
-		log(f"Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=f"Evaluation failed.\n Log:{run_result.stdout} \nError:{run_result.stderr}")
 
 	# logs_dir = get_logs_dir_path()
@@ -320,18 +330,18 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	test_output_data = get_test_output_file(get_test_output_path(instance_id, run_id, predictions_path))
 
 	if not report_file_data["method_success"]:
-		log(f"Failed to get report file data: {report_file_data.get('error')}", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Failed to get report file data: {report_file_data.get('error')}", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=report_file_data.get("error", "Unknown error while reading report file."))
 	
 	if not test_output_data["method_success"]:
-		log(f"Failed to get test output file data: {test_output_data.get('error')}", caller=CALLER, level=logging.ERROR)
+		log(f"{run_id}: Failed to get test output file data: {test_output_data.get('error')}", caller=CALLER, level=logging.ERROR)
 		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=test_output_data.get("error", "Unknown error while reading test output file."))
 
 	# bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
 	test_output = _get_filtered_test_output(test_output_data["test_output"])
 
-	log(f"Evaluation completed for instance {instance_id} with run ID {run_id}. Bug resolved: {test_case_results['bug_resolved']}.", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: Evaluation completed for instance {instance_id} with run ID {run_id}. Bug resolved: {test_case_results['bug_resolved']}.", caller=CALLER, level=logging.INFO)
 
 	# return {"method_success": True, "logs_dir": logs_dir, "instance_logs_dir": instance_logs_dir, "results_file": results_file}
 	return EvaluationResult(
@@ -357,6 +367,57 @@ def run_evaluation_with_no_patch(instance_id: str, run_id: str, max_workers: int
 	no_change_patch = "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n"
 
 	return run_evaluation_on_instance(instance_id=instance_id, run_id=run_id, patch=no_change_patch, max_workers=max_workers)
+
+
+def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patches: list[str]) -> list[EvaluationResult]:
+	"""Run SWE-bench evaluation on a specific instance for each patch in parallel.
+
+	Each patch gets a unique run_id formed by appending a counter (e.g. run_id_1, run_id_2, ...).
+	Returns a list of EvaluationResult objects in the same order as the input patches.
+	"""
+	results: list[EvaluationResult | None] = [None] * len(patches)
+
+	def _run(counter: int, patch: str) -> tuple[int, EvaluationResult]:
+		unique_run_id = f"{run_id}_{counter}"
+
+		result = run_evaluation_on_instance(
+			instance_id=instance_id,
+			run_id=unique_run_id,
+			patch=patch,
+		)
+
+		cleanup_results_file_for_run(unique_run_id)
+
+		return counter, result
+
+	if len(patches) == 0:
+		log("No patches provided for parallel evaluation.", caller=CALLER, level=logging.WARNING)
+		return []
+
+	with ThreadPoolExecutor(max_workers=min(5, len(patches))) as executor:
+		futures = {
+			executor.submit(_run, i + 1, patch): i
+			for i, patch in enumerate(patches)
+		}
+		for future in as_completed(futures):
+			try:
+				counter, result = future.result()
+			except Exception as exc:
+				# Ensure we still return an EvaluationResult for this patch even if the
+				# worker raised, and do not abort the entire parallel run.
+				index = futures[future]
+				log(
+					f"Parallel evaluation failed for patch index {index + 1}: {exc}",
+					caller=CALLER,
+					level=logging.ERROR,
+				)
+				counter = index + 1
+				result = EvaluationResult(evaluation_ran_successfully=False)
+			results[counter - 1] = result
+	
+	cleanup_logs_dir()
+
+	return results
 
 
 def test_installation() -> bool:
@@ -405,19 +466,44 @@ def test_installation() -> bool:
 	return logs_dir.exists() and logs_dir.is_dir() and gold_logs_dir.exists() and gold_logs_dir.is_dir() and results_file.exists() and results_file.is_file() and evaluation_result.evaluation_ran_successfully and evaluation_result.bug_resolved
 
 
+def cleanup_logs_dir() -> bool:
+	"""Remove the logs directory inside EVAL_DIR."""
+	log("Cleaning up logs directory...", caller=CALLER, level=logging.INFO)
+
+	logs_dir = get_logs_dir_path()
+
+	if logs_dir.exists() and logs_dir.is_dir():
+		shutil.rmtree(logs_dir)
+		log("Logs directory cleaned up successfully.", caller=CALLER, level=logging.INFO)
+		return True
+	else:
+		log("Logs directory does not exist or is not a directory.", caller=CALLER, level=logging.WARNING)
+		return False
+
+
+def cleanup_results_file_for_run(run_id: str) -> bool:
+	"""Remove the results file generated for a specific run."""
+	log(f"Cleaning up results file for run ID {run_id}...", caller=CALLER, level=logging.INFO)
+
+	eval_dir = get_eval_dir_path()
+	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
+
+	if results_file.exists() and results_file.is_file():
+		results_file.unlink()
+		log(f"Results file for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
+		return True
+	else:
+		log(f"Results file for run ID {run_id} does not exist or is not a file.", caller=CALLER, level=logging.WARNING)
+		return False
+
+
 def cleanup_logs_and_results_for_run(run_id: str) -> bool:
 	"""Remove logs and results generated for a specific run."""
 	log(f"Cleaning up logs and results for run ID {run_id}...", caller=CALLER, level=logging.INFO)
 
-	eval_dir = get_eval_dir_path()
-	logs_dir = get_logs_dir_path()
-	results_file = eval_dir / f"{DEFAULT_PREDICTIONS_PATH}.{run_id}.json"
+	cleanup_logs_dir()
 
-	if logs_dir.exists() and logs_dir.is_dir():
-		shutil.rmtree(logs_dir)
-
-	if results_file.exists() and results_file.is_file():
-		results_file.unlink()
+	cleanup_results_file_for_run(run_id)
 
 	log(f"Logs and results for run ID {run_id} cleaned up successfully.", caller=CALLER, level=logging.INFO)
 

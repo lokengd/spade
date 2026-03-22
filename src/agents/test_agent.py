@@ -3,9 +3,10 @@ from src.core.state import SpadeState, PatchCandidate, EvaluationResult
 from src.core import settings
 from src.utils.logger import log, get_loop_info
 from src.utils.db_logger import db_logger
-from src.evaluation.swe_bench_lite_utils import run_evaluation_on_instance, cleanup_logs_and_results_for_run
+from src.evaluation.swe_bench_lite_utils import run_evaluation_on_instance, cleanup_logs_and_results_for_run, run_evaluation_on_instance_in_parallel
 
 agent_name = "Test_Agent"
+
 
 def _run_evaluation_on_patch(bug_id: str, run_id: str, patch_code_diff: str) -> EvaluationResult:
     """
@@ -28,6 +29,7 @@ def _run_evaluation_on_patch(bug_id: str, run_id: str, patch_code_diff: str) -> 
     except Exception as e:
         log(f"Evaluation captured an exception for patch: {str(e)}", caller=agent_name, level=logging.ERROR)
         return EvaluationResult(evaluation_ran_successfully=False, bug_resolved=False, evaluation_error_message=str(e))
+
 
 def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCandidate:
     log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
@@ -53,6 +55,22 @@ def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCand
         
     return patch
 
+
+def _update_patch_status(patch: PatchCandidate, evaluation_result: EvaluationResult) -> PatchCandidate:
+    log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
+    
+    log(f"evaluation_result: {evaluation_result}", agent_name, level=logging.DEBUG)
+
+    if evaluation_result.bug_resolved:
+        log(f">>> v1 PATCH {patch.id} Resolved Issue <<<", caller=agent_name)
+        patch.status = "passed"
+    else:
+        patch.status = "failed"
+        log(f"v1 PATCH {patch.id} failed to resolve the issue.", caller=agent_name)
+        
+    return patch
+
+
 def verify_v1(state: SpadeState):
     """
     Initial verification for the entire v1 pool.
@@ -63,12 +81,24 @@ def verify_v1(state: SpadeState):
     run_id = state.get("thread_id")
     v1_patches = state.get("v1_patches", [])
     any_passed = False
+
+    v1_patches_code_diff = [patch.code_diff for patch in v1_patches]
+    evaluation_results = run_evaluation_on_instance_in_parallel(
+        instance_id=state["bug_context"].bug_id,
+        run_id=run_id,
+        patches=v1_patches_code_diff
+    )
+
+    if state.get("v1_patches_evaluation_result") is None:
+        state["v1_patches_evaluation_result"] = []
     
-    for patch in v1_patches:
+    state["v1_patches_evaluation_result"].extend(evaluation_results)
+    
+    for index, patch in enumerate(v1_patches):
         if patch.status != "pending":
             continue
 
-        patch = _execute_and_evaluate(patch, state)
+        patch = _update_patch_status(patch, evaluation_results[index])
 
         # Explicitly check for passed status when updating the DB
         is_passed = (patch.status == "passed")
@@ -109,6 +139,7 @@ def verify_v1(state: SpadeState):
     log("All v1 candidates failed. Moving to debate panel.", agent_name)
     return {"resolution_status": ["v1_failed"]}
 
+
 def verify_refined(state: SpadeState):
     """
     Verification for the latest refined patch (v2, v3, etc.)
@@ -143,6 +174,7 @@ def verify_refined(state: SpadeState):
     
     # Otherwise, trigger the fallback policy
     return _handle_fallback(state, patch.version, patch)
+
 
 def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandidate):
     """

@@ -29,9 +29,11 @@ def generate_v1_patch(state: SpadeState):
     is_unconstrained = active_pattern == P_UNCONSTRAINED
     
     # Normalize pattern info for logging and prompting
+    pattern_rationale = ""
     if isinstance(active_pattern, dict):
-        pattern_str = f"{active_pattern.get('pattern_id')} ({active_pattern.get('scope')})"
         strategy = active_pattern.get('pattern_id')
+        pattern_str = f"{strategy} ({active_pattern.get('scope')})"
+        pattern_rationale = active_pattern.get('rationale', "")
     else:
         pattern_str = str(active_pattern)
         strategy = str(active_pattern)
@@ -100,7 +102,8 @@ def generate_v1_patch(state: SpadeState):
             error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
             suspicious_snippets=suspicious_snippets,
             active_pattern=pattern_str,
-            active_pattern_description=pattern_description
+            active_pattern_description=pattern_description,
+            active_pattern_rationale=pattern_rationale
         )
 
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
@@ -143,6 +146,7 @@ def generate_v1_patch(state: SpadeState):
         id=patch_id, 
         code_diff=code_diff,
         strategy=strategy,
+        rationale=pattern_rationale,
         origin_v1_id=patch_id, # v1 patch is its own origin
         version=1,
         status="pending",
@@ -167,10 +171,12 @@ def generate_refined_patch(state: SpadeState):
             previous_patch = p
             break
             
+    pattern_rationale = ""
     if previous_patch:
         log(f"Resuming refinement chain for {origin_id} from v{previous_patch.version}...", agent_base_name)
         previous_patch_diff = previous_patch.code_diff
         active_pattern = previous_patch.strategy
+        active_pattern_rationale = previous_patch.rationale or ""
         v_now = previous_patch.version + 1
     else:
         # First time refining this specific winner
@@ -184,6 +190,7 @@ def generate_refined_patch(state: SpadeState):
             if p.id == origin_id:
                 previous_patch_diff = p.code_diff
                 active_pattern = p.strategy
+                active_pattern_rationale = p.rationale or ""
                 break
 
     # Update version before getting loop info
@@ -207,6 +214,7 @@ def generate_refined_patch(state: SpadeState):
         issue_text=state["bug_context"].issue_text,
         active_pattern=active_pattern,
         active_pattern_description=pattern_description,
+        active_pattern_rationale=pattern_rationale,
         version=v_now - 1, 
         previous_patch_diff=previous_patch_diff,
         verdict=state.get("verdict", "No verdict available."),
@@ -261,6 +269,7 @@ def generate_refined_patch(state: SpadeState):
         id=patch_id, 
         code_diff=code_diff,
         strategy=active_pattern,
+        rationale=pattern_rationale,
         origin_v1_id=origin_id,
         version=v_now,
         status="pending"
