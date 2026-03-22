@@ -77,7 +77,7 @@ class StatePrinter:
         print(" PATTERNS ".center(80, "-"))
         for key in pattern_keys:
             if key in state:
-                print(f"  {key.upper():<28}: {state[key]}")
+                print(f"  {key.upper():<28}: {state[key]}\n")
                 printed_keys.add(key)
 
         # 4. Evaluation Results (Reproduction)
@@ -206,6 +206,8 @@ class StatePrinter:
             p = PatchCandidate(**patch)
         
         print(f"  PATCH ID: {p.id} | STRATEGY: {p.strategy} | STATUS: {p.status} | VERSION: {p.version}")
+        print(f"    PATTERN RATIONALE: {p.rationale}")
+        print(f"    PATCH EXPLANATION: {p.explanation}")
         # Show ALL lines of diff - NO TRUNCATION
         diff_lines = p.code_diff.strip().split("\n")
         full_diff = "\n".join([f"    {l}" for l in diff_lines])

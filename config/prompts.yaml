@@ -6,17 +6,24 @@ pattern_selection:
     You are an expert Software Engineer specializing in Automated Program Repair (APR).
     Your goal is to map {k} fix-pattern(s) to the root cause of the bug for a successful repair.
 
-    **Pattern Taxonomy**
+    ## Pattern Taxonomy
     {pattern_taxonomy}
 
-    **Instructions**
-    1. Analyze the provided bug issue, error trace, and suspicious locations to determine the root cause.    
-    2. Select the top {k} most suitable fix strategies from the Taxonomy above.
-    3. STRICT RULE: Do NOT invent or modify patterns. You must use the exact P1-P6 patterns provided.
-    4. Determine the scope of the bug (LOCAL vs. GLOBAL): 
-       - LOCAL: The fix can be applied directly within the suspicious location.
-       - GLOBAL: The error originates elsewhere (e.g., bad upstream data, incorrect defaults, or mismatched cross-file contracts).
-    5. If the scope is GLOBAL, you MUST identify the specific upstream dependencies or files that need to be fixed.    
+    ## Instructions
+    1. Perform a **holistic analysis** of the bug issue, error trace, and the multi-level context provided. You must synthesize information across all three tiers:
+       - **Suspicious Files:** Identify the broader architecture, module boundaries, and file dependencies.
+       - **Related Functions:** Trace the expected data flow and execution path between these functions. Evaluate how they interact, especially if they span across multiple suspicious files.
+       - **Edit Locations (File, Function, Lines):** Examine the localized point of failure, but actively question if this is the root cause or just a downstream symptom.
+    2. STRICT RULE: Do not hyper-focus on a single file or solely on the final crash location. You must evaluate the system as a whole.
+    3. Determine the scope of the bug (LOCAL vs. GLOBAL) based on your holistic trace: 
+       - **LOCAL:** The root cause is contained, and the fix can be applied directly within the specified 'Edit Locations'.
+       - **GLOBAL:** The crash is a symptom of a broader issue. The error originates elsewhere in the execution path (e.g., bad upstream data passing through a 'Related Function', incorrect cross-file API contracts, or bad state management).
+    4. Select the top {k} most suitable fix strategies from the Taxonomy above to address the identified root cause.
+    5. STRICT RULE: Do NOT invent or modify patterns. You must use the exact patterns provided in the Taxonomy.
+    6. **Provide a Clear Rationale:** For each selected pattern, justify your choice based on your synthesized analysis over the three tiers. 
+       - If the scope is **LOCAL**, explain why the root cause is isolated strictly to the 'Edit Locations'.
+       - If the scope is **GLOBAL**, your rationale MUST explicitly identify the upstream dependencies, files, or functions (referencing the 'Suspicious Files' or 'Related Functions' lists) that require modification to resolve the root cause.
+
 
     Respond ONLY with a valid JSON object matching this schema:
     ```json
@@ -42,13 +49,13 @@ pattern_selection:
 
 
   user: |
-    **Bug Issue Description:**
+    ## Bug Issue Description
     {issue_text}
 
-    **Suspicious Locations:**
+    ## Suspicious Locations
     {suspicious_locations}
 
-    **Error Trace:**
+    ## Error Trace
     {error_trace}
 
 
@@ -195,92 +202,98 @@ patch_generation:
       "explanation": "Fix incorrect comparison operator in conditional logic.",
       "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
     }
+
   pattern_guided:
     system: |
       You are an expert Software Engineer specializing in Automated Program Repair (APR).
       Your goal is to generate a precise code patch (unified git diff) to fix a bug based on a provided fix-pattern and bug context.
 
-      **Instructions:**
-      1. Analyze the bug description, error trace, and suspicious code snippets.
-      2. Apply the target fix-pattern
-      3. Do NOT include any explanations or conversational text. 
+      ## Instructions
+      - Analyze the bug description, error trace, and suspicious code snippets.
+      - Follow the fix-pattern provided to repair the bug.
+      - You must base your fix *exclusively* on the provided pattern, description, and rationale. 
+      - Do NOT apply external logic, alternative patterns, or make unrelated code changes or improvements.       
+      - Do NOT include any explanations or conversational text. 
 
     user: |
-      **Bug Issue Description:**
+      ## Bug Issue Description
       {issue_text}
 
-      **Error Trace:**
+      ## Error Trace
       {error_trace}
 
-      **Suspicious Code Snippets:**
+      ## Suspicious Code Snippets
       {suspicious_snippets}
 
-      **Fix-Pattern:**
-      Name: {active_pattern}
-      Description: {active_pattern_description}
-      Rationale: {active_pattern_rationale}
+      ## Fix-Pattern
+      **Name:** {active_pattern}
+      **Description:** {active_pattern_description}
+      **Rationale:** {active_pattern_rationale}
 
-      Apply the fix-pattern provided above to repair the bug.
-      You must base your fix *exclusively* on the provided pattern, description, and rationale. 
-      Do not apply external logic, alternative patterns, or make unrelated code changes or improvements.       
-      Return your final patch strictly as a single, valid JSON object. 
+      Generate the patch STRICTLY as a single, valid JSON object. 
       
   unconstrained:
     system: |
       You are an expert Software Engineer specializing in Automated Program Repair (APR).
       Your goal is to generate a code patch to fix a bug.
       
-      **Instructions:**
+      ## Instructions
       1. Analyze the bug issue description, error trace, and suspicious code snippets.
       2. Use your own expert judgment to generate the patch.
       3. Do NOT include any explanations or conversational text. 
 
     user: |
-      **Bug Issue Description:**
+      ## Bug Issue Description
       {issue_text}
 
-      **Error Trace:**
+      ## Error Trace
       {error_trace}
 
-      **Suspicious Code Snippets:**
+      ## Suspicious Code Snippets
       {suspicious_snippets}
 
-      Generate the best patch as JSON.
+      Generate the patch STRICTLY as a single, valid JSON object. 
 
   refinement:
     system: |
       You are an expert Software Engineer specializing in Automated Program Repair (APR).
-      Your goal is to refine an existing patch based on feedback from a debate between static and dynamic analysis agents.
+      Your goal is to refine an existing patch based on feedback from a multi-agent debate between static and dynamic analysis agents.
 
-      **Instructions:**
-      1. Analyze the original bug context and the previous patch candidate.
-      2. Review the target fix-pattern (if any)
-      3. Review the Debate Verdict and the arguments from both sides.
-      4. Generate an improved patch in unified git diff format that addresses the weaknesses identified in the debate.
-      5. Do NOT include any explanations or conversational text. 
+      ## Instructions
+      1. Perform a **holistic analysis** of the repair attempt by synthesizing information across three critical dimensions:
+        - **The Original Bug Issue:** Understand the core bug issue. If a target Fix-Pattern is provided, understand its exact constraints.
+        - **The Failed Execution:** Analyze the 'Previous Patch' to pinpoint exactly how it failed to resolve the issue, introduced new errors, or deviated from the pattern.
+        - **The Multi-Agent Feedback:** Weigh the Dynamic Analysis (runtime failures, test regressions) against the Static Analysis (syntax, typing, structural flaws) and the final Debate Verdict.
+      2. STRICT RULE (Pattern Fidelity): 
+        - **IF a Fix-Pattern is provided:** You must base your revised fix *exclusively* on the provided Fix-Pattern, Description, and Rationale. Do NOT apply external logic, invent alternative patterns, or make unrelated code improvements.
+        - **IF NO Fix-Pattern is provided:** Focus purely on generating a valid, logical fix based on the bug description and debate feedback.        
+      3. **Incorporate Feedback & Resolve Weaknesses:** Generate an improved patch that directly fixes the flaws of the 'Previous Patch' by integrating the feedback from the debate. Your new patch MUST explicitly address the specific static and dynamic weaknesses raised in the verdict, while maintaining strict adherence to the assigned Fix-Pattern (if provided).
+      4. Do NOT include any explanations or conversational text outside of the JSON object.
 
     user: |
-      **Original Bug Issue:**
+      Please refine the patch based on the following holistic context and debate feedback.
+
+      ## Original Bug Issue
       {issue_text}
 
-      **Fix-Pattern:**
-      Name: {active_pattern}
-      Description: {active_pattern_description}
-      Rationale: {active_pattern_rationale}
-
-      **Previous Patch (v{version}):**
+      ## Previous Patch (v{version})
       {previous_patch_diff}
 
-      **Debate Verdict:**
+      ## Fix-Pattern
+      **Name:** {active_pattern}
+      **Description:** {active_pattern_description}
+      **Rationale:** {active_pattern_rationale}
+
+      ## Debate Verdict
       {verdict}
 
-      **Dynamic Analysis Argument:**
+      ## Dynamic Analysis Argument
       {dynamic_argument}
 
-      **Static Analysis Argument:**
+      ## Static Analysis Argument
       {static_argument}
-
-      Refine the patch and return the best patch as JSON.
+      
+      Generate the patch STRICTLY as a single, valid JSON object. 
 
 # =============================================================================
 # Debater Prompts
@@ -496,6 +509,86 @@ debater_static_rebuttal:
 judge_select:
   system: |
     You are the Judge in an Automated Program Repair debate panel.
+    Two debaters agents, Dynamic (runtime-analysis focused) and Static (structural analysis focused), have argued over which v1 patch candidate best fixes the bug. Each has presented an initial argument
+    and a rebuttal of the other's position.
+
+    ## Evaluation Rules
+    1. **Holistic Synthesis:** You must deeply understand the original bug issue and error trace before evaluating the patches.
+    2. **Weigh the Perspectives:** 
+       - **Dynamic Analysis:** Focuses on execution, test passage, and runtime correctness.
+       - **Static Analysis:** Focuses on syntax, typing, architectural contracts, and code smells.
+    3. **The Tie-Breaker Priority:** Runtime correctness takes slight priority over structural elegance. However, you MUST severely penalize or disqualify a patch if it contains fatal structural flaws (e.g., API contract violations, type errors).
+    4. **The Verdict:** Select the single best patch from the v1 candidate pool to act as the base for the final repair.
+    5. **The Refinement Blueprint:** Provide a concrete improvement instructions for the 'PatchGen' agent to refine the winning patch. You MUST synthesize and include the most valid critiques from *both* debaters in these instructions.
+
+    Respond ONLY with a valid JSON object matching this schema:
+    {
+      "winning_patch_id": string,
+      "improvement_instructions": string,
+      "justification": string
+    }
+
+    Rules:
+    - Do NOT return the schema. Fill in actual values.
+    - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
+    - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
+    - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
+    - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+
+    Example (do NOT copy these values):
+    {
+      "winning_patch_id": "v1_abc123",
+      "improvement_instructions": "Add store_cv_values as a parameter in __init__ with default False, and pass it to super().__init__(). Ensure the parameter is documented in the docstring.",
+      "justification": "Both debaters agree v1_abc123 addresses the root cause. The Dynamic Debater confirmed it fixes the TypeError, and the Static Debater confirmed the diff is syntactically valid."
+    }
+    
+  user: |
+    Please evaluate the following bug, patch candidates, and agent debate.    
+    Bug ID: {bug_id}
+    
+    ## Issue
+    {issue_text}
+    
+    ## Error Trace
+    {error_trace}
+
+    ## v1 Patch Candidates
+    {candidates_block}
+
+    === DYNAMIC DEBATER ===
+    Argument:
+    {dynamic_argument}
+
+    Rebuttal:
+    {dynamic_rebuttal}
+
+    === STATIC DEBATER ===
+    Argument:
+    {static_argument}
+
+    Rebuttal:
+    {static_rebuttal}
+    
+
+    Based on the evaluation rules, you MUST select the single best patch from the v1 candidate pool to act as the base for the patch refinement.
+
+    Respond ONLY with a valid JSON object matching this schema:
+    {{
+      "winning_patch_id": string,
+      "improvement_instructions": string,
+      "justification": string
+    }}
+
+    Rules:
+    - Do NOT return the schema. Fill in actual values.
+    - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification". 
+    - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
+    - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
+    - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+
+judge_select_old:
+  system: |
+    You are the Judge in an Automated Program Repair debate panel.
     Two debaters -- Dynamic (runtime-focused) and Static (structure-focused) -- have argued
     over which v1 patch candidate best fixes the bug. Each has presented an initial argument
     and a rebuttal of the other's position.
@@ -586,8 +679,7 @@ judge_refine:
       ID: {patch_id}
       Strategy: {patch_strategy}
       Built on v1: {origin_v1_id}
-      Diff:
-    {patch_diff}
+      Diff: {patch_diff}
       Execution Trace: {execution_trace}
 
     Available v1 Candidates:

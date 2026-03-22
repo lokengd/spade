@@ -97,7 +97,7 @@ def run(state: SpadeState):
     raw_telemetry = {}
     try:
         # Get both the structured response AND telemetry metrics
-        structured_response, metrics, raw_telemetry = client.generate_structured(
+        structured_response, metrics, raw_telemetry = client.generate_json_response(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=PatternSelectionResponse,

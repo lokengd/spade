@@ -8,7 +8,7 @@ from src.core.graph import build_graph, draw_graph
 from src.core.state import BugContext
 from src.core.dataset_loader import DatasetLoader
 from src.evaluation import cleanup_evaluation_dir, setup_evaluation_environment, cleanup_sweb_docker_images
-from src.utils.logger import log, setup_logger, get_log_header, save_memory_state
+from src.utils.logger import log, setup_logger, get_log_header, get_log_footer, save_memory_state
 from src.utils.db_logger import db_logger
 from src.core import settings
 
@@ -171,3 +171,4 @@ if __name__ == "__main__":
 
     cleanup_evaluation_dir()
     log("All experiments completed. Evaluation environment cleaned up.", "Main", level=logging.INFO)
+    log(get_log_footer(db_experiment_id))

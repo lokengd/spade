@@ -178,9 +178,10 @@ def run(state: SpadeState):
     raw_telemetry = {}
 
     try:
-        raw_text, metrics, raw_telemetry = client.generate_text(
+        raw_text, metrics, raw_telemetry = client.generate_json_response(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
         if run_id and raw_telemetry:
