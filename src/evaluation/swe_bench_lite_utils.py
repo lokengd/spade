@@ -13,6 +13,8 @@ from src.core.state import EvaluationResult
 
 from src.evaluation.constants import (
 	EVAL_DIR,
+	GOLD_PATCH,
+	GOLD_PREDICITONS_PATH,
 	SWE_BENCH_REPO_NAME,
 	SWE_BENCH_REPO_URL,
 	SWE_BENCH_DEPTH_TO_CLONE,
@@ -47,6 +49,10 @@ def get_instance_logs_dir(instance_id: str, run_id: str, predictions_path: str) 
 	if predictions_path == VALIDATION_PREDICTIONS_PATH and run_id == VALIDATION_RUN_ID:
 		# For validation run, logs are always stored under "gold" directory to be able to verify the results.
 		return logs_dir / "run_evaluation" / VALIDATION_RUN_ID / VALIDATION_PREDICTIONS_PATH / instance_id
+
+	if predictions_path == GOLD_PREDICITONS_PATH:
+		# For gold patch, logs are also stored under "gold" directory to be able to verify the results.
+		return logs_dir / "run_evaluation" / run_id / GOLD_PREDICITONS_PATH / instance_id
 
 	instance_logs_dir = logs_dir / "run_evaluation" / run_id / DEFAULT_PREDICTIONS_PATH / instance_id
 	return instance_logs_dir
@@ -217,6 +223,9 @@ def generate_predictions_path_file(instance_id: str, patch: str, run_id: str = N
 		# For validation run, we want to use the same predictions path and file to be able to verify the results.
 		return VALIDATION_PREDICTIONS_PATH
 
+	if patch == GOLD_PATCH:
+		return GOLD_PREDICITONS_PATH
+
 
 	with open(get_eval_dir_path() / f"predictions_{instance_id}_{run_id}.jsonl", "w") as f:
 		json_line = json.dumps({
@@ -305,9 +314,9 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	# print(run_result.stderr)
 
 	log(f"{run_id}: Evaluation command completed with return code {run_result.returncode}.", caller=CALLER, level=logging.INFO)
-	log(f"{run_id}: Evaluation command output:", caller=CALLER, level=logging.DEBUG)
-	log(f"{run_id}: stdout: {run_result.stdout}", caller=CALLER, level=logging.DEBUG)
-	log(f"{run_id}: stderr: {run_result.stderr}", caller=CALLER, level=logging.DEBUG)
+	log(f"{run_id}: Evaluation command output:", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: stdout: {run_result.stdout}", caller=CALLER, level=logging.INFO)
+	log(f"{run_id}: stderr: {run_result.stderr}", caller=CALLER, level=logging.INFO)
 
 	if run_result.returncode != 0:
 		log(f"{run_id}: Evaluation command failed with return code {run_result.returncode}.", caller=CALLER, level=logging.ERROR)
