@@ -312,39 +312,41 @@ debater_dynamic_arg_select:
     You will receive the bug context (issue description, error trace, suspicious files)
     and a list of v1 patch candidates with their diffs and strategies.
 
-    Respond ONLY with valid JSON matching this schema (fill in the values, do NOT return booleans or scores -- write explanations):
-    {{
-      "recommended_patch_id": "<id of the best candidate>",
-      "analysis": [
-        {{
-          "patch_id": "<candidate id>",
-          "addresses_error_trace": "<how/whether the diff fixes the observed failure>",
-          "regression_risk": "<low|medium|high -- explain why>",
-          "edge_cases": "<unhandled edge cases this patch misses>"
-        }}
-      ],
-      "justification": "<why your recommended patch is the best from a runtime perspective>"
-    }}
+    Respond with the recommended patch id, your analysis, and final justification. 
+    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+  # ONLY with valid JSON matching this schema (fill in the values, do NOT return booleans or scores -- write explanations):
+  # {{
+  #   "recommended_patch_id": "<id of the best candidate>",
+  #   "analysis": [
+  #     {{
+  #       "patch_id": "<candidate id>",
+  #       "addresses_error_trace": "<how/whether the diff fixes the observed failure>",
+  #       "regression_risk": "<low|medium|high -- explain why>",
+  #       "edge_cases": "<unhandled edge cases this patch misses>"
+  #     }}
+  #   ],
+  #   "justification": "<why your recommended patch is the best from a runtime perspective>"
+  # }}
 
-    Example (do NOT copy these values -- analyze the actual candidates):
-    {{
-      "recommended_patch_id": "v1_abc123",
-      "analysis": [
-        {{
-          "patch_id": "v1_abc123",
-          "addresses_error_trace": "Adds the missing parameter to __init__, directly fixing the TypeError in the trace.",
-          "regression_risk": "low -- only adds a new optional parameter with a default value",
-          "edge_cases": "Does not validate the type of the new parameter"
-        }},
-        {{
-          "patch_id": "v1_def456",
-          "addresses_error_trace": "Modifies the wrong function; the error originates in __init__ not fit().",
-          "regression_risk": "high -- changes return type which breaks downstream callers",
-          "edge_cases": "N/A since the patch targets the wrong location"
-        }}
-      ],
-      "justification": "v1_abc123 directly addresses the TypeError by adding the missing parameter, with minimal regression risk."
-    }}
+  # Example (do NOT copy these values -- analyze the actual candidates):
+  # {{
+  #   "recommended_patch_id": "v1_abc123",
+  #   "analysis": [
+  #     {{
+  #       "patch_id": "v1_abc123",
+  #       "addresses_error_trace": "Adds the missing parameter to __init__, directly fixing the TypeError in the trace.",
+  #       "regression_risk": "low -- only adds a new optional parameter with a default value",
+  #       "edge_cases": "Does not validate the type of the new parameter"
+  #     }},
+  #     {{
+  #       "patch_id": "v1_def456",
+  #       "addresses_error_trace": "Modifies the wrong function; the error originates in __init__ not fit().",
+  #       "regression_risk": "high -- changes return type which breaks downstream callers",
+  #       "edge_cases": "N/A since the patch targets the wrong location"
+  #     }}
+  #   ],
+  #   "justification": "v1_abc123 directly addresses the TypeError by adding the missing parameter, with minimal regression risk."
+  # }}
 
 debater_static_arg_select:
   system: |
@@ -359,39 +361,40 @@ debater_static_arg_select:
 
     You will receive the bug context and a list of v1 patch candidates.
 
-    Respond ONLY with valid JSON matching this schema (fill in the values, do NOT return booleans or scores -- write explanations):
-    {{
-      "recommended_patch_id": "<id of the best candidate>",
-      "analysis": [
-        {{
-          "patch_id": "<candidate id>",
-          "diff_correctness": "<is the diff syntactically valid and minimal? specific issues if not>",
-          "pattern_alignment": "<does the fix match its declared strategy? explain>",
-          "api_contract_violations": "<any type, signature, or interface violations>"
-        }}
-      ],
-      "justification": "<why your recommended patch is the best from a structural perspective>"
-    }}
+    Respond with the recommended patch id, your analysis, and final justification. 
+    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+  # {{
+  #   "recommended_patch_id": "<id of the best candidate>",
+  #   "analysis": [
+  #     {{
+  #       "patch_id": "<candidate id>",
+  #       "diff_correctness": "<is the diff syntactically valid and minimal? specific issues if not>",
+  #       "pattern_alignment": "<does the fix match its declared strategy? explain>",
+  #       "api_contract_violations": "<any type, signature, or interface violations>"
+  #     }}
+  #   ],
+  #   "justification": "<why your recommended patch is the best from a structural perspective>"
+  # }}
 
-    Example (do NOT copy these values -- analyze the actual candidates):
-    {{
-      "recommended_patch_id": "v1_abc123",
-      "analysis": [
-        {{
-          "patch_id": "v1_abc123",
-          "diff_correctness": "Valid unified diff, adds one parameter and one line in super().__init__. Minimal change.",
-          "pattern_alignment": "Matches api_synchronization -- fixes a missing constructor parameter.",
-          "api_contract_violations": "None. The new parameter follows the same pattern as the parent class _BaseRidgeCV."
-        }},
-        {{
-          "patch_id": "v1_def456",
-          "diff_correctness": "Malformed hunk header -- line numbers don't match the target file.",
-          "pattern_alignment": "Claims logic_mutation but the change is adding a parameter, not fixing logic.",
-          "api_contract_violations": "Breaks super().__init__() call by removing existing arguments."
-        }}
-      ],
-      "justification": "v1_abc123 is a clean, minimal diff that correctly extends the constructor signature."
-    }}
+  # Example (do NOT copy these values -- analyze the actual candidates):
+  # {{
+  #   "recommended_patch_id": "v1_abc123",
+  #   "analysis": [
+  #     {{
+  #       "patch_id": "v1_abc123",
+  #       "diff_correctness": "Valid unified diff, adds one parameter and one line in super().__init__. Minimal change.",
+  #       "pattern_alignment": "Matches api_synchronization -- fixes a missing constructor parameter.",
+  #       "api_contract_violations": "None. The new parameter follows the same pattern as the parent class _BaseRidgeCV."
+  #     }},
+  #     {{
+  #       "patch_id": "v1_def456",
+  #       "diff_correctness": "Malformed hunk header -- line numbers don't match the target file.",
+  #       "pattern_alignment": "Claims logic_mutation but the change is adding a parameter, not fixing logic.",
+  #       "api_contract_violations": "Breaks super().__init__() call by removing existing arguments."
+  #     }}
+  #   ],
+  #   "justification": "v1_abc123 is a clean, minimal diff that correctly extends the constructor signature."
+  # }}
 
 # Shared user template for both dynamic and static debaters in select mode
 debater_arg_select:
@@ -416,13 +419,16 @@ debater_dynamic_arg_refine:
     3. What specific runtime behavior must the next version address?
     4. Given the history of prior verdicts and failures, what pattern of mistakes is emerging?
 
-    Respond ONLY with valid JSON matching this schema:
-    {
-      "failure_diagnosis": "<what the execution trace reveals about why this patch failed>",
-      "failure_type": "<regression|incomplete_fix|wrong_location|malformed_diff>",
-      "runtime_requirements": "<specific runtime behavior the next version must achieve>",
-      "recurring_mistakes": "<patterns from prior failures that must be avoided>"
-    }
+    Respond with your diagnosis on the reasons for failure and likely recurring mistakes, based on the execution trace and runtime behavior ONLY.
+    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+
+  # ONLY with valid JSON matching this schema:
+  # {
+  #   "failure_diagnosis": "<what the execution trace reveals about why this patch failed>",
+  #   "failure_type": "<regression|incomplete_fix|wrong_location|malformed_diff>",
+  #   "runtime_requirements": "<specific runtime behavior the next version must achieve>",
+  #   "recurring_mistakes": "<patterns from prior failures that must be avoided>"
+  # }
     
 debater_static_arg_refine:
   system: |
@@ -436,13 +442,14 @@ debater_static_arg_refine:
     3. Is the fix-pattern strategy still appropriate, or should a different pattern be tried?
     4. What structural changes would make the next version more robust?
 
-    Respond ONLY with valid JSON matching this schema:
-    {
-      "structural_issues": "<syntactic or structural problems in the failed diff>",
-      "api_violations": "<any contract, type, or interface violations introduced>",
-      "pattern_reassessment": "<is the current fix-pattern still appropriate, or should a different one be tried?>",
-      "structural_recommendations": "<concrete structural changes for the next version>"
-    }
+    Respond with your diagnosis on the reasons for failure and likely recurring mistakes, based on the code structure and without reference to runtime behavior.
+    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+  # {
+  #   "structural_issues": "<syntactic or structural problems in the failed diff>",
+  #   "api_violations": "<any contract, type, or interface violations introduced>",
+  #   "pattern_reassessment": "<is the current fix-pattern still appropriate, or should a different one be tried?>",
+  #   "structural_recommendations": "<concrete structural changes for the next version>"
+  # }
 
 # Shared user template for both dynamic and static debaters in refine mode
 debater_arg_refine:
@@ -467,13 +474,14 @@ debater_dynamic_rebuttal:
     You have read the Static Debater's argument. Counter their claims using runtime evidence.
     Where you agree, acknowledge it. Where you disagree, explain why from a runtime behavior perspective.
     If the Static Debater recommended a different patch than you, argue why yours is better from a runtime standpoint.
+    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
 
-    Respond ONLY with valid JSON matching this schema:
-    {
-      "agreements": "<points from the Static Debater you accept>",
-      "rebuttals": "<points you disagree with, countered with runtime evidence>",
-      "final_recommendation": "<your final patch pick and why, incorporating the exchange>"
-    }    
+  # Respond ONLY with valid JSON matching this schema:
+  # {
+  #   "agreements": "<points from the Static Debater you accept>",
+  #   "rebuttals": "<points you disagree with, countered with runtime evidence>",
+  #   "final_recommendation": "<your final patch pick and why, incorporating the exchange>"
+  # }    
   user: |
     Your original argument:
     {own_argument}
@@ -487,13 +495,14 @@ debater_static_rebuttal:
     You have read the Dynamic Debater's argument. Counter their claims using structural evidence.
     Where you agree, acknowledge it. Where you disagree, explain why from a code structure perspective.
     If the Dynamic Debater recommended a different patch than you, argue why yours is better from a structural standpoint.
+    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
 
-    Respond ONLY with valid JSON matching this schema:
-    {
-      "agreements": "<points from the Dynamic Debater you accept>",
-      "rebuttals": "<points you disagree with, countered with structural evidence>",
-      "final_recommendation": "<your final patch pick and why, incorporating the exchange>"
-    }
+  # Respond ONLY with valid JSON matching this schema:
+  # {
+  #   "agreements": "<points from the Dynamic Debater you accept>",
+  #   "rebuttals": "<points you disagree with, countered with structural evidence>",
+  #   "final_recommendation": "<your final patch pick and why, incorporating the exchange>"
+  # }
     
   user: |
     Your original argument:
@@ -521,27 +530,28 @@ judge_select:
     4. **The Verdict:** Select the single best patch from the v1 candidate pool to act as the base for the final repair.
     5. **The Refinement Blueprint:** Provide a concrete improvement instructions for the 'PatchGen' agent to refine the winning patch. You MUST synthesize and include the most valid critiques from *both* debaters in these instructions.
 
-    Respond ONLY with a valid JSON object matching this schema:
-    {
-      "winning_patch_id": string,
-      "improvement_instructions": string,
-      "justification": string
-    }
+    Use the above rules to identify the winning patch and your justification.
+  # Respond ONLY with a valid JSON object matching this schema:
+  # {
+  #   "winning_patch_id": string,
+  #   "improvement_instructions": string,
+  #   "justification": string
+  # }
 
-    Rules:
-    - Do NOT return the schema. Fill in actual values.
-    - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
-    - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
-    - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
-    - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+  # Rules:
+  # - Do NOT return the schema. Fill in actual values.
+  # - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
+  # - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
+  # - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
+  # - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
 
-    Example (do NOT copy these values):
-    {
-      "winning_patch_id": "v1_abc123",
-      "improvement_instructions": "Add store_cv_values as a parameter in __init__ with default False, and pass it to super().__init__(). Ensure the parameter is documented in the docstring.",
-      "justification": "Both debaters agree v1_abc123 addresses the root cause. The Dynamic Debater confirmed it fixes the TypeError, and the Static Debater confirmed the diff is syntactically valid."
-    }
-    
+  # Example (do NOT copy these values):
+  # {
+  #   "winning_patch_id": "v1_abc123",
+  #   "improvement_instructions": "Add store_cv_values as a parameter in __init__ with default False, and pass it to super().__init__(). Ensure the parameter is documented in the docstring.",
+  #   "justification": "Both debaters agree v1_abc123 addresses the root cause. The Dynamic Debater confirmed it fixes the TypeError, and the Static Debater confirmed the diff is syntactically valid."
+  # }
+  
   user: |
     Please evaluate the following bug, patch candidates, and agent debate.    
     Bug ID: {bug_id}
@@ -572,19 +582,19 @@ judge_select:
 
     Based on the evaluation rules, you MUST select the single best patch from the v1 candidate pool to act as the base for the patch refinement.
 
-    Respond ONLY with a valid JSON object matching this schema:
-    {{
-      "winning_patch_id": string,
-      "improvement_instructions": string,
-      "justification": string
-    }}
+  # Respond ONLY with a valid JSON object matching this schema:
+  # {{
+  #   "winning_patch_id": string,
+  #   "improvement_instructions": string,
+  #   "justification": string
+  # }}
 
-    Rules:
-    - Do NOT return the schema. Fill in actual values.
-    - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification". 
-    - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
-    - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
-    - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+  # Rules:
+  # - Do NOT return the schema. Fill in actual values.
+  # - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification". 
+  # - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
+  # - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
+  # - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
 
 judge_select_old:
   system: |
@@ -653,22 +663,22 @@ judge_refine:
     3. Provide concrete, actionable improvement instructions that address the specific failure mode.
        Do NOT repeat instructions from prior verdicts -- check the history and escalate specificity.
 
-    Respond ONLY with valid JSON. Do NOT return the schema -- fill in actual values.
-        IMPORTANT: The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
-        Do NOT use "winning_patch", "winner", "patch_id", or any other variation.
+  # Respond ONLY with valid JSON. Do NOT return the schema -- fill in actual values.
+  #     IMPORTANT: The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
+  #     Do NOT use "winning_patch", "winner", "patch_id", or any other variation.
 
-        {{
-          "winning_patch_id": "<the exact v1 candidate ID to base the next refinement on>",
-          "improvement_instructions": "<concrete, actionable instructions addressing the specific failure>",
-          "justification": "<your reasoning, referencing both debaters' analyses and prior failure history>"
-        }}
+  #     {{
+  #       "winning_patch_id": "<the exact v1 candidate ID to base the next refinement on>",
+  #       "improvement_instructions": "<concrete, actionable instructions addressing the specific failure>",
+  #       "justification": "<your reasoning, referencing both debaters' analyses and prior failure history>"
+  #     }}
 
-        Example (do NOT copy these values):
-        {{
-          "winning_patch_id": "v1_abc123",
-          "improvement_instructions": "The v2 patch failed because it did not add store_cv_values to the function signature. The next version must add it as a keyword argument with default=False in both __init__ and the super() call.",
-          "justification": "The Dynamic Debater identified the root cause as an incomplete fix. The Static Debater confirmed the diff structure was otherwise sound. Continuing with v1_abc123 as the base."
-        }}
+  #     Example (do NOT copy these values):
+  #     {{
+  #       "winning_patch_id": "v1_abc123",
+  #       "improvement_instructions": "The v2 patch failed because it did not add store_cv_values to the function signature. The next version must add it as a keyword argument with default=False in both __init__ and the super() call.",
+  #       "justification": "The Dynamic Debater identified the root cause as an incomplete fix. The Static Debater confirmed the diff structure was otherwise sound. Continuing with v1_abc123 as the base."
+  #     }}
     
   user: |
     Bug ID: {bug_id}

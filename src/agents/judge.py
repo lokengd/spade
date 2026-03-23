@@ -178,7 +178,7 @@ def run(state: SpadeState):
     raw_telemetry = {}
 
     try:
-        raw_text, metrics, raw_telemetry = client.generate_json_response(
+        verdict, metrics, raw_telemetry = client.generate_json_response(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=JudgeVerdict,
@@ -186,8 +186,6 @@ def run(state: SpadeState):
         )
         if run_id and raw_telemetry:
             db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
-
-        verdict = _parse_verdict_from_text(raw_text)
 
     except Exception as e:
         log(f"Judge LLM call or parse failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
