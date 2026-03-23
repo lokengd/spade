@@ -32,7 +32,7 @@ def _run_evaluation_on_patch(bug_id: str, run_id: str, patch_code_diff: str) -> 
 
 
 def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCandidate:
-    log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
+    log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.pattern})...", agent_name)
     
     bug_id = state["bug_context"].bug_id
     run_id = state.get("thread_id")
@@ -57,7 +57,7 @@ def _execute_and_evaluate(patch: PatchCandidate, state: SpadeState) -> PatchCand
 
 
 def _update_patch_status(patch: PatchCandidate, evaluation_result: EvaluationResult) -> PatchCandidate:
-    log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.strategy})...", agent_name)
+    log(f"Evaluating patch {patch.id} (v{patch.version}, {patch.pattern})...", agent_name)
     
     log(f"evaluation_result: {evaluation_result}", agent_name, level=logging.DEBUG)
 
@@ -91,7 +91,7 @@ def verify_v1(state: SpadeState):
 
     if state.get("v1_patches_evaluation_result") is None:
         state["v1_patches_evaluation_result"] = []
-    
+
     state["v1_patches_evaluation_result"].extend(evaluation_results)
     
     for index, patch in enumerate(v1_patches):
@@ -156,7 +156,7 @@ def verify_refined(state: SpadeState):
     log(f"{loop_info_str} Refined patch verification (v{patch.version})...", agent_name)
     
     patch = _execute_and_evaluate(patch, state)
-    
+
     # Explicitly check for passed status when updating the DB
     is_passed = (patch.status == "passed")
     db_logger.update_patch(patch.id, tests_passed=is_passed)
@@ -220,9 +220,9 @@ def _handle_fallback(state: SpadeState, current_v: int, failed_patch: PatchCandi
             "failed_traces": [failed_trace_log]
         }
 
-    # Case 3: Inner loops hit, try next patterns?
+    # Case 3: Inner loops hit, try next patterns? hard reset
     if curr_n < settings.N_OUTER_LOOPS:
-        log(f"INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Resetting to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
+        log(f"INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Hard reset to Pattern Selection, preparing for N={curr_n + 1}\n", agent_name, level=logging.WARNING)
         return {
             "resolution_status": [_update_db_status(f"N{curr_n}_failed")], 
             "inner_loop_count": 1, # Reset M

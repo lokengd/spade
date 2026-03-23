@@ -205,7 +205,7 @@ class StatePrinter:
         else:
             p = PatchCandidate(**patch)
         
-        print(f"  PATCH ID: {p.id} | STRATEGY: {p.strategy} | STATUS: {p.status} | VERSION: {p.version}")
+        print(f"  PATCH ID: {p.id} | STRATEGY: {p.pattern} | STATUS: {p.status} | VERSION: {p.version}")
         print(f"    PATTERN RATIONALE: {p.rationale}")
         print(f"    PATCH EXPLANATION: {p.explanation}")
         # Show ALL lines of diff - NO TRUNCATION

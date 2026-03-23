@@ -5,6 +5,9 @@ __pycache__/
 
 # Evalution artifacts
 EVAL_DIR/
+src/evaluation/gold_patch_results/
+src/evaluation/scraping_resolved_instances.txt
+src/evaluation/scraping_unresolved_instances.txt
 
 # C extensions
 *.so

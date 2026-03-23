@@ -13,16 +13,16 @@ pattern_selection:
     1. Perform a **holistic analysis** of the bug issue, error trace, and the multi-level context provided. You must synthesize information across all three tiers:
        - **Suspicious Files:** Identify the broader architecture, module boundaries, and file dependencies.
        - **Related Functions:** Trace the expected data flow and execution path between these functions. Evaluate how they interact, especially if they span across multiple suspicious files.
-       - **Edit Locations (File, Function, Lines):** Examine the localized point of failure, but actively question if this is the root cause or just a downstream symptom.
+       - **Edit Locations (File, Function, Lines):** Examine the localized point of failure, but question if this is the root cause or just a downstream symptom.
     2. STRICT RULE: Do not hyper-focus on a single file or solely on the final crash location. You must evaluate the system as a whole.
     3. Determine the scope of the bug (LOCAL vs. GLOBAL) based on your holistic trace: 
        - **LOCAL:** The root cause is contained, and the fix can be applied directly within the specified 'Edit Locations'.
        - **GLOBAL:** The crash is a symptom of a broader issue. The error originates elsewhere in the execution path (e.g., bad upstream data passing through a 'Related Function', incorrect cross-file API contracts, or bad state management).
-    4. Select the top {k} most suitable fix strategies from the Taxonomy above to address the identified root cause.
+    4. Select the top {k} most suitable fix patterns from the Taxonomy above to address the identified root cause.
     5. STRICT RULE: Do NOT invent or modify patterns. You must use the exact patterns provided in the Taxonomy.
     6. **Provide a Clear Rationale:** For each selected pattern, justify your choice based on your synthesized analysis over the three tiers. 
        - If the scope is **LOCAL**, explain why the root cause is isolated strictly to the 'Edit Locations'.
-       - If the scope is **GLOBAL**, your rationale MUST explicitly identify the upstream dependencies, files, or functions (referencing the 'Suspicious Files' or 'Related Functions' lists) that require modification to resolve the root cause.
+       - If the scope is **GLOBAL**, your rationale MUST identify the upstream dependencies, files, or functions (referencing the 'Suspicious Files' or 'Related Functions' lists) that require modification to resolve the root cause.
 
 
     Respond ONLY with a valid JSON object matching this schema:
@@ -58,6 +58,16 @@ pattern_selection:
     ## Error Trace
     {error_trace}
 
+    {failed_patches_history}
+   
+  failed_patches_history: |
+    ## Previously Failed Patches
+    The patches listed below were previously generated but failed verification. 
+    {failed_patches}
+
+    **Rules for using this history:**
+    1. **Analyze the Flaws:** Use these failures to understand why certain fix-patterns might have been ineffective or incorrectly applied.
+    2. **Pattern Re-evaluation:** If a specific fix-pattern has failed multiple times across different patches, consider whether a different pattern from the taxonomy might be more appropriate.
 
   json_response_zero_shot: | # to be concatenated into system and user prompt
     Respond ONLY with a valid JSON object matching this schema:
@@ -202,6 +212,14 @@ patch_generation:
       "explanation": "Fix incorrect comparison operator in conditional logic.",
       "code_diff": "diff --git a/example/utils.py b/example/utils.py\n--- a/example/utils.py\n+++ b/example/utils.py\n@@ -14,4 +14,4 @@\n def check_limit(count, limit):\n-    if count > limit:\n+    if count >= limit:\n         raise ValueError(\"Limit exceeded\")\n     return True\n"
     }
+  failed_patches_history: |
+    ## Previously Failed Patches
+    The patches listed below were previously generated but failed verification. 
+    {failed_patches}
+
+    **Rules for using this history:**
+    1. **Do Not Repeat:** You MUST NOT generate a patch that is identical to any of these failed attempts.
+    2. **Analyze the Flaws:** Use these failures as negative constraints. Analyze them to understand what specific logic, syntax, or architectural choices to avoid.
 
   pattern_guided:
     system: |
@@ -230,6 +248,8 @@ patch_generation:
       **Description:** {active_pattern_description}
       **Rationale:** {active_pattern_rationale}
 
+      {failed_patches_history}
+
       Generate the patch STRICTLY as a single, valid JSON object. 
       
   unconstrained:
@@ -252,6 +272,8 @@ patch_generation:
       ## Suspicious Code Snippets
       {suspicious_snippets}
 
+      {failed_patches_history}
+
       Generate the patch STRICTLY as a single, valid JSON object. 
 
   refinement:
@@ -267,7 +289,7 @@ patch_generation:
       2. STRICT RULE (Pattern Fidelity): 
         - **IF a Fix-Pattern is provided:** You must base your revised fix *exclusively* on the provided Fix-Pattern, Description, and Rationale. Do NOT apply external logic, invent alternative patterns, or make unrelated code improvements.
         - **IF NO Fix-Pattern is provided:** Focus purely on generating a valid, logical fix based on the bug description and debate feedback.        
-      3. **Incorporate Feedback & Resolve Weaknesses:** Generate an improved patch that directly fixes the flaws of the 'Previous Patch' by integrating the feedback from the debate. Your new patch MUST explicitly address the specific static and dynamic weaknesses raised in the verdict, while maintaining strict adherence to the assigned Fix-Pattern (if provided).
+      3. **Incorporate Feedback & Resolve Weaknesses:** Generate an improved patch that directly fixes the flaws of the 'Previous Patch' by integrating the feedback from the debate. Your new patch MUST address the specific static and dynamic weaknesses raised in the verdict, while maintaining strict adherence to the assigned Fix-Pattern (if provided).
       4. Do NOT include any explanations or conversational text outside of the JSON object.
 
     user: |
@@ -293,6 +315,8 @@ patch_generation:
       ## Static Analysis Argument
       {static_argument}
       
+      {failed_patches_history}
+
       Generate the patch STRICTLY as a single, valid JSON object. 
 
 # =============================================================================
@@ -355,7 +379,7 @@ debater_static_arg_select:
 
     Analyze each candidate on:
     1. Is the diff syntactically correct and minimal (no unnecessary changes)?
-    2. Does the fix align with the declared semantic fix-pattern strategy?
+    2. Does the fix align with the declared semantic fix-pattern?
     3. Does it respect API contracts, type signatures, and module interfaces?
     4. Are there structural anti-patterns (e.g., swallowed exceptions, dead code, implicit type coercions)?
 
@@ -439,7 +463,7 @@ debater_static_arg_refine:
     Analyze:
     1. Does the diff introduce any syntactic or structural issues?
     2. Does it violate the API contracts or type expectations of the surrounding code?
-    3. Is the fix-pattern strategy still appropriate, or should a different pattern be tried?
+    3. Is the fix-pattern still appropriate, or should a different pattern be tried?
     4. What structural changes would make the next version more robust?
 
     Respond with your diagnosis on the reasons for failure and likely recurring mistakes, based on the code structure and without reference to runtime behavior.
@@ -460,7 +484,7 @@ debater_arg_refine:
 
     Failed Patch (v{version}):
       ID: {patch_id}
-      Strategy: {patch_strategy}
+      Pattern: {patch_pattern}
       Diff:
     {patch_diff}
       Execution Trace: {execution_trace}
@@ -687,7 +711,7 @@ judge_refine:
 
     Failed Patch (v{version}):
       ID: {patch_id}
-      Strategy: {patch_strategy}
+      Pattern: {patch_pattern}
       Built on v1: {origin_v1_id}
       Diff: {patch_diff}
       Execution Trace: {execution_trace}

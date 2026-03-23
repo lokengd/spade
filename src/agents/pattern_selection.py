@@ -7,6 +7,7 @@ from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.core import settings
 from src.utils.db_logger import db_logger
+from src.utils.prompt_helper import get_failed_patches_section
 
 agent_name = "Pattern_Selection"
 
@@ -77,13 +78,18 @@ def run(state: SpadeState):
     if not locations_str.strip():
         locations_str = "No specific locations identified by Fault Localization."
 
+    # Format failed patches section
+    v1_patches = state.get("v1_patches", [])
+    refined_patches = state.get("refined_patches", [])
+    failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "pattern_selection")
 
     # Format the User Prompt
     user_template = prompts_config["pattern_selection"]["user"]
     user_prompt = user_template.format(
         issue_text=bug_context.issue_text,
         error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-        suspicious_locations=locations_str.strip()
+        suspicious_locations=locations_str.strip(),
+        failed_patches_history=failed_patches_history
     )
 
     # Append json_response with one shot prompt

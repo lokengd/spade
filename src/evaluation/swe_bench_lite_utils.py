@@ -23,7 +23,8 @@ from src.evaluation.constants import (
 	VALIDATION_MAX_WORKERS,
 	VALIDATION_PREDICTIONS_PATH,
 	VALIDATION_RUN_ID,
-	DEFAULT_PREDICTIONS_PATH
+	DEFAULT_PREDICTIONS_PATH,
+	NO_CHANGE_PATCH
 )
 
 CALLER = "Evaluator"
@@ -364,9 +365,7 @@ def run_evaluation_with_no_patch(instance_id: str, run_id: str, max_workers: int
 	"""Run SWE-bench evaluation on a specific instance without applying any patches, to get the error trace."""
 	log(f"Running evaluation with no patch for instance {instance_id} with run ID {run_id}...", caller=CALLER, level=logging.INFO)
 
-	no_change_patch = "diff --git a/.placeholder b/.placeholder\nindex e69de29..e69de29 100644\n--- a/.placeholder\n+++ b/.placeholder\n"
-
-	return run_evaluation_on_instance(instance_id=instance_id, run_id=run_id, patch=no_change_patch, max_workers=max_workers)
+	return run_evaluation_on_instance(instance_id=instance_id, run_id=run_id, patch=NO_CHANGE_PATCH, max_workers=max_workers)
 
 
 def run_evaluation_on_instance_in_parallel(instance_id: str, run_id: str, patches: list[str]) -> list[EvaluationResult]:
