@@ -100,6 +100,8 @@ class DBLogger:
                     loop_m INTEGER,
                     loop_v INTEGER,
                     pattern_applied TEXT,
+                    pattern_rationale TEXT,
+                    patch_explanation TEXT,
                     patch_diff TEXT,
                     tests_passed BOOLEAN DEFAULT 0, -- Is it "Plausible"? (not correctness, just whether it passes tests)
                     previous_feedback TEXT,
@@ -293,14 +295,14 @@ class DBLogger:
             ))
             return cursor.lastrowid
 
-    def log_patch(self, patch_id: str, run_id: str, patch_version: int, loop_n: int, loop_m: int, loop_v: int, pattern: str, diff: str, tests_passed: bool = False, feedback: str = None):
+    def log_patch(self, patch_id: str, run_id: str, patch_version: int, loop_n: int, loop_m: int, loop_v: int, pattern: str, rationale: str, explanation: str, diff: str, tests_passed: bool = False, feedback: str = None):
         with sqlite3.connect(self.db_path) as conn:
             conn.cursor().execute("""
                 INSERT OR REPLACE INTO patch_evaluations (
                     patch_id, run_id, patch_version, 
-                    loop_n, loop_m, loop_v, pattern_applied, patch_diff, tests_passed, previous_feedback, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (patch_id, run_id, patch_version, loop_n, loop_m, loop_v, pattern, diff, tests_passed, feedback))
+                    loop_n, loop_m, loop_v, pattern_applied, pattern_rationale, patch_explanation, patch_diff, tests_passed, previous_feedback, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (patch_id, run_id, patch_version, loop_n, loop_m, loop_v, pattern, rationale, explanation, diff, tests_passed, feedback))
 
     def update_patch(self, patch_id: str, tests_passed: bool):
         with sqlite3.connect(self.db_path) as conn:

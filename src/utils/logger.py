@@ -86,7 +86,7 @@ def get_log_header(experiment_id: str) -> str:
     lines = [
         "",
         "*" * width,
-        f"SPADE Experiment: {experiment_id}",
+        f"Start of Experiment: {experiment_id}",
         "-" * width,
         f"Orchestration Parameters:",
         f" K (Top-Patterns)     : {settings.K_PATTERNS}",
@@ -97,6 +97,15 @@ def get_log_header(experiment_id: str) -> str:
     ]
     return "\n".join(lines)
 
+def get_log_footer(experiment_id: str) -> str:
+    width = 40
+    lines = [
+        "",
+        "-" * width,
+        f"End of Experiment: {experiment_id}",
+        "*" * width,
+    ]
+    return "\n".join(lines)
 
 def save_memory_state(shared_memory_state: dict) -> str:
     """Saves the shared memory state as a formatted string to a separate file and returns a message with the path."""

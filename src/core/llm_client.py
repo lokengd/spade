@@ -91,7 +91,25 @@ class LLM_Client:
 
         # Format the trajectory filename: <folder_name>_<agent_name>_traj.json
         clean_agent_name = self.agent_name.replace("] [", "_").replace("[", "").replace("]", "").replace(" ", "_")
-        filename = f"{log_dir.name}_{clean_agent_name}_traj.json"
+        
+        # Add loop suffixes if available
+        suffix = ""
+        if loop_info:
+            n = loop_info.get("n")
+            m = loop_info.get("m")
+            v = loop_info.get("v")
+            
+            if "Pattern_Selection" in clean_agent_name and n is not None:
+                suffix = f"_n{n}"
+            elif "PatchGen" in clean_agent_name and n is not None and m is not None and v is not None:
+                suffix = f"_n{n}_m{m}_v{v}"
+            # For other agents, use the full suffix if all info is present
+            elif n is not None and m is not None and v is not None:
+                suffix = f"_n{n}_m{m}_v{v}"
+            elif n is not None:
+                suffix = f"_n{n}"
+
+        filename = f"{log_dir.name}_{clean_agent_name}{suffix}_traj.json"
         filepath = log_dir / filename
         txt_filepath = filepath.with_suffix(".txt")
 
@@ -159,7 +177,7 @@ class LLM_Client:
             log(f"LLM Text Gen Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             raise
 
-    def generate_structured(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
+    def generate_json_response(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """

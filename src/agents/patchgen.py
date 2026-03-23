@@ -40,7 +40,7 @@ def generate_v1_patch(state: SpadeState):
 
     log_prefix = "Unconstrained" if is_unconstrained else pattern_str
     # User requested format: [PatchGen] [PatternName]
-    specific_agent_name = f"{agent_base_name}] [{strategy}"
+    specific_agent_name = f"{agent_base_name}-{strategy}"
     log(f"{loop_info_str} {log_prefix} PatchGen working on strategy -> {pattern_str}", specific_agent_name)
 
     agent_config = settings.LLM_AGENTS["patchgen"]
@@ -112,13 +112,15 @@ def generate_v1_patch(state: SpadeState):
     raw_telemetry = {}
 
     try:
-        structured_response, metrics, raw_telemetry = client.generate_structured(
+        structured_response, metrics, raw_telemetry = client.generate_json_response(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=PatchGenerationResponse,
             loop_info=loop_info_dict
         )
         code_diff = structured_response.code_diff
+        explanation = structured_response.explanation
+
         log(f"{loop_info_str} {log_prefix} Generated v1 patch: {patch_id} using {pattern_str}", specific_agent_name, level=logging.INFO)
     except Exception as e:
         log(f"{loop_info_str} {log_prefix} Error generating v1 patch: {e}", specific_agent_name, level=logging.ERROR)
@@ -138,10 +140,13 @@ def generate_v1_patch(state: SpadeState):
             loop_m=state.get("inner_loop_count", 1),
             loop_v=1,
             pattern=strategy,
+            rationale=pattern_rationale,
+            explanation=explanation,
             diff=code_diff,
-            tests_passed=False
+            tests_passed=False, #new patch gen, not yet passed
+            feedback=""
         )
-
+ 
     patch = PatchCandidate(
         id=patch_id, 
         code_diff=code_diff,
@@ -150,7 +155,8 @@ def generate_v1_patch(state: SpadeState):
         origin_v1_id=patch_id, # v1 patch is its own origin
         version=1,
         status="pending",
-        execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available."
+        execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+        explanation=explanation,
     )
     
     return {
@@ -159,7 +165,8 @@ def generate_v1_patch(state: SpadeState):
     }
 
 def generate_refined_patch(state: SpadeState):
-    origin_id = state.get("current_v1_id", "unknown_origin")
+    ## BUG? origin_id should be renamed to winning_patch_id ? winning_patch_id maybe in v2, or v3 if v_patience is more than 2 
+    origin_id = state.get("current_v1_id", "unknown_origin") 
     refined_patches = state.get("refined_patches", [])
     v1_patches = state.get("v1_patches", [])
     run_id = state.get("thread_id")
@@ -170,27 +177,27 @@ def generate_refined_patch(state: SpadeState):
         if p.origin_v1_id == origin_id:
             previous_patch = p
             break
-            
+    
+    active_pattern = ""           
     pattern_rationale = ""
     if previous_patch:
-        log(f"Resuming refinement chain for {origin_id} from v{previous_patch.version}...", agent_base_name)
+        prev_version = previous_patch.version
+        log(f"Start refinement chain for {origin_id} from v{prev_version}...", agent_base_name)
         previous_patch_diff = previous_patch.code_diff
         active_pattern = previous_patch.strategy
-        active_pattern_rationale = previous_patch.rationale or ""
-        v_now = previous_patch.version + 1
+        pattern_rationale = previous_patch.rationale or ""
+        v_now = prev_version + 1
     else:
-        # First time refining this specific winner
-        log(f"Starting refinement for {origin_id} (v2).", agent_base_name)
+        log(f"Starting refinement for {origin_id} (v2)...", agent_base_name)
         v_now = 2
         previous_patch_diff = ""
-        active_pattern = P_UNCONSTRAINED
-        
+        active_pattern = P_UNCONSTRAINED # default for now, may be overwritten at code segment below        
         # Find the v1 base
         for p in v1_patches:
             if p.id == origin_id:
                 previous_patch_diff = p.code_diff
                 active_pattern = p.strategy
-                active_pattern_rationale = p.rationale or ""
+                pattern_rationale = p.rationale or ""
                 break
 
     # Update version before getting loop info
@@ -198,7 +205,7 @@ def generate_refined_patch(state: SpadeState):
     temp_state["current_patch_version"] = v_now
     loop_info_str, loop_info_dict = get_loop_info(temp_state, include_inner=True)
     
-    specific_agent_name = f"{agent_base_name}] [{active_pattern}"
+    specific_agent_name = f"{agent_base_name}-{active_pattern}"
     log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
 
     agent_config = settings.LLM_AGENTS["patchgen"]
@@ -212,9 +219,9 @@ def generate_refined_patch(state: SpadeState):
     pattern_description = prompts_config.get("pattern_taxonomy", {}).get(active_pattern, "")
     user_prompt = prompts_config["patch_generation"]["refinement"]["user"].format(
         issue_text=state["bug_context"].issue_text,
-        active_pattern=active_pattern,
-        active_pattern_description=pattern_description,
-        active_pattern_rationale=pattern_rationale,
+        active_pattern=active_pattern or "No available.",
+        active_pattern_description=pattern_description or "No available.",
+        active_pattern_rationale=pattern_rationale or "No available.", 
         version=v_now - 1, 
         previous_patch_diff=previous_patch_diff,
         verdict=state.get("verdict", "No verdict available."),
@@ -234,13 +241,15 @@ def generate_refined_patch(state: SpadeState):
     raw_telemetry = {}
 
     try:
-        structured_response, metrics, raw_telemetry = client.generate_structured(
+        structured_response, metrics, raw_telemetry = client.generate_json_response(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             response_model=PatchGenerationResponse,
             loop_info=loop_info_dict
         )
         code_diff = structured_response.code_diff
+        explanation = structured_response.explanation
+
         log(f"{loop_info_str} Generated refined patch: {patch_id}", specific_agent_name, level=logging.INFO)
     except Exception as e:
         log(f"{loop_info_str} Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
@@ -260,8 +269,10 @@ def generate_refined_patch(state: SpadeState):
             loop_m=state.get("inner_loop_count", 1),
             loop_v=v_now,
             pattern=active_pattern,
+            rationale=pattern_rationale,
+            explanation=explanation,
             diff=code_diff,
-            tests_passed=False,
+            tests_passed=False, #new patch gen, not yet passed
             feedback=state.get("verdict")
         )
 
@@ -272,7 +283,8 @@ def generate_refined_patch(state: SpadeState):
         rationale=pattern_rationale,
         origin_v1_id=origin_id,
         version=v_now,
-        status="pending"
+        status="pending",
+        explanation=explanation,
     )
 
     return {
