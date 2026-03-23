@@ -119,4 +119,8 @@ if __name__ == "__main__":
     
     cleanup_evaluation_dir()
     save_resolved_and_unresolved_instances(resolved_instances, unresolved_instances)
+
+    print("Resolved instances:", len(resolved_instances))
+    print("Unresolved instances:", len(unresolved_instances))
+
     print("Evaluation complete. Cleaned up evaluation directory.")
