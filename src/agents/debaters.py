@@ -31,26 +31,26 @@ def _format_candidates_block(v1_patches: list) -> str:
     lines = []
     for p in v1_patches:
         pid = p.get("id", "?") if isinstance(p, dict) else getattr(p, "id", "?")
-        strategy = p.get("strategy", "?") if isinstance(p, dict) else getattr(p, "strategy", "?")
+        pattern = p.get("pattern", "?") if isinstance(p, dict) else getattr(p, "pattern", "?")
         diff = p.get("code_diff", "(empty)") if isinstance(p, dict) else getattr(p, "code_diff", "(empty)")
-        lines.append(f"--- Candidate {pid} [strategy: {strategy}] ---\n{diff or '(empty diff)'}\n")
+        lines.append(f"--- Candidate {pid} [pattern: {pattern}] ---\n{diff or '(empty diff)'}\n")
     return "\n".join(lines)
 
 
 def _get_patch_fields(patch) -> dict:
     """Extract fields from a PatchCandidate whether it is a dict or Pydantic model."""
     if patch is None:
-        return {"id": "none", "strategy": "none", "code_diff": "(none)", "execution_trace": "(none)"}
+        return {"id": "none", "pattern": "none", "code_diff": "(none)", "execution_trace": "(none)"}
     if isinstance(patch, dict):
         return {
             "id": patch.get("id", "?"),
-            "strategy": patch.get("strategy", "?"),
+            "pattern": patch.get("pattern", "?"),
             "code_diff": patch.get("code_diff", "(empty)") or "(empty)",
             "execution_trace": patch.get("execution_trace", "(none)") or "(none)",
         }
     return {
         "id": getattr(patch, "id", "?"),
-        "strategy": getattr(patch, "strategy", "?"),
+        "pattern": getattr(patch, "pattern", "?"),
         "code_diff": getattr(patch, "code_diff", "(empty)") or "(empty)",
         "execution_trace": getattr(patch, "execution_trace", "(none)") or "(none)",
     }
@@ -118,7 +118,7 @@ def generate_dynamic_arg(state: SpadeState):
         user_prompt = prompts["debater_arg_refine"]["user"].format(
             version=v,
             patch_id=pf["id"],
-            patch_strategy=pf["strategy"],
+            patch_pattern=pf["pattern"],
             patch_diff=pf["code_diff"],
             execution_trace=pf["execution_trace"],
             failed_traces=json.dumps(state.get("failed_traces", [])[-5:]),
@@ -152,7 +152,7 @@ def generate_static_arg(state: SpadeState):
         user_prompt = prompts["debater_arg_refine"]["user"].format(
             version=v,
             patch_id=pf["id"],
-            patch_strategy=pf["strategy"],
+            patch_pattern=pf["pattern"],
             patch_diff=pf["code_diff"],
             execution_trace=pf["execution_trace"],
             failed_traces=json.dumps(state.get("failed_traces", [])[-5:]),

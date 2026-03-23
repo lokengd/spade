@@ -8,6 +8,7 @@ from src.core.llm_client import LLM_Client
 from src.utils.snippet_extractor import extract_snippet
 from src.core import settings
 from src.utils.db_logger import db_logger
+from src.utils.prompt_helper import get_failed_patches_section
 
 agent_base_name = "PatchGen"
 
@@ -16,7 +17,7 @@ def load_prompts():
         return yaml.safe_load(f)
 
 class PatchGenerationResponse(BaseModel):
-    explanation: str = Field(description="Brief explanation of the fix strategy.")
+    explanation: str = Field(description="Brief explanation of the fix pattern.")
     code_diff: str = Field(description="The generated patch in UNIFIED DIFF format.")
 
 def generate_v1_patch(state: SpadeState):
@@ -31,17 +32,17 @@ def generate_v1_patch(state: SpadeState):
     # Normalize pattern info for logging and prompting
     pattern_rationale = ""
     if isinstance(active_pattern, dict):
-        strategy = active_pattern.get('pattern_id')
-        pattern_str = f"{strategy} ({active_pattern.get('scope')})"
+        pattern = active_pattern.get('pattern_id')
+        pattern_str = f"{pattern} ({active_pattern.get('scope')})"
         pattern_rationale = active_pattern.get('rationale', "")
     else:
         pattern_str = str(active_pattern)
-        strategy = str(active_pattern)
+        pattern = str(active_pattern)
 
     log_prefix = "Unconstrained" if is_unconstrained else pattern_str
     # User requested format: [PatchGen] [PatternName]
-    specific_agent_name = f"{agent_base_name}-{strategy}"
-    log(f"{loop_info_str} {log_prefix} PatchGen working on strategy -> {pattern_str}", specific_agent_name)
+    specific_agent_name = f"{agent_base_name}-{pattern}"
+    log(f"{loop_info_str} {log_prefix} PatchGen working on pattern -> {pattern_str}", specific_agent_name)
 
     agent_config = settings.LLM_AGENTS["patchgen"]
     client = LLM_Client(agent=specific_agent_name, **agent_config)
@@ -82,6 +83,11 @@ def generate_v1_patch(state: SpadeState):
     if not suspicious_snippets:
         suspicious_snippets = "No code snippets available."
 
+    # Format failed patches section
+    v1_patches = state.get("v1_patches", [])
+    refined_patches = state.get("refined_patches", [])
+    failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=pattern)
+
     # Format prompts based on unconstrained flag
     if is_unconstrained:
         system_prompt = prompts_config["patch_generation"]["unconstrained"]["system"]
@@ -90,10 +96,11 @@ def generate_v1_patch(state: SpadeState):
         user_prompt = prompts_config["patch_generation"]["unconstrained"]["user"].format(
             issue_text=bug_context.issue_text,
             error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-            suspicious_snippets=suspicious_snippets
+            suspicious_snippets=suspicious_snippets,
+            failed_patches_history=failed_patches_history
         )
     else:
-        pattern_description = prompts_config.get("pattern_taxonomy", {}).get(strategy, "")
+        pattern_description = prompts_config.get("pattern_taxonomy", {}).get(pattern, "")
         system_prompt = prompts_config["patch_generation"]["pattern_guided"]["system"]
         # Append json_response with one shot prompt
         system_prompt += "\n" + prompts_config["patch_generation"]["json_response_one_shot"]
@@ -103,7 +110,8 @@ def generate_v1_patch(state: SpadeState):
             suspicious_snippets=suspicious_snippets,
             active_pattern=pattern_str,
             active_pattern_description=pattern_description,
-            active_pattern_rationale=pattern_rationale
+            active_pattern_rationale=pattern_rationale,
+            failed_patches_history=failed_patches_history
         )
 
     patch_id = f"v1_{uuid.uuid4().hex[:6]}"
@@ -131,7 +139,7 @@ def generate_v1_patch(state: SpadeState):
 
     # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
-        db_logger.log_telemetry(run_id, f"{agent_base_name}_{strategy}", raw_telemetry)
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
         db_logger.log_patch(
             patch_id=patch_id,
             run_id=run_id,
@@ -139,7 +147,7 @@ def generate_v1_patch(state: SpadeState):
             loop_n=state.get("outer_loop_count", 1),
             loop_m=state.get("inner_loop_count", 1),
             loop_v=1,
-            pattern=strategy,
+            pattern=pattern,
             rationale=pattern_rationale,
             explanation=explanation,
             diff=code_diff,
@@ -150,7 +158,7 @@ def generate_v1_patch(state: SpadeState):
     patch = PatchCandidate(
         id=patch_id, 
         code_diff=code_diff,
-        strategy=strategy,
+        pattern=pattern,
         rationale=pattern_rationale,
         origin_v1_id=patch_id, # v1 patch is its own origin
         version=1,
@@ -184,7 +192,7 @@ def generate_refined_patch(state: SpadeState):
         prev_version = previous_patch.version
         log(f"Start refinement chain for {origin_id} from v{prev_version}...", agent_base_name)
         previous_patch_diff = previous_patch.code_diff
-        active_pattern = previous_patch.strategy
+        active_pattern = previous_patch.pattern
         pattern_rationale = previous_patch.rationale or ""
         v_now = prev_version + 1
     else:
@@ -196,7 +204,7 @@ def generate_refined_patch(state: SpadeState):
         for p in v1_patches:
             if p.id == origin_id:
                 previous_patch_diff = p.code_diff
-                active_pattern = p.strategy
+                active_pattern = p.pattern
                 pattern_rationale = p.rationale or ""
                 break
 
@@ -212,6 +220,9 @@ def generate_refined_patch(state: SpadeState):
     client = LLM_Client(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 
+    # Format failed patches section
+    failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=active_pattern)
+
     # Format prompts
     system_prompt = prompts_config["patch_generation"]["refinement"]["system"]
     # Append json_response with one shot prompt
@@ -226,7 +237,8 @@ def generate_refined_patch(state: SpadeState):
         previous_patch_diff=previous_patch_diff,
         verdict=state.get("verdict", "No verdict available."),
         dynamic_argument=state.get("dynamic_argument", "No argument."),
-        static_argument=state.get("static_argument", "No argument.")
+        static_argument=state.get("static_argument", "No argument."),
+        failed_patches_history=failed_patches_history
     )
 
     # Maintain lineage by using the same UUID suffix as the original v1 winner
@@ -279,7 +291,7 @@ def generate_refined_patch(state: SpadeState):
     patch = PatchCandidate(
         id=patch_id, 
         code_diff=code_diff,
-        strategy=active_pattern,
+        pattern=active_pattern,
         rationale=pattern_rationale,
         origin_v1_id=origin_id,
         version=v_now,
