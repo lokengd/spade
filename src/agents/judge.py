@@ -186,20 +186,26 @@ def run(state: SpadeState):
             loop_info=loop_info_dict
         )
     except Exception as e:
-        # Try to salvage from raw response with key remapping
         log(f"Judge structured parse failed: {e}. Attempting key remapping.", agent_name, level=logging.WARNING)
-        try:
-            raw = raw_telemetry.get("response", {}) if raw_telemetry else {}
-            if not isinstance(raw, dict):
-                raw = json.loads(str(raw)) if raw else {}
-            remapped = {
-                "winning_patch_id": raw.get("winning_patch_id") or raw.get("judge_decision") or raw.get("winning_patch") or raw.get("winner") or "",
-                "improvement_instructions": raw.get("improvement_instructions") or raw.get("reasoning") or raw.get("instructions") or "",
-                "justification": raw.get("justification") or raw.get("reasoning") or raw.get("rationale") or "",
-            }
-            verdict = JudgeVerdict(**remapped)
-        except Exception:
-            # True fallback
+        verdict = None
+        
+        # Try to salvage from raw JSON attached to exception
+        raw = getattr(e, "raw_json", None)
+        if raw and raw != "No response received":
+            try:
+                raw_dict = json.loads(raw) if isinstance(raw, str) else raw
+                remapped = {
+                    "winning_patch_id": raw_dict.get("winning_patch_id") or raw_dict.get("judge_decision") or raw_dict.get("winning_patch") or raw_dict.get("winner") or raw_dict.get("patch_id") or "",
+                    "improvement_instructions": raw_dict.get("improvement_instructions") or raw_dict.get("refinement_blueprint") or raw_dict.get("reasoning") or raw_dict.get("instructions") or "",
+                    "justification": raw_dict.get("justification") or raw_dict.get("reasoning") or raw_dict.get("rationale") or "",
+                }
+                verdict = JudgeVerdict(**remapped)
+                log(f"Key remapping succeeded: {remapped['winning_patch_id']}", agent_name, level=logging.INFO)
+            except Exception as remap_err:
+                log(f"Key remapping also failed: {remap_err}", agent_name, level=logging.WARNING)
+        
+        # True fallback if remapping didn't work
+        if verdict is None:
             fallback_id = "unknown"
             if v1_patches:
                 fallback_id = (v1_patches[0].get("id", "unknown")
