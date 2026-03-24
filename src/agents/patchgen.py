@@ -87,7 +87,10 @@ def generate_v1_patch(state: SpadeState):
     v1_patches = state.get("v1_patches", [])
     refined_patches = state.get("refined_patches", [])
     failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=pattern)
+    # debate_history = state.get("debate_history", []) #for when we want to include debate history later
+    # debate_history_section = get_debate_history_section(prompts_config, debate_history, "patch_generation")
 
+    
     # Format prompts based on unconstrained flag
     if is_unconstrained:
         system_prompt = prompts_config["patch_generation"]["unconstrained"]["system"]

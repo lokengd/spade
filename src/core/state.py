@@ -76,6 +76,20 @@ class PatchCandidate(BaseModel):
     execution_trace: Optional[str] = None
     explanation: Optional[str] = None # explanation of why the patch is generated in such way
 
+class DebateRecord(BaseModel):
+    """Snapshot of one full debate round, preserved for future PatchGen context."""
+    loop_n: int
+    loop_m: int
+    loop_v: int
+    patch_id: str  # The patch being debated (winner ID or refined patch ID)
+    dynamic_argument: str = ""
+    static_argument: str = ""
+    dynamic_rebuttal: str = ""
+    static_rebuttal: str = ""
+    winning_patch_id: str = ""
+    improvement_instructions: str = ""
+    justification: str = ""
+
 def add_metrics(old_data: dict, new_data: dict) -> dict:
     """Reducer function to safely add token and cost metrics together."""
     if not old_data: old_data = {}
@@ -102,6 +116,9 @@ class SpadeState(TypedDict):
     # Historical trace logs for analysis and potential LLM feedback
     historical_verdicts: Annotated[List[str], operator.add]
     failed_traces: Annotated[List[str], operator.add]
+    
+    # Full debate history for PatchGen context
+    debate_history: Annotated[List[DebateRecord], operator.add]
     
     # Active Debate (Overwritten each inner loop)
     dynamic_argument: Optional[str]

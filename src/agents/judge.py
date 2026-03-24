@@ -7,6 +7,7 @@ from src.utils.logger import log, get_loop_info
 from src.core import settings
 from src.utils.db_logger import db_logger
 import logging
+from src.core.state import DebateRecord
 
 agent_name = "Judge"
 
@@ -221,9 +222,25 @@ def run(state: SpadeState):
 
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.
+    
+    debate_record = DebateRecord(
+        loop_n=state.get("outer_loop_count", 1),
+        loop_m=state.get("inner_loop_count", 1),
+        loop_v=state.get("current_patch_version", 1),
+        patch_id=validated_id,
+        dynamic_argument=state.get("dynamic_argument", ""),
+        static_argument=state.get("static_argument", ""),
+        dynamic_rebuttal=state.get("dynamic_rebuttal", ""),
+        static_rebuttal=state.get("static_rebuttal", ""),
+        winning_patch_id=validated_id,
+        improvement_instructions=verdict.improvement_instructions,
+        justification=verdict.justification,
+    )
+
     return {
         "verdict": verdict_str,
         "historical_verdicts": [verdict_str],
+        "debate_history": [debate_record],
         "current_v1_id": validated_id,
         "total_metrics": metrics,
     }
