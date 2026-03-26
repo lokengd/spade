@@ -5,6 +5,7 @@ from src.utils.db_logger import db_logger
 import os
 import logging
 from pathlib import Path
+import re
 
 
 agent_name = "Reproduction"
@@ -27,6 +28,11 @@ def _read_error_trace_of_instance_from_file(instance_id: str) -> str | None:
     else:
         log(f"No error trace file found for instance {instance_id} at {trace_file}", caller=agent_name, level=logging.WARNING)
         return None
+
+
+def _remove_ansi_escape_sequences(text: str) -> str:
+    ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+    return ansi_escape.sub('', text)
 
 
 def run(state: SpadeState):
@@ -66,7 +72,12 @@ def run(state: SpadeState):
 
         if _pre_processed_error_trace:
             log(f"Using pre-processed error trace for instance {bug_id} from file.", caller=agent_name)
-            evaluation_result.test_output = _pre_processed_error_trace
+            
+            # log(f"Original pre-processed output: {_pre_processed_error_trace[:500]}...", caller=agent_name)  # Log the first 500 characters of the trace
+            log(f"Removing ANSI escape sequences from pre-processed error trace for instance {bug_id}.", caller=agent_name)
+            log(f"Cleaned pre-processed output: {_remove_ansi_escape_sequences(_pre_processed_error_trace)[:500]}...", caller=agent_name)  # Log the first 500 characters of the cleaned trace
+
+            evaluation_result.test_output = _remove_ansi_escape_sequences(_pre_processed_error_trace)
         else:
             log(f"No pre-processed error trace found for instance {bug_id}. Using error trace from evaluation result.", caller=agent_name)
 
