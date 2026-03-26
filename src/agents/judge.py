@@ -7,6 +7,7 @@ from src.utils.logger import log, get_loop_info
 from src.core import settings
 from src.utils.db_logger import db_logger
 import logging
+from src.core.state import DebateRecord
 
 agent_name = "Judge"
 
@@ -112,20 +113,20 @@ def _validate_winning_patch_id(verdict: JudgeVerdict, v1_patches: list) -> str:
 # Main Judge Node
 # ---------------------------------------------------------------------------
 
-def _parse_verdict_from_text(raw_text: str) -> JudgeVerdict:
-    """Parse a JudgeVerdict from raw LLM text output. 
-    Strips markdown fences and attempts JSON parsing."""
-    cleaned = raw_text.strip()
-    # Strip markdown code fences if present
-    if cleaned.startswith("```"):
-        # Remove opening fence (```json or ```)
-        first_newline = cleaned.index("\n")
-        cleaned = cleaned[first_newline + 1:]
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3].strip()
+# def _parse_verdict_from_text(raw_text: str) -> JudgeVerdict:
+#     """Parse a JudgeVerdict from raw LLM text output. 
+#     Strips markdown fences and attempts JSON parsing."""
+#     cleaned = raw_text.strip()
+#     # Strip markdown code fences if present
+#     if cleaned.startswith("```"):
+#         # Remove opening fence (```json or ```)
+#         first_newline = cleaned.index("\n")
+#         cleaned = cleaned[first_newline + 1:]
+#     if cleaned.endswith("```"):
+#         cleaned = cleaned[:-3].strip()
     
-    parsed = json.loads(cleaned)
-    return JudgeVerdict(**parsed)
+#     parsed = json.loads(cleaned)
+#     return JudgeVerdict(**parsed)
 
 def run(state: SpadeState):
     prompts = _load_prompts()
@@ -184,20 +185,36 @@ def run(state: SpadeState):
             response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
-        if run_id and raw_telemetry:
-            db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
-
     except Exception as e:
-        log(f"Judge LLM call or parse failed: {e}. Generating fallback verdict.", agent_name, level=logging.ERROR)
-        fallback_id = "unknown"
-        if v1_patches:
-            fallback_id = (v1_patches[0].get("id", "unknown")
-                          if isinstance(v1_patches[0], dict) else v1_patches[0].id)
-        verdict = JudgeVerdict(
-            winning_patch_id=fallback_id,
-            improvement_instructions="Address the error trace directly. Ensure the fix is minimal and does not introduce regressions.",
-            justification="Fallback verdict due to LLM failure.",
-        )
+        log(f"Judge structured parse failed: {e}. Attempting key remapping.", agent_name, level=logging.WARNING)
+        verdict = None
+        
+        # Try to salvage from raw JSON attached to exception
+        raw = getattr(e, "raw_json", None)
+        if raw and raw != "No response received":
+            try:
+                raw_dict = json.loads(raw) if isinstance(raw, str) else raw
+                remapped = {
+                    "winning_patch_id": raw_dict.get("winning_patch_id") or raw_dict.get("judge_decision") or raw_dict.get("winning_patch") or raw_dict.get("winner") or raw_dict.get("patch_id") or "",
+                    "improvement_instructions": raw_dict.get("improvement_instructions") or raw_dict.get("refinement_blueprint") or raw_dict.get("reasoning") or raw_dict.get("instructions") or "",
+                    "justification": raw_dict.get("justification") or raw_dict.get("reasoning") or raw_dict.get("rationale") or "",
+                }
+                verdict = JudgeVerdict(**remapped)
+                log(f"Key remapping succeeded: {remapped['winning_patch_id']}", agent_name, level=logging.INFO)
+            except Exception as remap_err:
+                log(f"Key remapping also failed: {remap_err}", agent_name, level=logging.WARNING)
+        
+        # True fallback if remapping didn't work
+        if verdict is None:
+            fallback_id = "unknown"
+            if v1_patches:
+                fallback_id = (v1_patches[0].get("id", "unknown")
+                              if isinstance(v1_patches[0], dict) else v1_patches[0].id)
+            verdict = JudgeVerdict(
+                winning_patch_id=fallback_id,
+                improvement_instructions="Address the error trace directly. Ensure the fix is minimal and does not introduce regressions.",
+                justification="Fallback verdict due to LLM failure.",
+            )
 
     # Validate the winning patch ID against the actual v1 pool
     validated_id = _validate_winning_patch_id(verdict, v1_patches)
@@ -211,9 +228,25 @@ def run(state: SpadeState):
 
     # NOTE: current_patch_version is NOT set here. test_agent._handle_fallback
     # is the sole owner of version numbering to avoid double-increment.
+    
+    debate_record = DebateRecord(
+        loop_n=state.get("outer_loop_count", 1),
+        loop_m=state.get("inner_loop_count", 1),
+        loop_v=state.get("current_patch_version", 1),
+        patch_id=validated_id,
+        dynamic_argument=state.get("dynamic_argument", ""),
+        static_argument=state.get("static_argument", ""),
+        dynamic_rebuttal=state.get("dynamic_rebuttal", ""),
+        static_rebuttal=state.get("static_rebuttal", ""),
+        winning_patch_id=validated_id,
+        improvement_instructions=verdict.improvement_instructions,
+        justification=verdict.justification,
+    )
+
     return {
         "verdict": verdict_str,
         "historical_verdicts": [verdict_str],
+        "debate_history": [debate_record],
         "current_v1_id": validated_id,
         "total_metrics": metrics,
     }

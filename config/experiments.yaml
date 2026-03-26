@@ -8,7 +8,7 @@ experiments:
     k_patterns: 2
     n_outer_loops: 1
     m_inner_loops: 1
-    v_patience: 2
+    v_patience: 1
     bug_list: ["scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
     snippet_context_lines: 15

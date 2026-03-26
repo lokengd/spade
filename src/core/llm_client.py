@@ -213,4 +213,5 @@ class LLM_Client:
         except Exception as e:
             log(f"LLM Structured Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             log(f"Raw LLM Response that possibly caused the error: \n{raw_json}", caller=self.agent_name, level=logging.ERROR)
+            e.raw_json = raw_json
             raise

@@ -220,6 +220,10 @@ patch_generation:
     **Rules for using this history:**
     1. **Do Not Repeat:** You MUST NOT generate a patch that is identical to any of these failed attempts.
     2. **Analyze the Flaws:** Use these failures as negative constraints. Analyze them to understand what specific logic, syntax, or architectural choices to avoid.
+  
+  # debate_history_section: | # to add debate history later
+  #   **Prior Debate History (for context — do NOT repeat failed approaches):**
+  #   {debate_history}
 
   pattern_guided:
     system: |
