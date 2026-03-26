@@ -1,0 +1,25 @@
+======================================================================
+FAIL: test_cleanse_setting_recurses_in_list_tuples (view_tests.tests.test_debug.ExceptionReporterFilterTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/view_tests/tests/test_debug.py", line 1280, in test_cleanse_setting_recurses_in_list_tuples
+    cleansed,
+AssertionError: Lists differ: [{'lo[24 chars]d': 'secret', 'apps': ({'name': 'app1', 'api_k[185 chars]7a'}] != [{'lo[24 chars]d': '********************', 'apps': ({'name': [167 chars]**'}]
+
+First differing element 0:
+{'log[23 chars]d': 'secret', 'apps': ({'name': 'app1', 'api_k[128 chars]16']}
+{'log[23 chars]d': '********************', 'apps': ({'name': [126 chars]***'}
+
+- [{'apps': ({'api_key': 'a06b-c462cffae87a', 'name': 'app1'},
+-            {'api_key': 'a9f4-f152e97ad808', 'name': 'app2'}),
++ [{'apps': ({'api_key': '********************', 'name': 'app1'},
++            {'api_key': '********************', 'name': 'app2'}),
+    'login': 'cooper',
+-   'password': 'secret',
+-   'tokens': ['98b37c57-ec62-4e39', '8690ef7d-8004-4916']},
+-  {'SECRET_KEY': 'c4d77c62-6196-4f17-a06b-c462cffae87a'}]
++   'password': '********************',
++   'tokens': '********************'},
++  {'SECRET_KEY': '********************'}]
+
+----------------------------------------------------------------------

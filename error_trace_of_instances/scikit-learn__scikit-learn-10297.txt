@@ -1,0 +1,16 @@
+=================================== FAILURES ===================================
+___________________ test_ridge_classifier_cv_store_cv_values ___________________
+
+    def test_ridge_classifier_cv_store_cv_values():
+        x = np.array([[-1.0, -1.0], [-1.0, 0], [-.8, -1.0],
+                      [1.0, 1.0], [1.0, 0.0]])
+        y = np.array([1, 1, 1, -1, -1])
+
+        n_samples = x.shape[0]
+        alphas = [1e-1, 1e0, 1e1]
+        n_alphas = len(alphas)
+
+>       r = RidgeClassifierCV(alphas=alphas, store_cv_values=True)
+E       TypeError: __init__() got an unexpected keyword argument 'store_cv_values'
+
+sklearn/linear_model/tests/test_ridge.py:609: TypeError

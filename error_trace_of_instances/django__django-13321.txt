@@ -1,0 +1,242 @@
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.CacheDBSessionTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.CacheDBSessionWithTimeZoneTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.CustomDatabaseSessionTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.DatabaseSessionTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.DatabaseSessionWithTimeZoneTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.CacheSessionTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.CookieSessionTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.FileSessionPathLibTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding
+
+======================================================================
+ERROR: test_decode_failure_logged_to_security (sessions_tests.tests.FileSessionTests) (encoded='bad:encoded:value')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/contrib/sessions/backends/base.py", line 121, in decode
+    return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)
+  File "/testbed/django/core/signing.py", line 135, in loads
+    base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
+  File "/testbed/django/core/signing.py", line 201, in unsign
+    result = super().unsign(value)
+  File "/testbed/django/core/signing.py", line 184, in unsign
+    raise BadSignature('Signature "%s" does not match' % sig)
+django.core.signing.BadSignature: Signature "value" does not match
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/sessions_tests/tests.py", line 343, in test_decode_failure_logged_to_security
+    self.assertEqual(self.session.decode(encoded), {})
+  File "/testbed/django/contrib/sessions/backends/base.py", line 125, in decode
+    return self._legacy_decode(session_data)
+  File "/testbed/django/contrib/sessions/backends/base.py", line 135, in _legacy_decode
+    encoded_data = base64.b64decode(session_data.encode('ascii'))
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/base64.py", line 87, in b64decode
+    return binascii.a2b_base64(s)
+binascii.Error: Incorrect padding

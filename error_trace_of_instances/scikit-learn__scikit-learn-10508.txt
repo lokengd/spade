@@ -1,0 +1,165 @@
+=================================== FAILURES ===================================
+__________________________ test_label_encoder_errors ___________________________
+
+exceptions = <class 'ValueError'>, message = 'bad input shape ()'
+function = <bound method LabelEncoder.inverse_transform of LabelEncoder()>
+args = ('',), kwargs = {}
+error_message = "y contains previously unseen labels: ['']"
+
+    def assert_raise_message(exceptions, message, function, *args, **kwargs):
+        """Helper function to test the message raised in an exception.
+    
+        Given an exception, a callable to raise the exception, and
+        a message string, tests that the correct exception is raised and
+        that the message is a substring of the error thrown. Used to test
+        that the specific message thrown during an exception is correct.
+    
+        Parameters
+        ----------
+        exceptions : exception or tuple of exception
+            An Exception object.
+    
+        message : str
+            The error message or a substring of the error message.
+    
+        function : callable
+            Callable object to raise error.
+    
+        *args : the positional arguments to `function`.
+    
+        **kwargs : the keyword arguments to `function`.
+        """
+        try:
+>           function(*args, **kwargs)
+
+sklearn/utils/testing.py:370: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = LabelEncoder(), y = ''
+
+    def inverse_transform(self, y):
+        """Transform labels back to original encoding.
+    
+        Parameters
+        ----------
+        y : numpy array of shape [n_samples]
+            Target values.
+    
+        Returns
+        -------
+        y : numpy array of shape [n_samples]
+        """
+        check_is_fitted(self, 'classes_')
+    
+        diff = np.setdiff1d(y, np.arange(len(self.classes_)))
+        if len(diff):
+            raise ValueError(
+>                   "y contains previously unseen labels: %s" % str(diff))
+E           ValueError: y contains previously unseen labels: ['']
+
+sklearn/preprocessing/label.py:154: ValueError
+
+During handling of the above exception, another exception occurred:
+
+    def test_label_encoder_errors():
+        # Check that invalid arguments yield ValueError
+        le = LabelEncoder()
+        assert_raises(ValueError, le.transform, [])
+        assert_raises(ValueError, le.inverse_transform, [])
+    
+        # Fail on unseen labels
+        le = LabelEncoder()
+        le.fit([1, 2, 3, -1, 1])
+        msg = "contains previously unseen labels"
+        assert_raise_message(ValueError, msg, le.inverse_transform, [-2])
+        assert_raise_message(ValueError, msg, le.inverse_transform, [-2, -3, -4])
+    
+        # Fail on inverse_transform("")
+        msg = "bad input shape ()"
+>       assert_raise_message(ValueError, msg, le.inverse_transform, "")
+
+sklearn/preprocessing/tests/test_label.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+exceptions = <class 'ValueError'>, message = 'bad input shape ()'
+function = <bound method LabelEncoder.inverse_transform of LabelEncoder()>
+args = ('',), kwargs = {}
+error_message = "y contains previously unseen labels: ['']"
+
+    def assert_raise_message(exceptions, message, function, *args, **kwargs):
+        """Helper function to test the message raised in an exception.
+    
+        Given an exception, a callable to raise the exception, and
+        a message string, tests that the correct exception is raised and
+        that the message is a substring of the error thrown. Used to test
+        that the specific message thrown during an exception is correct.
+    
+        Parameters
+        ----------
+        exceptions : exception or tuple of exception
+            An Exception object.
+    
+        message : str
+            The error message or a substring of the error message.
+    
+        function : callable
+            Callable object to raise error.
+    
+        *args : the positional arguments to `function`.
+    
+        **kwargs : the keyword arguments to `function`.
+        """
+        try:
+            function(*args, **kwargs)
+        except exceptions as e:
+            error_message = str(e)
+            if message not in error_message:
+                raise AssertionError("Error message does not include the expected"
+                                     " string: %r. Observed error message: %r" %
+>                                    (message, error_message))
+E               AssertionError: Error message does not include the expected string: 'bad input shape ()'. Observed error message: "y contains previously unseen labels: ['']"
+
+sklearn/utils/testing.py:376: AssertionError
+________________________ test_label_encoder_empty_array ________________________
+
+obj = array(['1', '2'],
+      dtype='<U1'), method = 'searchsorted'
+args = (array([], dtype=float64),), kwds = {'side': 'left', 'sorter': None}
+bound = <built-in method searchsorted of numpy.ndarray object at 0x7fffdf92a9e0>
+
+    def _wrapfunc(obj, method, *args, **kwds):
+        bound = getattr(obj, method, None)
+        if bound is None:
+            return _wrapit(obj, method, *args, **kwds)
+    
+        try:
+>           return bound(*args, **kwds)
+E           TypeError: Cannot cast array data from dtype('float64') to dtype('<U32') according to the rule 'safe'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/fromnumeric.py:58: TypeError
+
+During handling of the above exception, another exception occurred:
+
+    def test_label_encoder_empty_array():
+        le = LabelEncoder()
+        le.fit(np.array(["1", "2", "1", "2", "2"]))
+        # test empty transform
+>       transformed = le.transform([])
+
+sklearn/preprocessing/tests/test_label.py:220: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = array(['1', '2'],
+      dtype='<U1'), method = 'searchsorted'
+args = (array([], dtype=float64),), kwds = {'side': 'left', 'sorter': None}
+wrap = <built-in method __array_wrap__ of numpy.ndarray object at 0x7fffdf92a9e0>
+
+    def _wrapit(obj, method, *args, **kwds):
+        try:
+            wrap = obj.__array_wrap__
+        except AttributeError:
+            wrap = None
+>       result = getattr(asarray(obj), method)(*args, **kwds)
+E       TypeError: Cannot cast array data from dtype('float64') to dtype('<U32') according to the rule 'safe'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/fromnumeric.py:44: TypeError

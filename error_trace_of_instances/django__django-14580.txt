@@ -1,0 +1,21 @@
+======================================================================
+FAIL: test_serialize_type_model (migrations.test_writer.WriterTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_writer.py", line 663, in test_serialize_type_model
+    self.assertSerializedResultEqual(
+  File "/testbed/tests/migrations/test_writer.py", line 221, in assertSerializedResultEqual
+    self.assertEqual(MigrationWriter.serialize(value), target)
+AssertionError: Tuples differ: ("('models.Model', set())", set()) != ("('models.Model', {'from django.db import models'})", set())
+
+First differing element 0:
+"('models.Model', set())"
+"('models.Model', {'from django.db import models'})"
+
+- ("('models.Model', set())", set())
++ ("('models.Model', {'from django.db import models'})", set())
+
+----------------------------------------------------------------------
+Ran 50 tests in 0.042s
+
+FAILED (failures=1)

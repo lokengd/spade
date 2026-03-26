@@ -1,0 +1,58 @@
+=================================== FAILURES ===================================
+_______________________ TestPython.test_hostname_in_xml ________________________
+
+self = <test_junitxml.TestPython object at 0x7ffffe5117f0>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_hostname_in_xml0')>
+
+    def test_hostname_in_xml(self, testdir):
+        testdir.makepyfile(
+            """
+            def test_pass():
+                pass
+        """
+        )
+        result, dom = runandparse(testdir)
+        node = dom.find_first_by_tag("testsuite")
+>       node.assert_attr(hostname=platform.node())
+E       AssertionError: assert {'hostname': None} == {'hostname': 'f4cb1ccccefe'}
+
+/testbed/testing/test_junitxml.py:153: AssertionError
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-5.0.2.dev185+g29e336bd9, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_hostname_in_xml0
+collected 1 item
+
+test_hostname_in_xml.py .                                                [100%]
+
+- generated xml file: /tmp/pytest-of-root/pytest-0/test_hostname_in_xml0/junit.xml -
+=========================== 1 passed in 0.00 seconds ===========================
+_______________________ TestPython.test_timestamp_in_xml _______________________
+
+self = <test_junitxml.TestPython object at 0x7ffffe57cc40>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_timestamp_in_xml0')>
+
+    def test_timestamp_in_xml(self, testdir):
+        testdir.makepyfile(
+            """
+            def test_pass():
+                pass
+        """
+        )
+        start_time = datetime.now()
+        result, dom = runandparse(testdir)
+        node = dom.find_first_by_tag("testsuite")
+>       timestamp = datetime.strptime(node["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
+E       TypeError: strptime() argument 1 must be str, not None
+
+/testbed/testing/test_junitxml.py:165: TypeError
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-5.0.2.dev185+g29e336bd9, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_timestamp_in_xml0
+collected 1 item
+
+test_timestamp_in_xml.py .                                               [100%]
+
+- generated xml file: /tmp/pytest-of-root/pytest-0/test_timestamp_in_xml0/junit.xml -
+=========================== 1 passed in 0.00 seconds ===========================

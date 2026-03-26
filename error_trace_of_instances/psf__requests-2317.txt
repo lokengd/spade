@@ -1,0 +1,24 @@
+=================================== FAILURES ===================================
+________________ RequestsTestCase.test_conflicting_post_params _________________
+
+self = <test_requests.RequestsTestCase testMethod=test_conflicting_post_params>
+
+    def test_conflicting_post_params(self):
+        url = httpbin('post')
+        with open('requirements.txt') as f:
+>           pytest.raises(ValueError, "requests.post(url, data='[{\"some\": \"data\"}]', files={'some': f})")
+E           TypeError: 'requests.post(url, data=\'[{"some": "data"}]\', files={\'some\': f})' object (type: <class 'str'>) must be callable
+
+test_requests.py:439: TypeError
+_______________________ TestTimeout.test_encoded_methods _______________________
+
+self = <test_requests.TestTimeout object at 0x7ffffe4d3550>
+
+    def test_encoded_methods(self):
+        """See: https://github.com/kennethreitz/requests/issues/2316"""
+        r = requests.request(b'GET', httpbin('get'))
+>       assert r.ok
+E       assert False
+E        +  where False = <Response [400]>.ok
+
+test_requests.py:1395: AssertionError

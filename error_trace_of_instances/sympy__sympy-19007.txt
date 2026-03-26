@@ -1,0 +1,36 @@
+sympy/matrices/expressions/tests/test_indexing.py[15] 
+test_symbolic_indexing ok
+test_add_index ok
+test_mul_index ok
+test_pow_index ok
+test_transpose_index ok
+test_Identity_index ok
+test_block_index ok
+test_block_index_symbolic F
+test_block_index_symbolic_nonzero F
+test_block_index_large F
+test_block_index_symbolic_fail f
+test_slicing ok
+test_errors ok
+test_matrix_expression_to_indices ok
+test_matrix_expression_from_index_summation ok                            [FAIL]
+
+
+________________________________________________________________________________
+_ sympy/matrices/expressions/tests/test_indexing.py:test_block_index_symbolic __
+Traceback (most recent call last):
+  File "/testbed/sympy/matrices/expressions/tests/test_indexing.py", line 94, in test_block_index_symbolic
+    assert A[0, 0] == MatrixElement(A, 0, 0)  # Cannot be A1[0, 0]
+AssertionError
+________________________________________________________________________________
+ sympy/matrices/expressions/tests/test_indexing.py:test_block_index_symbolic_nonzero 
+Traceback (most recent call last):
+  File "/testbed/sympy/matrices/expressions/tests/test_indexing.py", line 119, in test_block_index_symbolic_nonzero
+    assert A[i, j] == MatrixElement(A, i, j)
+AssertionError
+________________________________________________________________________________
+___ sympy/matrices/expressions/tests/test_indexing.py:test_block_index_large ___
+Traceback (most recent call last):
+  File "/testbed/sympy/matrices/expressions/tests/test_indexing.py", line 138, in test_block_index_large
+    assert A[n + i, n + i] == MatrixElement(A, n + i, n + i)
+AssertionError

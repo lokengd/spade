@@ -1,0 +1,114 @@
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (MEDIA_URL='path/', script_name='/somesubpath')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'path/' != '/somesubpath/path/'
+- path/
++ /somesubpath/path/
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (MEDIA_URL='path/', script_name='/somesubpath/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'path/' != '/somesubpath/path/'
+- path/
++ /somesubpath/path/
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (MEDIA_URL='path/', script_name='/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'path/' != '/path/'
+- path/
++ /path/
+? +
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (MEDIA_URL='htp://myhost.com/path/', script_name='/somesubpath/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'htp://myhost.com/path/' != '/somesubpath/htp://myhost.com/path/'
+- htp://myhost.com/path/
++ /somesubpath/htp://myhost.com/path/
+? +++++++++++++
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (MEDIA_URL='', script_name='/somesubpath/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: '' != '/somesubpath/'
++ /somesubpath/
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (STATIC_URL='path/', script_name='/somesubpath')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'path/' != '/somesubpath/path/'
+- path/
++ /somesubpath/path/
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (STATIC_URL='path/', script_name='/somesubpath/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'path/' != '/somesubpath/path/'
+- path/
++ /somesubpath/path/
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (STATIC_URL='path/', script_name='/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'path/' != '/path/'
+- path/
++ /path/
+? +
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (STATIC_URL='htp://myhost.com/path/', script_name='/somesubpath/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: 'htp://myhost.com/path/' != '/somesubpath/htp://myhost.com/path/'
+- htp://myhost.com/path/
++ /somesubpath/htp://myhost.com/path/
+? +++++++++++++
+
+
+======================================================================
+FAIL: test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest) (STATIC_URL='', script_name='/somesubpath/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/settings_tests/tests.py", line 616, in test_add_script_name_prefix
+    self.assertEqual(getattr(settings, setting), expected_path)
+AssertionError: '' != '/somesubpath/'
++ /somesubpath/
+
+----------------------------------------------------------------------
+Ran 179 tests in 1.652s
+
+FAILED (failures=10)

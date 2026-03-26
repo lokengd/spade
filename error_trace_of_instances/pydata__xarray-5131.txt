@@ -1,0 +1,313 @@
+=================================== FAILURES ===================================
+__________________________ test_groupby_repr[obj0-x] ___________________________
+
+obj = <xarray.DataArray (x: 10, y: 20, z: 6, t: 24)>
+array([[[[-1.36021676e+00, -1.22048428e+00, -7.95605631e-01, ...,
+     ...02-12-31
+    month    (t) int64 1 2 3 4 5 6 7 8 9 10 11 12 1 2 3 4 5 6 7 8 9 10 11 12
+Dimensions without coordinates: y
+dim = 'x'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DataArrayGro..., 2, 3, 4, 5.' == 'DataArrayGro..., 2, 3, 4, 5.'
+E         - DataArrayGroupBy, grouped over 'x'
+E         + DataArrayGroupBy, grouped over 'x' 
+E         ?                                   +
+E           5 groups with labels 1, 2, 3, 4, 5.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+__________________________ test_groupby_repr[obj0-y] ___________________________
+
+obj = <xarray.DataArray (x: 10, y: 20, z: 6, t: 24)>
+array([[[[-1.36021676e+00, -1.22048428e+00, -7.95605631e-01, ...,
+     ...02-12-31
+    month    (t) int64 1 2 3 4 5 6 7 8 9 10 11 12 1 2 3 4 5 6 7 8 9 10 11 12
+Dimensions without coordinates: y
+dim = 'y'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DataArrayGro..., 17, 18, 19.' == 'DataArrayGro..., 17, 18, 19.'
+E         - DataArrayGroupBy, grouped over 'y'
+E         + DataArrayGroupBy, grouped over 'y' 
+E         ?                                   +
+E           20 groups with labels 0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+__________________________ test_groupby_repr[obj0-z] ___________________________
+
+obj = <xarray.DataArray (x: 10, y: 20, z: 6, t: 24)>
+array([[[[-1.36021676e+00, -1.22048428e+00, -7.95605631e-01, ...,
+     ...02-12-31
+    month    (t) int64 1 2 3 4 5 6 7 8 9 10 11 12 1 2 3 4 5 6 7 8 9 10 11 12
+Dimensions without coordinates: y
+dim = 'z'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       assert "DataArrayGro...a', 'b', 'c'." == "DataArrayGro...a', 'b', 'c'."
+E         - DataArrayGroupBy, grouped over 'z'
+E         + DataArrayGroupBy, grouped over 'z' 
+E         ?                                   +
+E           3 groups with labels 'a', 'b', 'c'.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+________________________ test_groupby_repr[obj0-month] _________________________
+
+obj = <xarray.DataArray (x: 10, y: 20, z: 6, t: 24)>
+array([[[[-1.36021676e+00, -1.22048428e+00, -7.95605631e-01, ...,
+     ...02-12-31
+    month    (t) int64 1 2 3 4 5 6 7 8 9 10 11 12 1 2 3 4 5 6 7 8 9 10 11 12
+Dimensions without coordinates: y
+dim = 'month'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DataArrayGro..., 10, 11, 12.' == 'DataArrayGro..., 10, 11, 12.'
+E         - DataArrayGroupBy, grouped over 'month'
+E         + DataArrayGroupBy, grouped over 'month' 
+E         ?                                       +
+E           12 groups with labels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+__________________________ test_groupby_repr[obj1-x] ___________________________
+
+obj = <xarray.Dataset>
+Dimensions:  (t: 24, x: 10, y: 20, z: 6)
+Coordinates:
+  * z        (z) <U1 'a' 'b' 'c' 'a' 'b' 'c'
+  ...ns without coordinates: y
+Data variables:
+    a        (x, y, z, t) float64 -1.36 -1.22 -0.7956 ... 2.562 -1.089 0.3303
+dim = 'x'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DatasetGroup..., 2, 3, 4, 5.' == 'DatasetGroup..., 2, 3, 4, 5.'
+E         - DatasetGroupBy, grouped over 'x'
+E         + DatasetGroupBy, grouped over 'x' 
+E         ?                                 +
+E           5 groups with labels 1, 2, 3, 4, 5.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+__________________________ test_groupby_repr[obj1-y] ___________________________
+
+obj = <xarray.Dataset>
+Dimensions:  (t: 24, x: 10, y: 20, z: 6)
+Coordinates:
+  * z        (z) <U1 'a' 'b' 'c' 'a' 'b' 'c'
+  ...ns without coordinates: y
+Data variables:
+    a        (x, y, z, t) float64 -1.36 -1.22 -0.7956 ... 2.562 -1.089 0.3303
+dim = 'y'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DatasetGroup..., 17, 18, 19.' == 'DatasetGroup..., 17, 18, 19.'
+E         - DatasetGroupBy, grouped over 'y'
+E         + DatasetGroupBy, grouped over 'y' 
+E         ?                                 +
+E           20 groups with labels 0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+__________________________ test_groupby_repr[obj1-z] ___________________________
+
+obj = <xarray.Dataset>
+Dimensions:  (t: 24, x: 10, y: 20, z: 6)
+Coordinates:
+  * z        (z) <U1 'a' 'b' 'c' 'a' 'b' 'c'
+  ...ns without coordinates: y
+Data variables:
+    a        (x, y, z, t) float64 -1.36 -1.22 -0.7956 ... 2.562 -1.089 0.3303
+dim = 'z'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       assert "DatasetGroup...a', 'b', 'c'." == "DatasetGroup...a', 'b', 'c'."
+E         - DatasetGroupBy, grouped over 'z'
+E         + DatasetGroupBy, grouped over 'z' 
+E         ?                                 +
+E           3 groups with labels 'a', 'b', 'c'.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+________________________ test_groupby_repr[obj1-month] _________________________
+
+obj = <xarray.Dataset>
+Dimensions:  (t: 24, x: 10, y: 20, z: 6)
+Coordinates:
+  * z        (z) <U1 'a' 'b' 'c' 'a' 'b' 'c'
+  ...ns without coordinates: y
+Data variables:
+    a        (x, y, z, t) float64 -1.36 -1.22 -0.7956 ... 2.562 -1.089 0.3303
+dim = 'month'
+
+    @pytest.mark.parametrize("dim", ["x", "y", "z", "month"])
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr(obj, dim):
+        actual = repr(obj.groupby(dim))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over %r" % dim
+        expected += "\n%r groups with labels " % (len(np.unique(obj[dim])))
+        if dim == "x":
+            expected += "1, 2, 3, 4, 5."
+        elif dim == "y":
+            expected += "0, 1, 2, 3, 4, 5, ..., 15, 16, 17, 18, 19."
+        elif dim == "z":
+            expected += "'a', 'b', 'c'."
+        elif dim == "month":
+            expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DatasetGroup..., 10, 11, 12.' == 'DatasetGroup..., 10, 11, 12.'
+E         - DatasetGroupBy, grouped over 'month'
+E         + DatasetGroupBy, grouped over 'month' 
+E         ?                                     +
+E           12 groups with labels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+
+/testbed/xarray/tests/test_groupby.py:401: AssertionError
+_______________________ test_groupby_repr_datetime[obj0] _______________________
+
+obj = <xarray.DataArray (x: 10, y: 20, z: 6, t: 24)>
+array([[[[-1.36021676e+00, -1.22048428e+00, -7.95605631e-01, ...,
+     ...02-12-31
+    month    (t) int64 1 2 3 4 5 6 7 8 9 10 11 12 1 2 3 4 5 6 7 8 9 10 11 12
+Dimensions without coordinates: y
+
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr_datetime(obj):
+        actual = repr(obj.groupby("t.month"))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over 'month'"
+        expected += "\n%r groups with labels " % (len(np.unique(obj.t.dt.month)))
+        expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DataArrayGro..., 10, 11, 12.' == 'DataArrayGro..., 10, 11, 12.'
+E         - DataArrayGroupBy, grouped over 'month'
+E         + DataArrayGroupBy, grouped over 'month' 
+E         ?                                       +
+E           12 groups with labels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+
+/testbed/xarray/tests/test_groupby.py:411: AssertionError
+_______________________ test_groupby_repr_datetime[obj1] _______________________
+
+obj = <xarray.Dataset>
+Dimensions:  (t: 24, x: 10, y: 20, z: 6)
+Coordinates:
+  * z        (z) <U1 'a' 'b' 'c' 'a' 'b' 'c'
+  ...ns without coordinates: y
+Data variables:
+    a        (x, y, z, t) float64 -1.36 -1.22 -0.7956 ... 2.562 -1.089 0.3303
+
+    @pytest.mark.parametrize("obj", [repr_da, repr_da.to_dataset(name="a")])
+    def test_groupby_repr_datetime(obj):
+        actual = repr(obj.groupby("t.month"))
+        expected = "%sGroupBy" % obj.__class__.__name__
+        expected += ", grouped over 'month'"
+        expected += "\n%r groups with labels " % (len(np.unique(obj.t.dt.month)))
+        expected += "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12."
+>       assert actual == expected
+E       AssertionError: assert 'DatasetGroup..., 10, 11, 12.' == 'DatasetGroup..., 10, 11, 12.'
+E         - DatasetGroupBy, grouped over 'month'
+E         + DatasetGroupBy, grouped over 'month' 
+E         ?                                     +
+E           12 groups with labels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+
+/testbed/xarray/tests/test_groupby.py:411: AssertionError

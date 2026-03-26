@@ -1,0 +1,161 @@
+=================================== FAILURES ===================================
+[31m[1m________________________________ test_viewcode _________________________________[0m
+
+app = <SphinxTestApp buildername='html'>
+status = <_io.StringIO object at 0x7ffffc586a50>
+warning = <_io.StringIO object at 0x7ffffc586af0>
+
+    [0m[37m@pytest[39;49;00m.mark.sphinx(testroot=[33m'[39;49;00m[33mext-viewcode[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+    [94mdef[39;49;00m [92mtest_viewcode[39;49;00m(app, status, warning):[90m[39;49;00m
+        app.builder.build_all()[90m[39;49;00m
+    [90m[39;49;00m
+        warnings = re.sub([33mr[39;49;00m[33m'[39;49;00m[33m\\[39;49;00m[33m+[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m/[39;49;00m[33m'[39;49;00m, warning.getvalue())[90m[39;49;00m
+        [94massert[39;49;00m re.findall([90m[39;49;00m
+            [33mr[39;49;00m[33m"[39;49;00m[33mindex.rst:[39;49;00m[33m\[39;49;00m[33md+: WARNING: Object named [39;49;00m[33m'[39;49;00m[33mfunc1[39;49;00m[33m'[39;49;00m[33m not found in include [39;49;00m[33m"[39;49;00m +[90m[39;49;00m
+            [33mr[39;49;00m[33m"[39;49;00m[33mfile .*/spam/__init__.py[39;49;00m[33m'[39;49;00m[33m"[39;49;00m,[90m[39;49;00m
+            warnings[90m[39;49;00m
+        )[90m[39;49;00m
+    [90m[39;49;00m
+        result = (app.outdir / [33m'[39;49;00m[33mindex.html[39;49;00m[33m'[39;49;00m).read_text()[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33mhref=[39;49;00m[33m"[39;49;00m[33m_modules/spam/mod1.html#func1[39;49;00m[33m"[39;49;00m[33m'[39;49;00m) == [94m2[39;49;00m[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33mhref=[39;49;00m[33m"[39;49;00m[33m_modules/spam/mod2.html#func2[39;49;00m[33m"[39;49;00m[33m'[39;49;00m) == [94m2[39;49;00m[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33mhref=[39;49;00m[33m"[39;49;00m[33m_modules/spam/mod1.html#Class1[39;49;00m[33m"[39;49;00m[33m'[39;49;00m) == [94m2[39;49;00m[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33mhref=[39;49;00m[33m"[39;49;00m[33m_modules/spam/mod2.html#Class2[39;49;00m[33m"[39;49;00m[33m'[39;49;00m) == [94m2[39;49;00m[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33m@decorator[39;49;00m[33m'[39;49;00m) == [94m1[39;49;00m[90m[39;49;00m
+    [90m[39;49;00m
+        [90m# test that the class attribute is correctly documented[39;49;00m[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33mthis is Class3[39;49;00m[33m'[39;49;00m) == [94m2[39;49;00m[90m[39;49;00m
+        [94massert[39;49;00m [33m'[39;49;00m[33mthis is the class attribute class_attr[39;49;00m[33m'[95min[39;49;00m result[90m[39;49;00m
+        [90m# the next assert fails, until the autodoc bug gets fixed[90m[39;49;00m
+        [94massert[39;49;00m result.count([33m'[39;49;00m[33mthis is the class attribute class_attr[39;49;00m[33m'[39;49;00m) == [94m2[39;49;00m[90m[39;49;00m
+    [90m[39;49;00m
+        result = (app.outdir / [33m'[39;49;00m[33m_modules/spam/mod1.html[39;49;00m[33m'[39;49;00m).read_text()[90m[39;49;00m
+        result = re.sub([33m'[39;49;00m[33m<span class=[39;49;00m[33m"[39;49;00m[33m.*?[39;49;00m[33m"[39;49;00m[33m>[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m<span>[39;49;00m[33m'[39;49;00m, result)  [90m# filter pygments classes[39;49;00m[90m[39;49;00m
+>       [94massert[39;49;00m ([33m'[39;49;00m[33m<div class=[39;49;00m[33m"[39;49;00m[33mviewcode-block[39;49;00m[33m"[39;49;00m[33m id=[39;49;00m[33m"[39;49;00m[33mClass1[39;49;00m[33m"[39;49;00m[33m><a class=[39;49;00m[33m"[39;49;00m[33mviewcode-back[39;49;00m[33m"[39;49;00m [39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33mhref=[39;49;00m[33m"[39;49;00m[33m../../index.html#spam.Class1[39;49;00m[33m"[39;49;00m
+                [33m'[39;49;00m[33m>[docs]</a>[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m<span>@decorator</span>[39;49;00m[33m\n[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m<span>class</span> <span>Class1</span>[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m<span>(</span><span>object</span><span>):</span>[39;49;00m[33m\n[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m    <span>&quot;&quot;&quot;</span>[39;49;00m[33m\n[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m<span>    this is Class1</span>[39;49;00m[33m\n[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m<span>    &quot;&quot;&quot;</span></div>[39;49;00m[33m\n[39;49;00m[33m'[90m[39;49;00m
+                [33m'[39;49;00m[33m) [95min[39;49;00m result[90m[39;49;00m
+[1m[31mE       assert '<div class="viewcode-block" id="Class1"><a class="viewcode-back" href="../../index.html#spam.Class1">[docs]</a><span>...an>\n    <span>&quot;&quot;&quot;</span>\n<span>    this is Class1</span>\n<span>    &quot;&quot;&quot;</span></div>\n' in '\n<!DOCTYPE html>\n\n<html>\n  <head>\n    <meta charset="utf-8" />\n    <meta name="viewport" content="width=device-..."https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>\n      \n    </div>\n\n    \n\n    \n  </body>\n</html>'[0m
+
+[1m[31mtests/test_ext_viewcode.py[0m:42: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: html
+# srcdir: /tmp/pytest-of-root/pytest-0/ext-viewcode
+# outdir: /tmp/pytest-of-root/pytest-0/ext-viewcode/_build/html
+# status: 
+[01mRunning Sphinx v3.5.0+/5993cf4c2[39;49;00m
+[01mbuilding [html]: [39;49;00mall source files
+[01mupdating environment: [39;49;00m[new config] 2 added, 0 changed, 0 removed
+[01mreading sources... [39;49;00m[ 50%] [35mindex[39;49;00m                                                
+[01mreading sources... [39;49;00m[100%] [35mobjects[39;49;00m                                              
+[01mlooking for now-outdated files... [39;49;00mnone found
+[01mpickling environment... [39;49;00mdone
+[01mchecking consistency... [39;49;00mdone
+[01mpreparing documents... [39;49;00mdone
+[01mwriting output... [39;49;00m[ 50%] [32mindex[39;49;00m                                                 
+[01mwriting output... [39;49;00m[100%] [32mobjects[39;49;00m                                               
+[01mgenerating indices... [39;49;00mgenindex py-modindex done
+[01mhighlighting module code... [39;49;00m[ 50%] [94mspam.mod1[39;49;00m                                   
+[01mhighlighting module code... [39;49;00m[100%] [94mspam.mod2[39;49;00m                                   
+[01mwriting additional pages... [39;49;00msearch done
+[01mcopying static files... [39;49;00mdone
+[01mcopying extra files... [39;49;00mdone
+[01mdumping search index in English (code: en)... [39;49;00mdone
+[01mdumping object inventory... [39;49;00mdone
+
+# warning: 
+[91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/index.rst:23: WARNING: Object named 'func1' not found in include file '/tmp/pytest-of-root/pytest-0/ext-viewcode/spam/__init__.py'[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/spam/mod1.py:docstring of spam.mod1.Class3:1: WARNING: duplicate object description of spam.mod3.Class3, other instance in index, use :noindex: for one of them[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/spam/mod1.py:docstring of spam.mod3.Class3.class_attr:1: WARNING: duplicate object description of spam.mod3.Class3.class_attr, other instance in index, use :noindex: for one of them[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:84: WARNING: Error in declarator
+If declarator-id with parameters (e.g., 'void f(int arg)'):
+  Invalid C declaration: Expected identifier in nested name. [error at 18]
+    Sphinx_DoSomething()
+    ------------------^
+If parenthesis in noptr-declarator (e.g., 'void (*f(int arg))(double)'):
+  Error in declarator or parameters
+  Invalid C declaration: Expected identifier in nested name. [error at 19]
+    Sphinx_DoSomething()
+    -------------------^
+[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:86: WARNING: Error in declarator or parameters
+Invalid C declaration: Expected identifier in nested name. [error at 19]
+  SphinxStruct.member
+  -------------------^[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:92: WARNING: Error in declarator or parameters
+Invalid C declaration: Expected identifier in nested name. [error at 13]
+  sphinx_global
+  -------------^[39;49;00m
+[31m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:155: WARNING: Unknown directive type "userdesc".
+
+.. userdesc:: myobj:parameter
+
+   Description of userdesc.[39;49;00m
+[31m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:160: WARNING: Unknown interpreted text role "userdescrole".[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:166: WARNING: Too many template argument lists compared to parameter lists. Argument lists: 1, Parameter lists: 0, Extra empty parameters lists prepended: 1. Declaration:
+	n::Array<T, d>[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:117: WARNING: Unparseable C cross-reference: 'SphinxType *'
+Invalid C declaration: Expected end of definition. [error at 11]
+  SphinxType *
+  -----------^[39;49;00m
+
+[31m[1m__________________________ test_viewcode_epub_default __________________________[0m
+
+app = <SphinxTestApp buildername='epub'>
+status = <_io.StringIO object at 0x7ffffb1e64b0>
+warning = <_io.StringIO object at 0x7ffffb1e6550>
+
+    [0m[37m@pytest[39;49;00m.mark.sphinx([33m'[39;49;00m[33mepub[39;49;00m[33m'[39;49;00m, testroot=[33m'[39;49;00m[33mext-viewcode[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+    [94mdef[39;49;00m [92mtest_viewcode_epub_default[39;49;00m(app, status, warning):[90m[39;49;00m
+        app.builder.build_all()[90m[39;49;00m
+    [90m[39;49;00m
+>       [94massert[39;49;00m [95mnot[39;49;00m (app.outdir / [33m'[39;49;00m[33m_modules/spam/mod1.xhtml[39;49;00m[33m'[39;49;00m).exists()[90m[39;49;00m
+[1m[31mE       AssertionError: assert not True[0m
+[1m[31mE        +  where True = exists()[0m
+[1m[31mE        +    where exists = (path('/tmp/pytest-of-root/pytest-0/ext-viewcode/_build/epub') / '_modules/spam/mod1.xhtml').exists[0m
+[1m[31mE        +      where path('/tmp/pytest-of-root/pytest-0/ext-viewcode/_build/epub') = <SphinxTestApp buildername='epub'>.outdir[0m
+
+[1m[31mtests/test_ext_viewcode.py[0m:56: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: epub
+# srcdir: /tmp/pytest-of-root/pytest-0/ext-viewcode
+# outdir: /tmp/pytest-of-root/pytest-0/ext-viewcode/_build/epub
+# status: 
+[01mRunning Sphinx v3.5.0+/5993cf4c2[39;49;00m
+[01mloading pickled environment... [39;49;00mdone
+[01mbuilding [epub]: [39;49;00mall source files
+[01mupdating environment: [39;49;00m0 added, 0 changed, 0 removed
+[01mlooking for now-outdated files... [39;49;00mnone found
+[01mpreparing documents... [39;49;00mdone
+[01mwriting output... [39;49;00m[ 50%] [32mindex[39;49;00m                                                 
+[01mwriting output... [39;49;00m[100%] [32mobjects[39;49;00m                                               
+[01mgenerating indices... [39;49;00mgenindex py-modindex done
+[01mhighlighting module code... [39;49;00m[ 50%] [94mspam.mod1[39;49;00m                                   
+[01mhighlighting module code... [39;49;00m[100%] [94mspam.mod2[39;49;00m                                   
+[01mwriting additional pages... [39;49;00mdone
+[01mcopying static files... [39;49;00mdone
+[01mcopying extra files... [39;49;00mdone
+writing mimetype file...
+writing META-INF/container.xml file...
+writing content.opf file...
+writing nav.xhtml file...
+writing toc.ncx file...
+writing Python.epub file...
+
+# warning: 
+[91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden[39;49;00m
+[91mWARNING: conf value "epub_copyright" (or "copyright")should not be empty for EPUB3[39;49;00m
+[91mWARNING: conf value "version" should not be empty for EPUB3[39;49;00m
+[91m/tmp/pytest-of-root/pytest-0/ext-viewcode/objects.rst:117: WARNING: Unparseable C cross-reference: 'SphinxType *'
+Invalid C declaration: Expected end of definition. [error at 11]
+  SphinxType *
+  -----------^[39;49;00m

@@ -1,0 +1,38 @@
+======================================================================
+FAIL: test_auto_created_inherited_pk (check_framework.test_model_checks.ModelDefaultAutoFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.8/unittest/mock.py", line 1325, in patched
+    return func(*newargs, **newkeywargs)
+  File "/testbed/tests/check_framework/test_model_checks.py", line 422, in test_auto_created_inherited_pk
+    self.assertEqual(checks.run_checks(app_configs=self.apps.get_app_configs()), [
+AssertionError: Lists differ: [<War[448 chars]042'>, <Warning: level=30, msg="Auto-created p[413 chars]42'>] != [<War[448 chars]042'>]
+
+First list contains 1 additional elements.
+First extra element 1:
+<Warning: level=30, msg="Auto-created primary key used when not defining a primary key type, by default 'django.db.models.AutoField'.", hint="Configure the DEFAULT_AUTO_FIELD setting or the CheckDefaultPKConfig.default_auto_field attribute to point to a subclass of AutoField, e.g. 'django.db.models.BigAutoField'.", obj=<class 'check_framework.test_model_checks.ModelDefaultAutoFieldTests.test_auto_created_inherited_pk.<locals>.Child'>, id='models.W042'>
+
+Diff is 2311 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_explicit_inherited_pk (check_framework.test_model_checks.ModelDefaultAutoFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.8/unittest/mock.py", line 1325, in patched
+    return func(*newargs, **newkeywargs)
+  File "/testbed/tests/check_framework/test_model_checks.py", line 404, in test_explicit_inherited_pk
+    self.assertEqual(checks.run_checks(app_configs=self.apps.get_app_configs()), [])
+AssertionError: Lists differ: [<Warning: level=30, msg="Auto-created pri[407 chars]42'>] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+<Warning: level=30, msg="Auto-created primary key used when not defining a primary key type, by default 'django.db.models.AutoField'.", hint="Configure the DEFAULT_AUTO_FIELD setting or the CheckDefaultPKConfig.default_auto_field attribute to point to a subclass of AutoField, e.g. 'django.db.models.BigAutoField'.", obj=<class 'check_framework.test_model_checks.ModelDefaultAutoFieldTests.test_explicit_inherited_pk.<locals>.Child'>, id='models.W042'>
+
+- [<Warning: level=30, msg="Auto-created primary key used when not defining a primary key type, by default 'django.db.models.AutoField'.", hint="Configure the DEFAULT_AUTO_FIELD setting or the CheckDefaultPKConfig.default_auto_field attribute to point to a subclass of AutoField, e.g. 'django.db.models.BigAutoField'.", obj=<class 'check_framework.test_model_checks.ModelDefaultAutoFieldTests.test_explicit_inherited_pk.<locals>.Child'>, id='models.W042'>]
++ []
+
+----------------------------------------------------------------------
+Ran 26 tests in 0.042s
+
+FAILED (failures=2)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

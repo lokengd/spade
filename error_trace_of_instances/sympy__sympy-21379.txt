@@ -1,0 +1,29 @@
+test_issue_21034 ok                                                       [FAIL]
+
+
+________________________________________________________________________________
+____________________ sympy/core/tests/test_arit.py:test_Mod ____________________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_arit.py", line 1921, in test_Mod
+    (Piecewise((x_r, y_r > x_r), (y_r, True)) / z) % 1
+  File "/testbed/sympy/core/decorators.py", line 266, in _func
+    return func(self, other)
+  File "/testbed/sympy/core/decorators.py", line 136, in binary_op_wrapper
+    return func(self, other)
+  File "/testbed/sympy/core/expr.py", line 280, in __mod__
+    return Mod(self, other)
+  File "/testbed/sympy/core/function.py", line 473, in __new__
+    result = super().__new__(cls, *args, **options)
+  File "/testbed/sympy/core/function.py", line 285, in __new__
+    evaluated = cls.eval(*args)
+  File "/testbed/sympy/core/mod.py", line 169, in eval
+    G = gcd(p, q)
+  File "/testbed/sympy/polys/polytools.py", line 5306, in gcd
+    (F, G), opt = parallel_poly_from_expr((f, g), *gens, **args)
+  File "/testbed/sympy/polys/polytools.py", line 4340, in parallel_poly_from_expr
+    return _parallel_poly_from_expr(exprs, opt)
+  File "/testbed/sympy/polys/polytools.py", line 4399, in _parallel_poly_from_expr
+    raise PolynomialError("Piecewise generators do not make sense")
+sympy.polys.polyerrors.PolynomialError: Piecewise generators do not make sense
+ tests finished: 92 passed, 2 expected to fail, 1 exceptions, in 13.59 seconds =
+DO *NOT* COMMIT!

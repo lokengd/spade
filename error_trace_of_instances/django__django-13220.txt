@@ -1,0 +1,36 @@
+======================================================================
+FAIL: test_eq (test_exceptions.test_validation_error.TestValidationError)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/test_exceptions/test_validation_error.py", line 35, in test_eq
+    self.assertEqual(error1, ValidationError('message'))
+AssertionError: ValidationError(['message']) != ValidationError(['message'])
+
+======================================================================
+FAIL: test_eq_nested (test_exceptions.test_validation_error.TestValidationError)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/test_exceptions/test_validation_error.py", line 127, in test_eq_nested
+    self.assertEqual(error, ValidationError(dict(error_dict)))
+AssertionError: ValidationError({'field1': ['error val1 val2'], 'field2': ['other']}) != ValidationError({'field1': ['error val1 val2'], 'field2': ['other']})
+
+======================================================================
+FAIL: test_hash (test_exceptions.test_validation_error.TestValidationError)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/test_exceptions/test_validation_error.py", line 164, in test_hash
+    self.assertEqual(hash(error1), hash(ValidationError('message')))
+AssertionError: -9223363240764757386 != -9223363240764731410
+
+======================================================================
+FAIL: test_hash_nested (test_exceptions.test_validation_error.TestValidationError)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/test_exceptions/test_validation_error.py", line 266, in test_hash_nested
+    self.assertEqual(hash(error), hash(ValidationError(dict(error_dict))))
+AssertionError: -9223363240764731440 != -9223363240764731470
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.002s
+
+FAILED (failures=4)

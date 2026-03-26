@@ -1,0 +1,12 @@
+======================================================================
+ERROR: test_choice_value_hash (model_forms.test_modelchoicefield.ModelChoiceFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_forms/test_modelchoicefield.py", line 347, in test_choice_value_hash
+    self.assertEqual(hash(value_1), hash(ModelChoiceIteratorValue(self.c1.pk, None)))
+TypeError: unhashable type: 'ModelChoiceIteratorValue'
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.033s
+
+FAILED (errors=1)

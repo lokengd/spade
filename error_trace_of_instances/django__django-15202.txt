@@ -1,0 +1,18 @@
+======================================================================
+ERROR: test_urlfield_clean_invalid (forms_tests.field_tests.test_urlfield.URLFieldTest) (value='#@A.bO')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/field_tests/test_urlfield.py", line 112, in test_urlfield_clean_invalid
+    f.clean(value)
+  File "/testbed/django/forms/fields.py", line 151, in clean
+    self.run_validators(value)
+  File "/testbed/django/forms/fields.py", line 136, in run_validators
+    v(value)
+  File "/testbed/django/core/validators.py", line 142, in __call__
+    if len(urlsplit(value).hostname) > 253:
+TypeError: object of type 'NoneType' has no len()
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.032s
+
+FAILED (errors=1)

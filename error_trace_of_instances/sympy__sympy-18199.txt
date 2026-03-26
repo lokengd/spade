@@ -1,0 +1,32 @@
+________________________________ slowest tests _________________________________
+test_issue_17479 - Took 10.839 seconds
+________________________________________________________________________________
+_______________ sympy/ntheory/tests/test_residue.py:test_residue _______________
+Traceback (most recent call last):
+  File "/testbed/sympy/ntheory/tests/test_residue.py", line 166, in test_residue
+    assert nthroot_mod(29, 31, 74) == [45]
+  File "/testbed/sympy/ntheory/residue_ntheory.py", line 777, in nthroot_mod
+    raise NotImplementedError("Not implemented for composite p")
+NotImplementedError: Not implemented for composite p
+
+________________________________________________________________________________
+_____________ sympy/solvers/tests/test_solveset.py:test_solve_trig _____________
+Traceback (most recent call last):
+  File "/testbed/sympy/solvers/tests/test_solveset.py", line 786, in test_solve_trig
+    assert solveset_complex(cos(x) - S.Half, x) == \
+AssertionError
+________________________________________________________________________________
+__________ sympy/solvers/tests/test_solveset.py:test_solve_hyperbolic __________
+Traceback (most recent call last):
+  File "/testbed/sympy/solvers/tests/test_solveset.py", line 840, in test_solve_hyperbolic
+    assert solveset_complex(sinh(x) - I/2, x) == Union(
+AssertionError
+________________________________________________________________________________
+___________ sympy/solvers/tests/test_solveset.py:test_solve_modular ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/solvers/tests/test_solveset.py", line 2246, in test_solve_modular
+    assert solveset(Mod(x**3, 8) - 1, x, S.Integers) == \
+AssertionError
+
+ tests finished: 113 passed, 3 failed, 3 skipped, 12 expected to fail, 
+1 exceptions, in 62.06 seconds

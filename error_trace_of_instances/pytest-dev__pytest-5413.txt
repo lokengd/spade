@@ -1,0 +1,56 @@
+=================================== FAILURES ===================================
+____________________________ test_excinfo_repr_str _____________________________
+
+    def test_excinfo_repr_str():
+        excinfo = pytest.raises(ValueError, h)
+        assert repr(excinfo) == "<ExceptionInfo ValueError tblen=4>"
+>       assert str(excinfo) == "<ExceptionInfo ValueError tblen=4>"
+E       AssertionError: assert '/testbed/tes...8: ValueError' == '<ExceptionInf...rror tblen=4>'
+E         - /testbed/testing/code/test_excinfo.py:98: ValueError
+E         + <ExceptionInfo ValueError tblen=4>
+
+testing/code/test_excinfo.py:339: AssertionError
+
+___________________________ test_match_raises_error ____________________________
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.6.1.dev72+g450d26462, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_match_raises_error0
+collected 1 item
+
+test_match_raises_error.py F                                             [100%]
+
+=================================== FAILURES ===================================
+______________________________ test_division_zero ______________________________
+
+    def test_division_zero():
+        with pytest.raises(ZeroDivisionError) as excinfo:
+            0 / 0
+>       excinfo.match(r'[123]+')
+E       AssertionError: Pattern '[123]+' not found in 'division by zero'
+
+test_match_raises_error.py:5: AssertionError
+=========================== 1 failed in 0.00 seconds ===========================
+
+_______________________________ test_cwd_deleted _______________________________
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.6.1.dev72+g450d26462, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_cwd_deleted0
+collected 1 item
+
+test_cwd_deleted.py F                                                    [100%]
+
+=================================== FAILURES ===================================
+_____________________________________ test _____________________________________
+
+tmpdir = local('/tmp/pytest-of-root/pytest-0/basetemp/test0')
+
+    def test(tmpdir):
+        tmpdir.chdir()
+        tmpdir.remove()
+>       assert False
+E       assert False
+
+/tmp/pytest-of-root/pytest-0/test_cwd_deleted0/test_cwd_deleted.py:4: AssertionError
+=========================== 1 failed in 0.00 seconds ===========================

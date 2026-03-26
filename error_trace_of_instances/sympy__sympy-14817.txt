@@ -1,0 +1,89 @@
+________________________________ xpassed tests _________________________________
+sympy/printing/pretty/tests/test_pretty.py: test_missing_in_2X_issue_9047
+
+________________________________________________________________________________
+_______ sympy/printing/pretty/tests/test_pretty.py:test_pretty_geometry ________
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5285, in test_pretty_geometry
+    e = Ray((1, 1), angle=4.02*pi)
+  File "/testbed/sympy/geometry/line.py", line 1275, in __new__
+    return Ray2D(p1, p2, **kwargs)
+  File "/testbed/sympy/geometry/line.py", line 2108, in __new__
+    p2 = p1 + Point(x, y)
+  File "/testbed/sympy/geometry/point.py", line 224, in __add__
+    coords = [simplify(a + b) for a, b in zip(s, o)]
+  File "/testbed/sympy/geometry/point.py", line 224, in <listcomp>
+    coords = [simplify(a + b) for a, b in zip(s, o)]
+  File "/testbed/sympy/simplify/simplify.py", line 613, in simplify
+    short = exptrigsimp(short)
+  File "/testbed/sympy/simplify/trigsimp.py", line 542, in exptrigsimp
+    newexpr = bottom_up(expr, exp_trig)
+  File "/testbed/sympy/simplify/simplify.py", line 1086, in bottom_up
+    args = tuple([bottom_up(a, F, atoms, nonbasic)
+  File "/testbed/sympy/simplify/simplify.py", line 1086, in <listcomp>
+    args = tuple([bottom_up(a, F, atoms, nonbasic)
+  File "/testbed/sympy/simplify/simplify.py", line 1090, in bottom_up
+    rv = F(rv)
+  File "/testbed/sympy/simplify/trigsimp.py", line 539, in exp_trig
+    choices.append(e.rewrite(exp))
+  File "/testbed/sympy/core/basic.py", line 1670, in rewrite
+    return self._eval_rewrite(None, rule, **hints)
+  File "/testbed/sympy/core/basic.py", line 1578, in _eval_rewrite
+    rewritten = getattr(self, rule)(*args)
+  File "/testbed/sympy/functions/elementary/trigonometric.py", line 1147, in _eval_rewrite_as_exp
+    neg_exp, pos_exp = exp(-arg*I), exp(arg*I)
+  File "/testbed/sympy/core/function.py", line 441, in __new__
+    result = super(Function, cls).__new__(cls, *args, **options)
+  File "/testbed/sympy/core/function.py", line 250, in __new__
+    evaluated = cls.eval(*args)
+  File "/testbed/sympy/functions/elementary/exponential.py", line 257, in eval
+    if ask(Q.integer(2*coeff)):
+  File "/testbed/sympy/assumptions/ask.py", line 1247, in ask
+    from sympy.assumptions.satask import satask
+  File "/testbed/sympy/assumptions/satask.py", line 9, in <module>
+    from sympy.assumptions.sathandlers import fact_registry
+  File "/testbed/sympy/assumptions/sathandlers.py", line 3, in <module>
+    from collections import MutableMapping, defaultdict
+  File "<frozen importlib._bootstrap>", line 1055, in _handle_fromlist
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/collections/__init__.py", line 62, in __getattr__
+    warnings.warn("Using or importing the ABCs from 'collections' instead "
+DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_8292 __________
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5835, in test_issue_8292
+    e = sympify('((x+x**4)/(x-1))-(2*(x-1)**4/(x-1)**4)', evaluate=False)
+  File "/testbed/sympy/core/sympify.py", line 368, in sympify
+    expr = parse_expr(a, local_dict=locals, transformations=transformations, evaluate=evaluate)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 948, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_8344 __________
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5876, in test_issue_8344
+    e = sympify('2*x*y**2/1**2 + 1', evaluate=False)
+  File "/testbed/sympy/core/sympify.py", line 368, in sympify
+    expr = parse_expr(a, local_dict=locals, transformations=transformations, evaluate=evaluate)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 948, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+________________________________________________________________________________
+____ sympy/printing/pretty/tests/test_pretty.py:test_MatrixSymbol_printing _____
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 6126, in test_MatrixSymbol_printing
+    assert pretty(x + y) == "x + y*"
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 226, in pretty
+    return xpretty(expr, order=order, use_unicode=False, wrap_line=False)
+  File "/testbed/sympy/printing/pretty/pretty.py", line 2331, in pretty
+    return pp.doprint(expr)
+  File "/testbed/sympy/printing/pretty/pretty.py", line 62, in doprint
+    return self._print(expr).render(**self._settings)
+  File "/testbed/sympy/printing/printer.py", line 274, in _print
+    return getattr(self, printmethod)(expr, *args, **kwargs)
+  File "/testbed/sympy/printing/pretty/pretty.py", line 828, in _print_MatAdd
+    if S(item.args[0]).is_negative:
+  File "/testbed/sympy/core/sympify.py", line 370, in sympify
+    raise SympifyError('could not parse %r' % a, exc)
+sympy.core.sympify.SympifyError: Sympify of expression 'could not parse 'y*'' failed, because of exception being raised:
+SyntaxError: unexpected EOF while parsing (<string>, line 1)
+
+ tests finished: 112 passed, 1 expected to fail but passed, 4 exceptions, 
+in 2.97 seconds 
+DO *NOT* COMMIT!

@@ -1,0 +1,22 @@
+======================================================================
+FAIL: test_callable_default_hidden_widget_value_not_overridden (forms_tests.tests.tests.ModelFormCallableModelDefault)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/tests/tests.py", line 225, in test_callable_default_hidden_widget_value_not_overridden
+    self.assertHTMLEqual(
+  File "/testbed/django/test/testcases.py", line 1045, in assertHTMLEqual
+    self.fail(self._formatMessage(msg, standardMsg))
+AssertionError: <p>
+<label for="id_int_field">
+Int field:
+</label><input id="id_int_field" name= [truncated]... != <p>
+<label for="id_int_field">
+Int field:
+</label><input id="id_int_field" name= [truncated]...
+Diff is 1070 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.059s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

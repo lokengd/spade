@@ -1,0 +1,17 @@
+======================================================================
+ERROR: test_set_permissions_fk_to_using_parameter (auth_tests.test_management.CreatePermissionsMultipleDatabasesTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_management.py", line 1504, in test_set_permissions_fk_to_using_parameter
+    create_permissions(apps.get_app_config("auth"), verbosity=0, using="other")
+  File "/testbed/django/contrib/auth/management/__init__.py", line 98, in create_permissions
+    perms = [
+  File "/testbed/django/contrib/auth/management/__init__.py", line 99, in <listcomp>
+    Permission(codename=codename, name=name, content_type=ct)
+  File "/testbed/django/db/models/base.py", line 543, in __init__
+    _setattr(self, field.name, rel_obj)
+  File "/testbed/django/db/models/fields/related_descriptors.py", line 285, in __set__
+    raise ValueError(
+ValueError: Cannot assign "<ContentType: auth | permission>": the current database router prevents this relation.
+
+----------------------------------------------------------------------

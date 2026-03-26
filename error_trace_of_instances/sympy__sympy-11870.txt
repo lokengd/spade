@@ -1,0 +1,10 @@
+________________________________________________________________________________
+_______ sympy/functions/elementary/tests/test_trigonometric.py:test_sinc _______
+  File "/testbed/sympy/functions/elementary/tests/test_trigonometric.py", line 717, in test_sinc
+    assert sinc(x).rewrite(sin) == Piecewise((sin(x)/x, Ne(x, 0)), (1, True))
+AssertionError
+________________________________________________________________________________
+___ sympy/functions/elementary/tests/test_trigonometric.py:test_issue_11864 ____
+  File "/testbed/sympy/functions/elementary/tests/test_trigonometric.py", line 1543, in test_issue_11864
+    assert F.rewrite(sinc) == soln
+AssertionError

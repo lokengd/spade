@@ -1,0 +1,49 @@
+=================================== FAILURES ===================================
+_________________________ test_module_level_skip_error _________________________
+
+pytester = <Pytester PosixPath('/tmp/pytest-of-root/pytest-0/test_module_level_skip_error0')>
+
+    def test_module_level_skip_error(pytester: Pytester) -> None:
+        """Verify that using pytest.skip at module level causes a collection error."""
+        pytester.makepyfile(
+            """
+            import pytest
+            pytest.skip("skip_module_level")
+
+            def test_func():
+                assert True
+        """
+        )
+        result = pytester.runpytest()
+>       result.stdout.fnmatch_lines(
+            ["*Using pytest.skip outside of a test will skip the entire module*"]
+        )
+E       Failed: nomatch: '*Using pytest.skip outside of a test will skip the entire module*'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-7.0.0.dev36+g69356d20c, py-1.11.0, pluggy-0.13.1'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_module_level_skip_error0'
+E           and: 'collected 0 items / 1 error'
+E           and: ''
+E           and: '==================================== ERRORS ===================================='
+E           and: '_______________ ERROR collecting test_module_level_skip_error.py _______________'
+E           and: 'Using pytest.skip outside of a test is not allowed. To decorate a test function, use the @pytest.mark.skip or @pytest.mark.skipif decorators instead, and to skip a module use `pytestmark = pytest.mark.{skip,skipif}.'
+E           and: '=========================== short test summary info ============================'
+E           and: 'ERROR test_module_level_skip_error.py'
+E           and: '!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!'
+E           and: '=============================== 1 error in 0.02s ==============================='
+E       remains unmatched: '*Using pytest.skip outside of a test will skip the entire module*'
+
+/testbed/testing/test_skipping.py:1343: Failed
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-7.0.0.dev36+g69356d20c, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_module_level_skip_error0
+collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting test_module_level_skip_error.py _______________
+Using pytest.skip outside of a test is not allowed. To decorate a test function, use the @pytest.mark.skip or @pytest.mark.skipif decorators instead, and to skip a module use `pytestmark = pytest.mark.{skip,skipif}.
+=========================== short test summary info ============================
+ERROR test_module_level_skip_error.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.02s ===============================

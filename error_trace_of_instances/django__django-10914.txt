@@ -1,0 +1,9 @@
+======================================================================
+FAIL: test_override_file_upload_permissions (test_utils.tests.OverrideSettingsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/test_utils/tests.py", line 1102, in test_override_file_upload_permissions
+    self.assertEqual(default_storage.file_permissions_mode, 0o644)
+AssertionError: None != 420
+
+----------------------------------------------------------------------

@@ -1,0 +1,186 @@
+=================================== FAILURES ===================================
+_______________ test_parameters_valid_types[n_components-value0] _______________
+
+param = 'n_components', value = 3
+
+    @pytest.mark.parametrize('param, value', [('n_components', np.int32(3)),
+                                              ('max_iter', np.int32(100)),
+                                              ('tol', np.float32(0.0001))])
+    def test_parameters_valid_types(param, value):
+        # check that no error is raised when parameters have numpy integer or
+        # floating types.
+        nca = NeighborhoodComponentsAnalysis(**{param: value})
+    
+        X = iris_data
+        y = iris_target
+    
+>       nca.fit(X, y)
+
+sklearn/neighbors/tests/test_nca.py:534: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/neighbors/nca.py:189: in fit
+    X, y, init = self._validate_params(X, y)
+sklearn/neighbors/nca.py:302: in _validate_params
+    check_scalar(self.n_components, 'n_components', int, 1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = 3, name = 'n_components', target_type = <class 'int'>, min_val = 1
+max_val = None
+
+    def check_scalar(x, name, target_type, min_val=None, max_val=None):
+        """Validate scalar parameters type and value.
+    
+        Parameters
+        ----------
+        x : object
+            The scalar parameter to validate.
+    
+        name : str
+            The name of the parameter to be printed in error messages.
+    
+        target_type : type or tuple
+            Acceptable data types for the parameter.
+    
+        min_val : float or int, optional (default=None)
+            The minimum valid value the parameter can take. If None (default) it
+            is implied that the parameter does not have a lower bound.
+    
+        max_val : float or int, optional (default=None)
+            The maximum valid value the parameter can take. If None (default) it
+            is implied that the parameter does not have an upper bound.
+    
+        Raises
+        -------
+        TypeError
+            If the parameter's type does not match the desired type.
+    
+        ValueError
+            If the parameter's value violates the given bounds.
+        """
+    
+        if not isinstance(x, target_type):
+            raise TypeError('`{}` must be an instance of {}, not {}.'
+>                           .format(name, target_type, type(x)))
+E           TypeError: `n_components` must be an instance of <class 'int'>, not <class 'numpy.int32'>.
+
+sklearn/utils/validation.py:977: TypeError
+_________________ test_parameters_valid_types[max_iter-value1] _________________
+
+param = 'max_iter', value = 100
+
+    @pytest.mark.parametrize('param, value', [('n_components', np.int32(3)),
+                                              ('max_iter', np.int32(100)),
+                                              ('tol', np.float32(0.0001))])
+    def test_parameters_valid_types(param, value):
+        # check that no error is raised when parameters have numpy integer or
+        # floating types.
+        nca = NeighborhoodComponentsAnalysis(**{param: value})
+    
+        X = iris_data
+        y = iris_target
+    
+>       nca.fit(X, y)
+
+sklearn/neighbors/tests/test_nca.py:534: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ 
+x = 100, name = 'max_iter', target_type = <class 'int'>, min_val = 1
+max_val = None
+
+    def check_scalar(x, name, target_type, min_val=None, max_val=None):
+        """Validate scalar parameters type and value.
+    
+        Parameters
+        ----------
+        x : object
+            The scalar parameter to validate.
+    
+        name : str
+            The name of the parameter to be printed in error messages.
+    
+        target_type : type or tuple
+            Acceptable data types for the parameter.
+    
+        min_val : float or int, optional (default=None)
+            The minimum valid value the parameter can take. If None (default) it
+            is implied that the parameter does not have a lower bound.
+    
+        max_val : float or int, optional (default=None)
+            The maximum valid value the parameter can take. If None (default) it
+            is implied that the parameter does not have an upper bound.
+    
+        Raises
+        -------
+        TypeError
+            If the parameter's type does not match the desired type.
+    
+        ValueError
+            If the parameter's value violates the given bounds.
+        """
+    
+        if not isinstance(x, target_type):
+            raise TypeError('`{}` must be an instance of {}, not {}.'
+>                           .format(name, target_type, type(x)))
+E           TypeError: `max_iter` must be an instance of <class 'int'>, not <class 'numpy.int32'>.
+
+sklearn/utils/validation.py:977: TypeError
+___________________ test_parameters_valid_types[tol-value2] ____________________
+
+param = 'tol', value = 1e-04
+
+    @pytest.mark.parametrize('param, value', [('n_components', np.int32(3)),
+                                              ('max_iter', np.int32(100)),
+                                              ('tol', np.float32(0.0001))])
+    def test_parameters_valid_types(param, value):
+        # check that no error is raised when parameters have numpy integer or
+        # floating types.
+        nca = NeighborhoodComponentsAnalysis(**{param: value})
+    
+        X = iris_data
+        y = iris_target
+    
+>       nca.fit(X, y)
+
+sklearn/neighbors/tests/test_nca.py:534: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = 1e-04, name = 'tol', target_type = <class 'float'>, min_val = 0.0
+max_val = None
+
+    def check_scalar(x, name, target_type, min_val=None, max_val=None):
+        """Validate scalar parameters type and value.
+    
+        Parameters
+        ----------
+        x : object
+            The scalar parameter to validate.
+    
+        name : str
+            The name of the parameter to be printed in error messages.
+    
+        target_type : type or tuple
+            Acceptable data types for the parameter.
+    
+        min_val : float or int, optional (default=None)
+            The minimum valid value the parameter can take. If None (default) it
+            is implied that the parameter does not have a lower bound.
+    
+        max_val : float or int, optional (default=None)
+            The maximum valid value the parameter can take. If None (default) it
+            is implied that the parameter does not have an upper bound.
+    
+        Raises
+        -------
+        TypeError
+            If the parameter's type does not match the desired type.
+    
+        ValueError
+            If the parameter's value violates the given bounds.
+        """
+    
+        if not isinstance(x, target_type):
+            raise TypeError('`{}` must be an instance of {}, not {}.'
+>                           .format(name, target_type, type(x)))
+E           TypeError: `tol` must be an instance of <class 'float'>, not <class 'numpy.float32'>.
+
+sklearn/utils/validation.py:977: TypeError

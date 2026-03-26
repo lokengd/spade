@@ -1,0 +1,36 @@
+======================================================================
+ERROR: test_has_key_race_handling (cache.tests.FileBasedCachePathLibTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/cache/tests.py", line 1768, in test_has_key_race_handling
+    self.assertIs(cache.has_key("key"), False)
+  File "/testbed/django/core/cache/backends/filebased.py", line 94, in has_key
+    with open(fname, "rb") as f:
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+FileNotFoundError
+
+======================================================================
+ERROR: test_has_key_race_handling (cache.tests.FileBasedCacheTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/cache/tests.py", line 1768, in test_has_key_race_handling
+    self.assertIs(cache.has_key("key"), False)
+  File "/testbed/django/core/cache/backends/filebased.py", line 94, in has_key
+    with open(fname, "rb") as f:
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1092, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1096, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1151, in _execute_mock_call
+    raise effect
+FileNotFoundError
+
+----------------------------------------------------------------------
+Ran 574 tests in 72.225s
+
+FAILED (errors=2, skipped=183)

@@ -1,0 +1,47 @@
+======================================================================
+FAIL: test_isnull_non_boolean_value (lookup.tests.LookupTests) (qs=<QuerySet []>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/lookup/tests.py", line 993, in test_isnull_non_boolean_value
+    qs.exists()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 682, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: RemovedInDjango40Warning not triggered
+
+======================================================================
+FAIL: test_isnull_non_boolean_value (lookup.tests.LookupTests) (qs=<QuerySet []>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/lookup/tests.py", line 993, in test_isnull_non_boolean_value
+    qs.exists()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 682, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: RemovedInDjango40Warning not triggered
+
+======================================================================
+FAIL: test_isnull_non_boolean_value (lookup.tests.LookupTests) (qs=<QuerySet []>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/lookup/tests.py", line 993, in test_isnull_non_boolean_value
+    qs.exists()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 682, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: RemovedInDjango40Warning not triggered
+
+======================================================================
+FAIL: test_isnull_non_boolean_value (lookup.tests.LookupTests) (qs=<QuerySet []>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/lookup/tests.py", line 993, in test_isnull_non_boolean_value
+    qs.exists()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 682, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: RemovedInDjango40Warning not triggered

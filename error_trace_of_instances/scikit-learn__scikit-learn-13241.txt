@@ -1,0 +1,30 @@
+=================================== FAILURES ===================================
+_____________________ test_kernel_pca_deterministic_output _____________________
+
+    def test_kernel_pca_deterministic_output():
+        rng = np.random.RandomState(0)
+        X = rng.rand(10, 10)
+        eigen_solver = ('arpack', 'dense')
+    
+        for solver in eigen_solver:
+            transformed_X = np.zeros((20, 2))
+            for i in range(20):
+                kpca = KernelPCA(n_components=2, eigen_solver=solver,
+                                 random_state=rng)
+                transformed_X[i, :] = kpca.fit_transform(X)[0]
+            assert_allclose(
+>               transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2))
+E           AssertionError: 
+E           Not equal to tolerance rtol=1e-07, atol=0
+E           
+E           Mismatched elements: 23 / 40 (57.5%)
+E           Max absolute difference: 0.80605651
+E           Max relative difference: 2.
+E            x: array([[-0.403028, -0.086532],
+E                  [ 0.403028, -0.086532],
+E                  [-0.403028,  0.086532],...
+E            y: array([[-0.403028, -0.086532],
+E                  [-0.403028, -0.086532],
+E                  [-0.403028, -0.086532],...
+
+sklearn/decomposition/tests/test_kernel_pca.py:86: AssertionError

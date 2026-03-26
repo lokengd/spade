@@ -1,0 +1,223 @@
+======================================================================
+ERROR: test_technical_404_converter_raise_404 (view_tests.tests.test_debug.DebugViewTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/core/handlers/base.py", line 100, in _get_response
+    resolver_match = resolver.resolve(request.path_info)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/utils/deprecation.py", line 94, in __call__
+    response = response or self.get_response(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/utils/deprecation.py", line 94, in __call__
+    response = response or self.get_response(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/utils/deprecation.py", line 94, in __call__
+    response = response or self.get_response(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/utils/deprecation.py", line 94, in __call__
+    response = response or self.get_response(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/utils/deprecation.py", line 94, in __call__
+    response = response or self.get_response(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/testbed/django/utils/deprecation.py", line 94, in __call__
+    response = response or self.get_response(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/view_tests/tests/test_debug.py", line 244, in test_technical_404_converter_raise_404
+    response = self.client.get('/path-post/1/')
+  File "/testbed/django/test/client.py", line 518, in get
+    response = super().get(path, data=data, secure=secure, **extra)
+  File "/testbed/django/test/client.py", line 346, in get
+    **extra,
+  File "/testbed/django/test/client.py", line 421, in generic
+    return self.request(**r)
+  File "/testbed/django/test/client.py", line 484, in request
+    response = self.handler(environ)
+  File "/testbed/django/test/client.py", line 139, in __call__
+    response = self.get_response(request)
+  File "/testbed/django/core/handlers/base.py", line 75, in get_response
+    response = self._middleware_chain(request)
+  File "/testbed/django/core/handlers/exception.py", line 36, in inner
+    response = response_for_exception(request, exc)
+  File "/testbed/django/core/handlers/exception.py", line 44, in response_for_exception
+    response = debug.technical_404_response(request, exc)
+  File "/testbed/django/views/debug.py", line 485, in technical_404_response
+    resolver_match = resolve(request.path)
+  File "/testbed/django/urls/base.py", line 25, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "/testbed/django/urls/resolvers.py", line 542, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/testbed/django/urls/resolvers.py", line 349, in resolve
+    match = self.pattern.match(path)
+  File "/testbed/django/urls/resolvers.py", line 260, in match
+    kwargs[key] = converter.to_python(value)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 939, in __call__
+    return _mock_self._mock_call(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 999, in _mock_call
+    raise effect
+django.http.response.Http404
+
+----------------------------------------------------------------------
+Ran 72 tests in 1.817s
+
+FAILED (errors=1)

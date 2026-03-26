@@ -1,0 +1,16 @@
+=================================== FAILURES ===================================
+_______________________________ test_grab_clear ________________________________
+
+    def test_grab_clear():
+        fig, ax = plt.subplots()
+    
+        fig.canvas.grab_mouse(ax)
+        assert fig.canvas.mouse_grabber == ax
+    
+        fig.clear()
+>       assert fig.canvas.mouse_grabber is None
+E       assert <Axes: > is None
+E        +  where <Axes: > = <matplotlib.backends.backend_agg.FigureCanvasAgg object at 0x7ffff062b9d0>.mouse_grabber
+E        +    where <matplotlib.backends.backend_agg.FigureCanvasAgg object at 0x7ffff062b9d0> = <Figure size 640x480 with 0 Axes>.canvas
+
+lib/matplotlib/tests/test_backend_bases.py:105: AssertionError

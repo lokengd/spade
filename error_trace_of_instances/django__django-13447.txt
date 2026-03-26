@@ -1,0 +1,7 @@
+======================================================================
+ERROR: test_available_apps (admin_views.test_adminsite.SiteEachContextTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_views/test_adminsite.py", line 60, in test_available_apps
+    self.assertEqual(article['model'], Article)
+KeyError: 'model'

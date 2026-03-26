@@ -1,0 +1,15 @@
+________________________________________________________________________________
+_______________ sympy/core/tests/test_exprtools.py:test_Factors ________________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_exprtools.py", line 31, in test_Factors
+    assert Factors((x**2)**S.Half).as_expr() == (x**2)**S.Half
+AssertionError
+________________________________________________________________________________
+___________________ sympy/simplify/tests/test_fu.py:test_fu ____________________
+Traceback (most recent call last):
+  File "/testbed/sympy/simplify/tests/test_fu.py", line 280, in test_fu
+    assert fu(cos(x) + sqrt(sin(x)**2)) == cos(x) + sqrt(sin(x)**2)
+AssertionError
+
+============ tests finished: 37 passed, 2 failed, in 11.67 seconds =============
+DO *NOT* COMMIT!

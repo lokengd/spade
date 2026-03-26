@@ -1,0 +1,17 @@
+======================================================================
+FAIL: test_limit_choices_to_no_duplicates (model_forms.tests.LimitChoicesToTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 382, in inner
+    return func(*args, **kwargs)
+  File "/testbed/tests/model_forms/tests.py", line 2888, in test_limit_choices_to_no_duplicates
+    [self.marley, self.threepwood],
+AssertionError: Element counts were not equal:
+First has 4, Second has 1:  <Character: threepwood>
+First has 3, Second has 1:  <Character: marley>
+
+----------------------------------------------------------------------
+Ran 149 tests in 0.308s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

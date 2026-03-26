@@ -1,0 +1,16 @@
+======================================================================
+FAIL: test_trailing_slash_in_target_app_directory_name (admin_scripts.tests.StartApp)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_scripts/tests.py", line 2213, in test_trailing_slash_in_target_app_directory_name
+    self.assertNoOutput(err)
+  File "/testbed/tests/admin_scripts/tests.py", line 151, in assertNoOutput
+    self.assertEqual(len(stream), 0, "Stream should be empty: actually contains '%s'" % stream)
+AssertionError: 101 != 0 : Stream should be empty: actually contains 'CommandError: '' is not a valid app directory. Please make sure the directory is a valid identifier.
+'
+
+----------------------------------------------------------------------
+Ran 199 tests in 40.591s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

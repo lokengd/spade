@@ -1,0 +1,33 @@
+======================================================================
+ERROR: test_callable_sitemod_no_items (sitemaps_tests.test_http.HTTPSitemapTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/sitemaps_tests/test_http.py", line 511, in test_callable_sitemod_no_items
+    index_response = self.client.get("/callable-lastmod-no-items/index.xml")
+  File "/testbed/django/test/client.py", line 839, in get
+    response = super().get(path, data=data, secure=secure, **extra)
+  File "/testbed/django/test/client.py", line 427, in get
+    return self.generic(
+  File "/testbed/django/test/client.py", line 544, in generic
+    return self.request(**r)
+  File "/testbed/django/test/client.py", line 813, in request
+    self.check_exception(response)
+  File "/testbed/django/test/client.py", line 666, in check_exception
+    raise exc_value
+  File "/testbed/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/testbed/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/testbed/django/contrib/sitemaps/views.py", line 34, in inner
+    response = func(request, *args, **kwargs)
+  File "/testbed/django/contrib/sitemaps/views.py", line 76, in index
+    site_lastmod = site.get_latest_lastmod()
+  File "/testbed/django/contrib/sitemaps/__init__.py", line 170, in get_latest_lastmod
+    return max([self.lastmod(item) for item in self.items()])
+ValueError: max() arg is an empty sequence
+
+----------------------------------------------------------------------
+Ran 40 tests in 0.090s
+
+FAILED (errors=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

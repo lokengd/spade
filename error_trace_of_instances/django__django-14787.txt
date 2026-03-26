@@ -1,0 +1,10 @@
+======================================================================
+FAIL: test_wrapper_assignments (decorators.tests.MethodDecoratorTests)
+@method_decorator preserves wrapper assignments.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/decorators/tests.py", line 448, in test_wrapper_assignments
+    self.assertEqual(func_name, 'method')
+AssertionError: None != 'method'
+
+----------------------------------------------------------------------

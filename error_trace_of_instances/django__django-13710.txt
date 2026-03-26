@@ -1,0 +1,11 @@
+======================================================================
+FAIL: test_verbose_name_inline (admin_inlines.tests.TestVerboseNameInlineForms)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_inlines/tests.py", line 1001, in test_verbose_name_inline
+    self.assertContains(response, '<h2>Non-verbose childss</h2>')
+  File "/testbed/django/test/testcases.py", line 465, in assertContains
+    self.assertTrue(real_count != 0, msg_prefix + "Couldn't find %s in response" % text_repr)
+AssertionError: False is not true : Couldn't find '<h2>Non-verbose childss</h2>' in response
+
+----------------------------------------------------------------------

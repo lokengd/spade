@@ -1,0 +1,13 @@
+======================================================================
+FAIL: test_subquery_sql (expressions.tests.BasicExpressionsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/expressions/tests.py", line 543, in test_subquery_sql
+    self.assertIs(employees_subquery.query.subquery, True)
+AssertionError: False is not True
+
+----------------------------------------------------------------------
+Ran 164 tests in 0.155s
+
+FAILED (failures=1, skipped=1, expected failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

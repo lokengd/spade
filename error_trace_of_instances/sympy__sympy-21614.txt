@@ -1,0 +1,6 @@
+________________________________________________________________________________
+______________ sympy/core/tests/test_kind.py:test_Derivative_kind ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_kind.py", line 45, in test_Derivative_kind
+    assert Derivative(comm_x, comm_x).kind is NumberKind
+AssertionError

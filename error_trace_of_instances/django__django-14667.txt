@@ -1,0 +1,9 @@
+======================================================================
+FAIL: test_defer_only_chaining (defer.tests.DeferTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/defer/tests.py", line 55, in test_defer_only_chaining
+    self.assert_delayed(qs.only('name').defer('name').defer('value')[0], 1)
+  File "/testbed/tests/defer/tests.py", line 18, in assert_delayed
+    self.assertEqual(count, num)
+AssertionError: 0 != 1

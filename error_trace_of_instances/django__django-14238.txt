@@ -1,0 +1,39 @@
+======================================================================
+ERROR: test_default_auto_field_setting_bigautofield_subclass (model_options.test_default_pk.TestDefaultPK)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 430, in inner
+    return func(*args, **kwargs)
+  File "/testbed/tests/model_options/test_default_pk.py", line 85, in test_default_auto_field_setting_bigautofield_subclass
+    class Model(models.Model):
+  File "/testbed/django/db/models/base.py", line 320, in __new__
+    new_class._prepare()
+  File "/testbed/django/db/models/base.py", line 333, in _prepare
+    opts._prepare(cls)
+  File "/testbed/django/db/models/options.py", line 285, in _prepare
+    pk_class = self._get_default_pk_class()
+  File "/testbed/django/db/models/options.py", line 246, in _get_default_pk_class
+    raise ValueError(
+ValueError: Primary key 'model_options.test_default_pk.MyBigAutoField' referred by DEFAULT_AUTO_FIELD must subclass AutoField.
+
+======================================================================
+FAIL: test_issubclass_of_autofield (model_fields.test_autofield.AutoFieldInheritanceTests) [MyBigAutoField]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_fields/test_autofield.py", line 47, in test_issubclass_of_autofield
+    self.assertTrue(issubclass(field, models.AutoField))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_issubclass_of_autofield (model_fields.test_autofield.AutoFieldInheritanceTests) [MySmallAutoField]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_fields/test_autofield.py", line 47, in test_issubclass_of_autofield
+    self.assertTrue(issubclass(field, models.AutoField))
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 61 tests in 0.030s
+
+FAILED (failures=2, errors=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

@@ -1,0 +1,23 @@
+======================================================================
+ERROR: test_program_name_from_argv (admin_scripts.tests.ExecuteFromCommandLine)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_scripts/tests.py", line 1880, in test_program_name_from_argv
+    execute_from_command_line(['django-admin'] + args)
+  File "/testbed/django/core/management/__init__.py", line 414, in execute_from_command_line
+    utility.execute()
+  File "/testbed/django/core/management/__init__.py", line 347, in execute
+    parser = CommandParser(usage='%(prog)s subcommand [options] [args]', add_help=False, allow_abbrev=False)
+  File "/testbed/django/core/management/base.py", line 54, in __init__
+    super().__init__(**kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/argparse.py", line 1626, in __init__
+    prog = _os.path.basename(_sys.argv[0])
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/posixpath.py", line 146, in basename
+    p = os.fspath(p)
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+----------------------------------------------------------------------
+Ran 196 tests in 38.238s
+
+FAILED (errors=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

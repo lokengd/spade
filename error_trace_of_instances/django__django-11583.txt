@@ -1,0 +1,35 @@
+======================================================================
+ERROR: test_path_with_embedded_null_bytes (utils_tests.test_autoreload.TestIterModulesAndFiles) (path='embedded_null_byte\x00.py')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/utils_tests/test_autoreload.py", line 150, in test_path_with_embedded_null_bytes
+    autoreload.iter_modules_and_files((), frozenset([path])),
+  File "/testbed/django/utils/autoreload.py", line 141, in iter_modules_and_files
+    resolved_path = path.resolve(strict=True).absolute()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 1141, in resolve
+    s = self._flavour.resolve(self, strict=strict)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 346, in resolve
+    return _resolve(base, str(path)) or sep
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 330, in _resolve
+    target = accessor.readlink(newpath)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 440, in readlink
+    return os.readlink(path)
+ValueError: embedded null byte
+
+======================================================================
+ERROR: test_path_with_embedded_null_bytes (utils_tests.test_autoreload.TestIterModulesAndFiles) (path='di\x00rectory/embedded_null_byte.py')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/utils_tests/test_autoreload.py", line 150, in test_path_with_embedded_null_bytes
+    autoreload.iter_modules_and_files((), frozenset([path])),
+  File "/testbed/django/utils/autoreload.py", line 141, in iter_modules_and_files
+    resolved_path = path.resolve(strict=True).absolute()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 1141, in resolve
+    s = self._flavour.resolve(self, strict=strict)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 346, in resolve
+    return _resolve(base, str(path)) or sep
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 330, in _resolve
+    target = accessor.readlink(newpath)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/pathlib.py", line 440, in readlink
+    return os.readlink(path)
+ValueError: embedded null byte

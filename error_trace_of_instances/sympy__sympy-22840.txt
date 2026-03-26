@@ -1,0 +1,12 @@
+________________________________________________________________________________
+____________ sympy/simplify/tests/test_cse.py:test_cse_MatrixSymbol ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/simplify/tests/test_cse.py", line 352, in test_cse_MatrixSymbol
+    assert cse(A[0,0]*A[0,1] + A[0,0]*A[0,1]*A[0,2]) == ([(x0, A[0, 0]*A[0, 1])], [x0*A[0, 2] + x0])
+AssertionError
+________________________________________________________________________________
+______ sympy/utilities/tests/test_codegen.py:test_multidim_c_argument_cse ______
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_codegen.py", line 539, in test_multidim_c_argument_cse
+    assert code == expected
+AssertionError

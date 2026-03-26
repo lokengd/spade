@@ -1,0 +1,20 @@
+________________________________________________________________________________
+______ sympy/printing/tests/test_latex.py:test_latex_SingularityFunction _______
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 217, in test_latex_SingularityFunction
+    assert latex(SingularityFunction(x, 4, 5)**3) == \
+  File "/testbed/sympy/printing/printer.py", line 373, in __call__
+    return self.__wrapped__(*args, **kwargs)
+  File "/testbed/sympy/printing/latex.py", line 2949, in latex
+    return LatexPrinter(settings).doprint(expr)
+  File "/testbed/sympy/printing/latex.py", line 254, in doprint
+    tex = Printer.doprint(self, expr)
+  File "/testbed/sympy/printing/printer.py", line 291, in doprint
+    return self._str(self._print(expr))
+  File "/testbed/sympy/printing/printer.py", line 329, in _print
+    return getattr(self, printmethod)(expr, **kwargs)
+  File "/testbed/sympy/printing/latex.py", line 651, in _print_Pow
+    return self._print(expr.base, exp=self._print(expr.exp))
+  File "/testbed/sympy/printing/printer.py", line 329, in _print
+    return getattr(self, printmethod)(expr, **kwargs)
+TypeError: _print_SingularityFunction() got an unexpected keyword argument 'exp'

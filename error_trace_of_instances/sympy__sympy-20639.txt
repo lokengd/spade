@@ -1,0 +1,14 @@
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_6285 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5945, in test_issue_6285
+    assert pretty(Pow(x, (1/pi))) == \
+AssertionError
+________________________________________________________________________________
+_________ sympy/printing/pretty/tests/test_pretty.py:test_issue_17616 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 7213, in test_issue_17616
+    assert pretty(pi**(1/exp(1))) == \
+AssertionError
+
+============ tests finished: 140 passed, 2 failed, in 2.78 seconds =============

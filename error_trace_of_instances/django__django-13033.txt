@@ -1,0 +1,25 @@
+======================================================================
+FAIL: test_order_by_self_referential_fk (ordering.tests.OrderingTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/ordering/tests.py", line 359, in test_order_by_self_referential_fk
+    attrgetter('headline'),
+  File "/testbed/django/test/testcases.py", line 1054, in assertQuerysetEqual
+    return self.assertEqual(list(items), values, msg=msg)
+AssertionError: Lists differ: ['Article 2', 'Article 1'] != ['Article 1', 'Article 2']
+
+First differing element 0:
+'Article 2'
+'Article 1'
+
+- ['Article 2', 'Article 1']
+?           ^            ^
+
++ ['Article 1', 'Article 2']
+?           ^            ^
+
+
+----------------------------------------------------------------------
+Ran 27 tests in 0.039s
+
+FAILED (failures=1)

@@ -1,0 +1,21 @@
+test_custom_test_name (backends.sqlite.test_creation.TestDbSignatureTests) ... FAIL
+
+======================================================================
+FAIL: test_custom_test_name (backends.sqlite.test_creation.TestDbSignatureTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/backends/sqlite/test_creation.py", line 16, in test_custom_test_name
+    self.assertEqual(signature, (None, 'custom.sqlite.db'))
+AssertionError: Tuples differ: (None,) != (None, 'custom.sqlite.db')
+
+Second tuple contains 1 additional elements.
+First extra element 1:
+'custom.sqlite.db'
+
+- (None,)
++ (None, 'custom.sqlite.db')
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

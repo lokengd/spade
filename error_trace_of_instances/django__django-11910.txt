@@ -1,0 +1,19 @@
+======================================================================
+FAIL: test_rename_referenced_primary_key (migrations.test_autodetector.AutodetectorTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 956, in test_rename_referenced_primary_key
+    self.assertOperationTypes(changes, 'app', 0, ['RenameField'])
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for app.auto_1 (expected ['RenameField']):
+  app:
+    auto_1
+      <RenameField  model_name='foo', old_name='id', new_name='renamed_id'>
+      <AlterField  model_name='bar', name='foo', field=<django.db.models.fields.related.ForeignKey: foo>, preserve_default=True>
+
+
+----------------------------------------------------------------------
+Ran 114 tests in 0.144s
+
+FAILED (failures=1)

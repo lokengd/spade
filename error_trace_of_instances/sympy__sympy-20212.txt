@@ -1,0 +1,33 @@
+test_zero F
+test_pow_as_base_exp ok
+test_nseries ok
+test_issue_6100_12942_4473 ok
+test_issue_6208 ok
+test_issue_6990 ok
+test_issue_6068 ok
+test_issue_6782 ok
+test_issue_6653 ok
+test_issue_6429 ok
+test_issue_7638 ok
+test_issue_8582 ok
+test_issue_8650 ok
+test_issue_13914 ok
+test_better_sqrt ok
+test_issue_2993 ok
+test_issue_17450 ok
+test_issue_18190 ok
+test_issue_14815 ok
+test_issue_18509 ok
+test_issue_18762 ok
+test_power_dispatcher ok                                                  [FAIL]
+
+
+________________________________________________________________________________
+___________________ sympy/core/tests/test_power.py:test_zero ___________________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_power.py", line 270, in test_zero
+    assert 0 ** -oo is zoo
+AssertionError
+
+============ tests finished: 33 passed, 1 failed, in 14.06 seconds =============
+DO *NOT* COMMIT!

@@ -1,0 +1,35 @@
+======================================================================
+FAIL: test_alter_unique_together_fk_to_m2m (migrations.test_autodetector.AutodetectorTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 4378, in test_alter_unique_together_fk_to_m2m
+    self.assertOperationTypes(
+  File "/testbed/tests/migrations/test_autodetector.py", line 1025, in assertOperationTypes
+    self.fail(
+AssertionError: Operation type mismatch for otherapp.auto_1 (expected ['AlterUniqueTogether', 'RemoveField', 'AddField']):
+  otherapp:
+    auto_1
+      <AlterUniqueTogether  name='book', unique_together=set()>
+
+
+======================================================================
+FAIL: test_many_to_many_changed_to_concrete_field (migrations.test_autodetector.AutodetectorTests)
+#23938 - Changing a ManyToManyField into a concrete field
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 3812, in test_many_to_many_changed_to_concrete_field
+    self.assertOperationTypes(
+  File "/testbed/tests/migrations/test_autodetector.py", line 1025, in assertOperationTypes
+    self.fail(
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['RemoveField', 'DeleteModel', 'AddField']):
+  testapp:
+    auto_1
+      <RemoveField  model_name='author', name='publishers'>
+      <AddField  model_name='author', name='publishers', field=<django.db.models.fields.CharField>, preserve_default=False>
+      <DeleteModel  name='Publisher'>
+
+
+----------------------------------------------------------------------
+Ran 148 tests in 0.069s
+
+FAILED (failures=2)

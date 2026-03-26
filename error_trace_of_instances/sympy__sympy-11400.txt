@@ -1,0 +1,10 @@
+________________________________________________________________________________
+___________ sympy/printing/tests/test_ccode.py:test_ccode_Relational ___________
+  File "/testbed/sympy/printing/tests/test_ccode.py", line 125, in test_ccode_Relational
+    assert ccode(Eq(x, y)) == "x == y"
+AssertionError
+________________________________________________________________________________
+______________ sympy/printing/tests/test_ccode.py:test_ccode_sinc ______________
+  File "/testbed/sympy/printing/tests/test_ccode.py", line 178, in test_ccode_sinc
+    assert ccode(expr) == (
+AssertionError

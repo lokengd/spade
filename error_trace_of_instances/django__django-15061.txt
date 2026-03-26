@@ -1,0 +1,115 @@
+======================================================================
+FAIL: test_form_as_table (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/field_tests/test_multivaluefield.py", line 141, in test_form_as_table
+    self.assertHTMLEqual(
+  File "/testbed/django/test/testcases.py", line 810, in assertHTMLEqual
+    self.fail(self._formatMessage(msg, standardMsg))
+AssertionError: <tr>
+<th>
+<label for="id_field1_0">
+Field1:
+</label>
+</th><td>
+<input id="id_fie [truncated]... != <tr>
+<th>
+<label>
+Field1:
+</label>
+</th><td>
+<input id="id_field1_0" name="field [truncated]...
+  <tr>
+  <th>
+- <label for="id_field1_0">
++ <label>
+  Field1:
+  </label>
+  </th><td>
+  <input id="id_field1_0" name="field1_0" required type="text"><select id="id_field1_1" multiple name="field1_1" required>
+  <option value="J">
+  John
+  </option><option value="P">
+  Paul
+  </option><option value="G">
+  George
+  </option><option value="R">
+  Ringo
+  </option>
+  </select><input id="id_field1_2_0" name="field1_2_0" required type="text"><input id="id_field1_2_1" name="field1_2_1" required type="text">
+  </td>
+  </tr>
+
+======================================================================
+FAIL: test_form_as_table_data (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/field_tests/test_multivaluefield.py", line 164, in test_form_as_table_data
+    self.assertHTMLEqual(
+  File "/testbed/django/test/testcases.py", line 810, in assertHTMLEqual
+    self.fail(self._formatMessage(msg, standardMsg))
+AssertionError: <tr>
+<th>
+<label for="id_field1_0">
+Field1:
+</label>
+</th><td>
+<input id="id_fie [truncated]... != <tr>
+<th>
+<label>
+Field1:
+</label>
+</th><td>
+<input id="id_field1_0" name="field [truncated]...
+  <tr>
+  <th>
+- <label for="id_field1_0">
++ <label>
+  Field1:
+  </label>
+  </th><td>
+  <input id="id_field1_0" name="field1_0" required type="text" value="some text"><select id="id_field1_1" multiple name="field1_1" required>
+  <option selected value="J">
+  John
+  </option><option selected value="P">
+  Paul
+  </option><option value="G">
+  George
+  </option><option value="R">
+  Ringo
+  </option>
+  </select><input id="id_field1_2_0" name="field1_2_0" required type="text" value="2007-04-25"><input id="id_field1_2_1" name="field1_2_1" required type="text" value="06:24:00">
+  </td>
+  </tr>
+
+======================================================================
+FAIL: test_form_as_table (forms_tests.field_tests.test_splitdatetimefield.SplitDateTimeFieldTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/field_tests/test_splitdatetimefield.py", line 69, in test_form_as_table
+    self.assertHTMLEqual(
+  File "/testbed/django/test/testcases.py", line 810, in assertHTMLEqual
+    self.fail(self._formatMessage(msg, standardMsg))
+AssertionError: <tr>
+<th>
+<label for="id_datetime_0">
+Datetime:
+</label>
+</th><td>
+<input id="id [truncated]... != <tr>
+<th>
+<label>
+Datetime:
+</label>
+</th><td>
+<input id="id_datetime_0" name="d [truncated]...
+  <tr>
+  <th>
+- <label for="id_datetime_0">
++ <label>
+  Datetime:
+  </label>
+  </th><td>
+  <input id="id_datetime_0" name="datetime_0" required type="text"><input id="id_datetime_1" name="datetime_1" required type="text">
+  </td>
+  </tr>

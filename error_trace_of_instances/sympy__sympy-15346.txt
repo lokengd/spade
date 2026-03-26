@@ -1,0 +1,6 @@
+________________________________________________________________________________
+___ sympy/simplify/tests/test_trigsimp.py:test_issue_15129_trigsimp_methods ____
+Traceback (most recent call last):
+  File "/testbed/sympy/simplify/tests/test_trigsimp.py", line 367, in test_issue_15129_trigsimp_methods
+    assert trigsimp(r1) == cos(S(1)/50)
+AssertionError

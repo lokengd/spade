@@ -1,0 +1,40 @@
+======================================================================
+FAIL: test_model_delete_returns_num_rows (delete.tests.DeletionTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/delete/tests.py", line 558, in test_model_delete_returns_num_rows
+    self.assertCountEqual(deleted_objs.keys(), existed_objs.keys())
+AssertionError: Element counts were not equal:
+First has 1, Second has 0:  'delete.A'
+
+======================================================================
+FAIL: test_queryset_delete_returns_num_rows (delete.tests.DeletionTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/delete/tests.py", line 528, in test_queryset_delete_returns_num_rows
+    self.assertCountEqual(deleted_objs.keys(), existed_objs.keys())
+AssertionError: Element counts were not equal:
+First has 1, Second has 0:  'delete.A'
+First has 1, Second has 0:  'delete.M_m2m'
+First has 1, Second has 0:  'delete.MR'
+
+======================================================================
+FAIL: test_fast_delete_empty_no_update_can_self_select (delete.tests.FastDeleteTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/delete/tests.py", line 696, in test_fast_delete_empty_no_update_can_self_select
+    (0, {})
+AssertionError: Tuples differ: (0, {'delete.User': 0}) != (0, {})
+
+First differing element 1:
+{'delete.User': 0}
+{}
+
+- (0, {'delete.User': 0})
++ (0, {})
+
+----------------------------------------------------------------------
+Ran 53 tests in 0.612s
+
+FAILED (failures=3, skipped=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

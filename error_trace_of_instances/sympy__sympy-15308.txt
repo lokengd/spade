@@ -1,0 +1,29 @@
+________________________________________________________________________________
+______________ sympy/printing/tests/test_latex.py:test_issue_8470 ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1669, in test_issue_8470
+    e = parse_expr("-B*A", evaluate=False)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 963, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+________________________________________________________________________________
+_____________ sympy/printing/tests/test_latex.py:test_issue_13559 ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1702, in test_issue_13559
+    expr = parse_expr('5/1', evaluate=False)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 963, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+
+________________________________________________________________________________
+________________ sympy/printing/tests/test_latex.py:test_trace _________________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1875, in test_trace
+    assert latex(trace(A)) == r"\mathrm{tr}\left (A \right )"
+AssertionError
+________________________________________________________________________________
+_____________ sympy/printing/tests/test_latex.py:test_print_basic ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1898, in test_print_basic
+    assert latex(unimplemented_expr(x)) == r'UnimplementedExpr\left(x\right)'
+AssertionError

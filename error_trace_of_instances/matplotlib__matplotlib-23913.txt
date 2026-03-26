@@ -1,0 +1,67 @@
+=================================== FAILURES ===================================
+_________________________ test_legend_draggable[True] __________________________
+
+draggable = True
+
+    @pytest.mark.parametrize('draggable', (True, False))
+    def test_legend_draggable(draggable):
+        fig, ax = plt.subplots()
+        ax.plot(range(10), label='shabnams')
+>       leg = ax.legend(draggable=draggable)
+
+lib/matplotlib/tests/test_legend.py:790: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/axes/_axes.py:307: in legend
+    self.legend_ = mlegend.Legend(self, handles, labels, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+args = (<matplotlib.legend.Legend object at 0x7fffe9ba12d0>, <AxesSubplot: >, [<matplotlib.lines.Line2D object at 0x7fffe8d70f10>], ['shabnams'])
+kwargs = {'draggable': True}
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Don't use signature.bind here, as it would fail when stacked with
+        # rename_parameter and an "old" argument name is passed in
+        # (signature.bind would fail, but the actual call would succeed).
+        if len(args) > name_idx:
+            warn_deprecated(
+                since, message="Passing the %(name)s %(obj_type)s "
+                "positionally is deprecated since Matplotlib %(since)s; the "
+                "parameter will become keyword-only %(removal)s.",
+                name=name, obj_type=f"parameter of {func.__name__}()")
+>       return func(*args, **kwargs)
+E       TypeError: Legend.__init__() got an unexpected keyword argument 'draggable'
+
+lib/matplotlib/_api/deprecation.py:454: TypeError
+_________________________ test_legend_draggable[False] _________________________
+
+draggable = False
+
+    @pytest.mark.parametrize('draggable', (True, False))
+    def test_legend_draggable(draggable):
+        fig, ax = plt.subplots()
+        ax.plot(range(10), label='shabnams')
+>       leg = ax.legend(draggable=draggable)
+
+lib/matplotlib/tests/test_legend.py:790: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/axes/_axes.py:307: in legend
+    self.legend_ = mlegend.Legend(self, handles, labels, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+args = (<matplotlib.legend.Legend object at 0x7fffe8db92d0>, <AxesSubplot: >, [<matplotlib.lines.Line2D object at 0x7fffe8c3ce50>], ['shabnams'])
+kwargs = {'draggable': False}
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Don't use signature.bind here, as it would fail when stacked with
+        # rename_parameter and an "old" argument name is passed in
+        # (signature.bind would fail, but the actual call would succeed).
+        if len(args) > name_idx:
+            warn_deprecated(
+                since, message="Passing the %(name)s %(obj_type)s "
+                "positionally is deprecated since Matplotlib %(since)s; the "
+                "parameter will become keyword-only %(removal)s.",
+                name=name, obj_type=f"parameter of {func.__name__}()")
+>       return func(*args, **kwargs)
+E       TypeError: Legend.__init__() got an unexpected keyword argument 'draggable'
+
+lib/matplotlib/_api/deprecation.py:454: TypeError

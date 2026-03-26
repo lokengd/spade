@@ -1,0 +1,48 @@
+======================================================================
+FAIL: test_repr (urlpatterns_reverse.tests.ResolverMatchTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/urlpatterns_reverse/tests.py", line 1141, in test_repr
+    self.assertEqual(
+AssertionError: "Reso[87 chars]name=no-kwargs, app_names=[], namespaces=[], r[32 chars])/$)" != "Reso[87 chars]name='no-kwargs', app_names=[], namespaces=[],[36 chars]/$')"
+- ResolverMatch(func=urlpatterns_reverse.views.empty_view, args=('42', '37'), kwargs={}, url_name=no-kwargs, app_names=[], namespaces=[], route=^no_kwargs/([0-9]+)/([0-9]+)/$)
++ ResolverMatch(func=urlpatterns_reverse.views.empty_view, args=('42', '37'), kwargs={}, url_name='no-kwargs', app_names=[], namespaces=[], route='^no_kwargs/([0-9]+)/([0-9]+)/$')
+?                                                                                                 +         +                                     +                              +
+
+
+======================================================================
+FAIL: test_repr_functools_partial (urlpatterns_reverse.tests.ResolverMatchTests) (name='partial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/urlpatterns_reverse/tests.py", line 1161, in test_repr_functools_partial
+    self.assertEqual(
+AssertionError: 'ResolverMatch(func=functools.partial, ar[76 chars]al/)' != "ResolverMatch(func=functools.partial(<fu[152 chars]l/')"
+- ResolverMatch(func=functools.partial, args=(), kwargs={}, url_name=partial, app_names=[], namespaces=[], route=partial/)
++ ResolverMatch(func=functools.partial(<function empty_view at 0x7ffffcbfe550>, template_name='template.html'), args=(), kwargs={}, url_name='partial', app_names=[], namespaces=[], route='partial/')
+?                                     ++++++++++++++++++++++++++++++++++++++++ ++++++++++++++++++++++++++++++++                              +       +                                     +        +
+
+
+======================================================================
+FAIL: test_repr_functools_partial (urlpatterns_reverse.tests.ResolverMatchTests) (name='partial_nested')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/urlpatterns_reverse/tests.py", line 1161, in test_repr_functools_partial
+    self.assertEqual(
+AssertionError: 'ResolverMatch(func=functools.partial, ar[90 chars]ed/)' != "ResolverMatch(func=functools.partial(<fu[172 chars]d/')"
+Diff is 660 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_repr_functools_partial (urlpatterns_reverse.tests.ResolverMatchTests) (name='partial_wrapped')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/urlpatterns_reverse/tests.py", line 1161, in test_repr_functools_partial
+    self.assertEqual(
+AssertionError: 'ResolverMatch(func=urlpatterns_reverse.v[111 chars]ed/)' != "ResolverMatch(func=functools.partial(<fu[168 chars]d/')"
+- ResolverMatch(func=urlpatterns_reverse.views.empty_view, args=(), kwargs={}, url_name=partial_wrapped, app_names=[], namespaces=[], route=partial_wrapped/)
++ ResolverMatch(func=functools.partial(<function empty_view at 0x7ffffcbfe550>, template_name='template.html'), args=(), kwargs={}, url_name='partial_wrapped', app_names=[], namespaces=[], route='partial_wrapped/')
+
+
+----------------------------------------------------------------------
+Ran 95 tests in 0.425s
+
+FAILED (failures=4)

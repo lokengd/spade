@@ -1,0 +1,10 @@
+________________________________________________________________________________
+_____________ sympy/core/tests/test_numbers.py:test_powers_Integer _____________
+  File "/testbed/sympy/core/tests/test_numbers.py", line 1025, in test_powers_Integer
+    assert (-8) ** Rational(2, 5) == \
+AssertionError
+________________________________________________________________________________
+______________ sympy/core/tests/test_numbers.py:test_issue_13890 _______________
+  File "/testbed/sympy/core/tests/test_numbers.py", line 1208, in test_issue_13890
+    assert abs(e.subs(x,a).evalf() - f.subs(x,a).evalf()) < 1e-15
+AssertionError

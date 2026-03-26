@@ -1,0 +1,29 @@
+======================================================================
+FAIL: test_choices_in_max_length (invalid_models_tests.test_ordinary_fields.CharFieldTests) [field]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/invalid_models_tests/test_ordinary_fields.py", line 329, in test_choices_in_max_length
+    id='fields.E009',
+AssertionError: Lists differ: [] != [<Error: level=40, msg="'max_length' is to[136 chars]09'>]
+
+Second list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg="'max_length' is too small to fit the longest value in 'choices' (3 characters).", hint=None, obj=<django.db.models.fields.CharField: field>, id='fields.E009'>
+
+- []
++ [<Error: level=40, msg="'max_length' is too small to fit the longest value in 'choices' (3 characters).", hint=None, obj=<django.db.models.fields.CharField: field>, id='fields.E009'>]
+
+======================================================================
+FAIL: test_choices_in_max_length (invalid_models_tests.test_ordinary_fields.CharFieldTests) [group]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/invalid_models_tests/test_ordinary_fields.py", line 329, in test_choices_in_max_length
+    id='fields.E009',
+AssertionError: Lists differ: [] != [<Error: level=40, msg="'max_length' is to[136 chars]09'>]
+
+Second list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg="'max_length' is too small to fit the longest value in 'choices' (6 characters).", hint=None, obj=<django.db.models.fields.CharField: group>, id='fields.E009'>
+
+- []
++ [<Error: level=40, msg="'max_length' is too small to fit the longest value in 'choices' (6 characters).", hint=None, obj=<django.db.models.fields.CharField: group>, id='fields.E009'>]

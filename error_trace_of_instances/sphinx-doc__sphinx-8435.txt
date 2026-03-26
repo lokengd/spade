@@ -1,0 +1,227 @@
+=================================== FAILURES ===================================
+[31m[1m__________________________ test_autodoc_type_aliases ___________________________[0m
+
+app = <SphinxTestApp buildername='text'>
+
+    [0m[37m@pytest[39;49;00m.mark.skipif(sys.version_info < ([94m3[39;49;00m, [94m7[39;49;00m), reason=[33m'[39;49;00m[33mpython 3.7+ is required.[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+    [37m@pytest[39;49;00m.mark.sphinx([33m'[39;49;00m[33mtext[39;49;00m[33m'[39;49;00m, testroot=[33m'[39;49;00m[33mext-autodoc[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+    [94mdef[39;49;00m [92mtest_autodoc_type_aliases[39;49;00m(app):[90m[39;49;00m
+        [90m# default[39;49;00m[90m[39;49;00m
+        options = {[33m"[39;49;00m[33mmembers[39;49;00m[33m"[39;49;00m: [94mNone[39;49;00m}[90m[39;49;00m
+        actual = do_autodoc(app, [33m'[39;49;00m[33mmodule[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mtarget.annotations[39;49;00m[33m'[39;49;00m, options)[90m[39;49;00m
+        [94massert[39;49;00m [96mlist[39;49;00m(actual) == [[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:module:: target.annotations[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:class:: Foo()[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   :module: target.annotations[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   .. py:attribute:: Foo.attr[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m      :module: target.annotations[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m      :type: int[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m      docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m.. py:function:: mult(x: int, y: int) -> int[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m                 mult(x: float, y: float) -> float[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m   :module: target.annotations[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m.. py:function:: sum(x: int, y: int) -> int[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   :module: target.annotations[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   docstring[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m.. py:data:: variable[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   :module: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m[33m   :type: int[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   docstring[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+        ][90m[39;49;00m
+    [90m[39;49;00m
+        [90m# define aliases[39;49;00m[90m[39;49;00m
+        app.config.autodoc_type_aliases = {[33m'[39;49;00m[33mmyint[39;49;00m[33m'[39;49;00m: [33m'[39;49;00m[33mmyint[39;49;00m[33m'[39;49;00m}[90m[39;49;00m
+        actual = do_autodoc(app, [33m'[39;49;00m[33mmodule[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mtarget.annotations[39;49;00m[33m'[39;49;00m, options)[90m[39;49;00m
+>       [94massert[39;49;00m [96mlist[39;49;00m(actual) == [[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:module:: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m.. py:class:: Foo()[33m'[90m[49;00m
+            [33m'[39;49;00m   :module: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   docstring[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   .. py:attribute:: Foo.attr[33m'[90m[49;00m
+            [33m'[39;49;00m      :module: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m      :type: myint[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m      docstring[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m.. py:function:: mult(x: myint, y: myint) -> myint[33m'[90m[49;00m
+            [33m'[39;49;00m                 mult(x: float, y: float) -> float[33m'[90m[49;00m
+            [33m'[39;49;00m   :module: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   docstring[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m.. py:function:: sum(x: myint, y: myint) -> myint[33m'[90m[49;00m
+            [33m'[39;49;00m   :module: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   docstring[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m.. py:data:: variable[33m'[90m[49;00m
+            [33m'[39;49;00m   :module: target.annotations[33m'[90m[49;00m
+            [33m'[39;49;00m   :type: myint[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+            [33m'[39;49;00m   docstring[33m'[90m[49;00m
+            [33m'[39;49;00m[33m'[90m[49;00m
+        ][90m[39;49;00m
+[1m[31mE       AssertionError: assert ['', '.. py:m...tations', ...] == ['', '.. py:m...tations', ...][0m
+[1m[31mE         [0m
+[1m[31mE         At index 12 diff: [0m[33m'[39;49;00m[33m      :type: int[39;49;00m[33m'[90m[49;00m != [0m[33m'[39;49;00m[33m      :type: myint[39;49;00m[33m'[90m[49;00m[0m
+[1m[31mE         Use -v to get more diff[0m
+
+[1m[31mtests/test_ext_autodoc_configs.py[0m:740: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: text
+# srcdir: /tmp/pytest-of-root/pytest-0/ext-autodoc
+# outdir: /tmp/pytest-of-root/pytest-0/ext-autodoc/_build/text
+# status: 
+[01mRunning Sphinx v3.4.0+/5d8d6275a[39;49;00m
+[01mloading pickled environment... [39;49;00mdone
+
+# warning: 
+[91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden[39;49;00m
+
+[33m=============================== warnings summary ===============================[0m
+sphinx/util/docutils.py:45
+  /testbed/sphinx/util/docutils.py:45: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+    __version_info__ = tuple(LooseVersion(docutils.__version__).version)
+
+sphinx/registry.py:22
+  /testbed/sphinx/registry.py:22: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import iter_entry_points
+
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+  /opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('sphinxcontrib')`.
+  Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+    declare_namespace(pkg)
+
+sphinx/directives/patches.py:14
+  /testbed/sphinx/directives/patches.py:14: DeprecationWarning: The `docutils.parsers.rst.directive.html` module will be removed in Docutils 2.0. Since Docutils 0.18, the "Meta" node is defined in `docutils.parsers.rst.directives.misc`.
+    from docutils.parsers.rst.directives import html, images, tables
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:210: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse():  # type: Node
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/i18n.py:95: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self document.traverse(addnodes.translatable):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:110: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for ref in self.document.traverse(nodes.substitution_reference):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:131: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.target):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:150: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.block_quote):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:175: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.Element):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:222: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.index):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:189: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.section):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:279: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.doctest_block):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/domains/citation.py:116: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.citation):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/domains/citation.py:135: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.citation_reference):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/__init__.py:69: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.pending_xref):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/util/nodes.py:598: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in document.traverse(addnodes.only):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/images.py:33: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.image):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/__init__.py:216: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.desc_sig_element):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/builders/latex/transforms.py:48: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.substitution_definition):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/builders/latex/transforms.py:606: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.title):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/code.py:43: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.highlightlang):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/code.py:95: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for lbnode in self.document.traverse(nodes.literal_block):  # type: nodes.literal_block
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/code.py:99: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for dbnode in self.document.traverse(nodes.doctest_block):  # type: nodes.doctest_block
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/environment/__init__.py:540: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for toctreenode in doctree.traverse(addnodes.toctree):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html

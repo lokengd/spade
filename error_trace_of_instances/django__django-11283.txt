@@ -1,0 +1,41 @@
+======================================================================
+ERROR: test_migrate_with_existing_target_permission (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 391, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.IntegrityError: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_migrations.py", line 178, in test_migrate_with_existing_target_permission
+    update_proxy_permissions.update_proxy_model_permissions(apps, None)
+  File "/testbed/django/contrib/auth/migrations/0011_update_proxy_permissions.py", line 30, in update_proxy_model_permissions
+    ).update(content_type=new_content_type)
+  File "/testbed/django/db/models/query.py", line 730, in update
+    rows = query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/testbed/django/db/models/sql/compiler.py", line 1421, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/testbed/django/db/models/sql/compiler.py", line 1080, in execute_sql
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 391, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.IntegrityError: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.141s
+
+FAILED (errors=1)

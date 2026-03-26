@@ -1,0 +1,6 @@
+________________________________________________________________________________
+_________ sympy/functions/elementary/tests/test_complexes.py:test_sign _________
+Traceback (most recent call last):
+  File "/testbed/sympy/functions/elementary/tests/test_complexes.py", line 305, in test_sign
+    assert sign(y).rewrite(Abs) == Piecewise((0, Eq(y, 0)), (y/Abs(y), True))
+AssertionError

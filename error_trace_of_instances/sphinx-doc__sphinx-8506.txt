@@ -1,0 +1,79 @@
+=================================== FAILURES ===================================
+[31m[1m____________________ test_cmd_option_starting_with_bracket _____________________[0m
+
+app = <SphinxTestApp buildername='html'>
+
+    [0m[94mdef[39;49;00m [92mtest_cmd_option_starting_with_bracket[39;49;00m(app):[90m[39;49;00m
+        text = [33m"[39;49;00m[33m.. option:: [enable=]PATTERN[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+        doctree = restructuredtext.parse(app, text)[90m[39;49;00m
+>       assert_node(doctree, (index,[90m[39;49;00m
+                              [desc, ([desc_signature, ([desc_name, [33m'[39;49;00m[33m[enable[39;49;00m[33m'[39;49;00m],[90m[39;49;00m
+                                                        [desc_addname, [33m'[39;49;00m[33m=]PATTERN[39;49;00m[33m'[39;49;00m])],[90m[39;49;00m
+                                      [desc_content, ()])]))[90m[39;49;00m
+
+[1m[31mtests/test_domain_std.py[0m:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+[1m[31msphinx/testing/util.py[0m:71: in assert_node
+    [0massert_node(node[i], nodecls, xpath=path, **kwargs)[90m[39;49;00m
+[1m[31msphinx/testing/util.py[0m:57: in assert_node
+    [0massert_node(node, [96mcls[39;49;00m[[94m139;49;00m], xpath=xpath, **kwargs)[90m[39;49;00m
+[1m[31msphinx/testing/util.py[0m:71: in assert_node
+    [0massert_node(node[i], nodecls, xpath=path, **kwargs)[90m[39;49;00m
+[1m[31msphinx/testing/util.py[0m:57: in assert_node
+    [0massert_node(node, [96mcls[39;49;00m[[94m139;49;00m], xpath=xpath, **kwargs)[90m[39;49;00m
+_ _ _ _ _ _ _ _ _ _ 
+node = <desc_signature: <desc_name...>>
+cls = ([<class 'sphinx.addnodes.desc_name'>, '[enable'], [<class 'sphinx.addnodes.desc_addname'>, '=]PATTERN'])
+xpath = '[1][0]', kwargs = {}
+
+    [0m[94mdef[39;49;00m [92massert_node[39;49;00m(node: Node, [96mcls[39;49;00m: Any = [94mNone[39;49;00m, xpath: [96mstr[39;49;00m = [33m"[39;49;00m[33m"[39;49;00m, **kwargs: Any) -> [94mNone[39;49;00m:[90m[39;49;00m
+        [94mif126;49;00m [96mcls124;49;00m:90m39;49;00m
+            [94mif126;49;00m [96misinstance126;49;00m(96mcls124;49;00m, 96mlist124;49;00m):90m39;49;00m
+                assert_node(node, 96mcls124;49;00m[94m0124;49;00m], xpath=xpath, **kwargs)90m39;49;00m
+                94mif126;49;00m 96mcls124;49;00m[94m1124;49;00m:]:90m39;49;00m
+                    94mif126;49;00m 96misinstance126;49;00m(96mcls124;49;00m[94m1124;49;00m], 96mtuple124;49;00m):90m39;49;00m
+                        assert_node(node, 96mcls124;49;00m[94m1124;49;00m], xpath=xpath, **kwargs)90m39;49;00m
+                    94melse126;49;00m:90m39;49;00m
+                        94massert126;49;00m 96misinstance126;49;00m(node, nodes.Element), \
+                            33m'39;49;00m33mThe node39;49;00m33m%s39;49;00m33m does not have any children33m'90m39;49;00m % xpath90m39;49;00m
+                        94massert126;49;00m 96mlen126;49;00m(node) == 94m1126;49;00m, \
+                            33m'39;49;00m33mThe node39;49;00m33m%s39;49;00m33m has 39;49;00m33m%d39;49;00m33m child nodes, not one33m'90m39;49;00m % (xpath, 96mlen39;49;00m(node))90m39;49;00m
+                        assert_node(node[94m039;49;00m], 96mcls124;49;00m[94m1124;49;00m:], xpath=xpath + 33m"39;49;00m33m[0]39;49;00m33m", **kwargs)90m39;49;00m
+            94melif126;49;00m 96misinstance126;49;00m(96mcls124;49;00m, 96mtuple124;49;00m):90m39;49;00m
+                94massert126;49;00m 96misinstance126;49;00m(node, (96mlist124;49;00m, nodes.Element)), \
+                    33m'39;49;00m33mThe node39;49;00m33m%s39;49;00m33m does not have any items33m'90m39;49;00m % xpath90m39;49;00m
+>               94massert126;49;00m 96mlen126;49;00m(node) == 96mlen124;49;00m(96mcls124;49;00m), \
+                    33m'39;49;00m33mThe node39;49;00m33m%s39;49;00m33m has 39;49;00m33m%d39;49;00m33m child nodes, not 39;49;00m33m%r39;49;00m33m'90m39;49;00m % (xpath, 96mlen39;49;00m(node), 96mlen124;49;00m(96mcls124;49;00m))90m39;49;00m
+1m31mE               AssertionError: The node[1][0] has 1 child nodes, not 20m
+
+1m31msphinx/testing/util.py126;49;00m:67: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: html
+# srcdir: /tmp/pytest-of-root/pytest-0/root
+# outdir: /tmp/pytest-of-root/pytest-0/root/_build/html
+# status: 
+01mRunning Sphinx v3.4.0+/e4bd3bd3d39;49;00m
+
+# warning: 
+91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden39;49;00m
+91m/tmp/pytest-of-root/pytest-0/root/index.rst:1: WARNING: Malformed option description '[enable=]PATTERN', should look like "opt", "-opt args", "--opt args", "/opt args" or "+opt args"39;49;00m
+
+31m[1m_____________________________ test_productionlist ______________________________[0m
+
+app = <SphinxTestApp buildername='html'>
+status = <_io.StringIO object at 0x7ffffd7815f0>
+warning = <_io.StringIO object at 0x7ffffd781550>
+
+    0m37m@pytest39;49;00m.mark.skipif(docutils.__version_info__ < (94m039;49;00m, 94m1339;49;00m),90m39;49;00m
+                        reason=33m'39;49;00mdocutils-0.13 or above is required33m'90m39;49;00m
+    37m@pytest39;49;00m.mark.sphinx(testroot=33m'39;49;00m33mproductionlist33m'90m39;49;00m
+    94mdef39;49;00m 92mtest_productionlist39;49;00m(app, status, warning):90m39;00m
+        app.builder.build_all()90m39;49;00m
+    90m39;00m
+        warnings = warning.getvalue().split(33m"39;49;00m33m\n39;49;00m33m"90m39;00m
+>       94massert39;49;00m 96mlen39;49;00m(warnings) == 94m290m39;00m
+31m[31;49;00mE       assert 3 == 20m
+31m[31;49;00mE        +  where 3 = len(["[91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors w...0/productionlist/Dup2.rst:4: WARNING: duplicate token description of Dup, other instance in Dup1[39;49;00m', ''])90m39;00m
+
+31mtests/test_domain_std.py126;49;00m:359: AssertionError

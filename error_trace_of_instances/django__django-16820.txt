@@ -1,0 +1,145 @@
+======================================================================
+FAIL: test_add_model_order_with_respect_to_index (migrations.test_autodetector.AutodetectorTests.test_add_model_order_with_respect_to_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 4099, in test_add_model_order_with_respect_to_index
+    self.assertOperationTypes(changes, "testapp", 0, ["CreateModel"])
+  File "/testbed/tests/migrations/test_autodetector.py", line 104, in assertOperationTypes
+    self.fail(
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['CreateModel']):
+  otherapp:
+    auto_1
+      <CreateModel  name='Book', fields=[('id', <django.db.models.fields.AutoField: id>), ('title', <django.db.models.fields.CharField: title>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+    auto_2
+      <AddField  model_name='book', name='author', field=<django.db.models.fields.related.ForeignKey: author>>
+  testapp:
+    auto_1
+      <CreateModel 'Author' fields=[('id', <django.db.models.fields.AutoField: id>), ('name', <django.db.models.fields.CharField: name>), ('book', <django.db.models.fields.related.ForeignKey: book>)], options={'order_with_respect_to': 'book'}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+      <AddIndex  model_name='author', index=<Index: fields=['_order'] name='book_order_idx'>>
+
+======================================================================
+FAIL: test_create_model_with_indexes (migrations.test_autodetector.AutodetectorTests.test_create_model_with_indexes)
+Test creation of new model with indexes already defined.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2586, in test_create_model_with_indexes
+    self.assertEqual(len(migration.operations), 1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_same_app_circular_fk_dependency_with_unique_together_and_indexes (migrations.test_autodetector.AutodetectorTests.test_same_app_circular_fk_dependency_with_unique_together_and_indexes)
+#22275 - A migration with circular FK dependency does not try
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2265, in test_same_app_circular_fk_dependency_with_unique_together_and_indexes
+    self.assertOperationTypes(
+  File "/testbed/tests/migrations/test_autodetector.py", line 104, in assertOperationTypes
+    self.fail(
+AssertionError: Operation type mismatch for eggs.auto_1 (expected ['CreateModel', 'CreateModel']):
+  eggs:
+    auto_1
+      <CreateModel  name='Knight', fields=[('id', <django.db.models.fields.AutoField: id>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+      <CreateModel 'Rabbit' fields=[('id', <django.db.models.fields.AutoField: id>), ('knight', <django.db.models.fields.related.ForeignKey: knight>), ('parent', <django.db.models.fields.related.ForeignKey: parent>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+      <AddIndex  model_name='rabbit', index=<Index: fields=['parent', 'knight'] name='rabbit_circular_fk_index'>>
+      <AlterUniqueTogether  name='rabbit', unique_together={('parent', 'knight')}>
+
+======================================================================
+FAIL: test_create_model_add_index (migrations.test_optimizer.OptimizerTests.test_create_model_add_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_optimizer.py", line 1177, in test_create_model_add_index
+    self.assertOptimizesTo(
+  File "/testbed/tests/migrations/test_optimizer.py", line 31, in assertOptimizesTo
+    self.assertEqual(expected, result)
+AssertionError: Lists differ: ["mig[226 chars]age'), models.Index(fields=['weight'], name='i[26 chars]\n)"] != ["mig[226 chars]age')],\n    },\n)", "migrations.AddIndex(\n  [88 chars]\n)"]
+
+First differing element 0:
+"migr[225 chars]age'), models.Index(fields=['weight'], name='i[25 chars],\n)"
+"migr[225 chars]age')],\n    },\n)"
+
+Second list contains 1 additional elements.
+First extra element 1:
+"migrations.AddIndex(\n    model_name='Pony',\n    index=models.Index(fields=['weight'], name='idx_pony_weight'),\n)"
+
+Diff is 746 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_create_model_index_together_rename_index (migrations.test_optimizer.OptimizerTests.test_create_model_index_together_rename_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_optimizer.py", line 1281, in test_create_model_index_together_rename_index
+    self.assertOptimizesTo(
+  File "/testbed/tests/migrations/test_optimizer.py", line 31, in assertOptimizesTo
+    self.assertEqual(expected, result)
+AssertionError: Lists differ: ["mig[269 chars]er': {('height', 'rank')},\n        'indexes':[78 chars]\n)"] != ["mig[269 chars]er': [('age', 'weight'), ('height', 'rank')],\[133 chars]\n)"]
+
+First differing element 0:
+"migr[268 chars]er': {('height', 'rank')},\n        'indexes':[77 chars],\n)"
+"migr[268 chars]er': [('age', 'weight'), ('height', 'rank')],\n    },\n)"
+
+Second list contains 1 additional elements.
+First extra element 1:
+"migrations.RenameIndex(\n    model_name='Pony',\n    new_name='idx_pony_age_weight',\n    old_fields=('age', 'weight'),\n)"
+
+Diff is 834 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_create_model_remove_index (migrations.test_optimizer.OptimizerTests.test_create_model_remove_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_optimizer.py", line 1212, in test_create_model_remove_index
+    self.assertOptimizesTo(
+  File "/testbed/tests/migrations/test_optimizer.py", line 31, in assertOptimizesTo
+    self.assertEqual(expected, result)
+AssertionError: Lists differ: ["mig[199 chars]ds=['weight'], name='idx_pony_weight')],\n    },\n)"] != ["mig[199 chars]ds=['age'], name='idx_pony_age'), models.Index[133 chars]\n)"]
+
+First differing element 0:
+"migr[198 chars]ds=['weight'], name='idx_pony_weight')],\n    },\n)"
+"migr[198 chars]ds=['age'], name='idx_pony_age'), models.Index[52 chars],\n)"
+
+Second list contains 1 additional elements.
+First extra element 1:
+"migrations.RemoveIndex(\n    model_name='Pony',\n    name='idx_pony_age',\n)"
+
+Diff is 702 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_create_model_remove_index_together_rename_index (migrations.test_optimizer.OptimizerTests.test_create_model_remove_index_together_rename_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_optimizer.py", line 1246, in test_create_model_remove_index_together_rename_index
+    self.assertOptimizesTo(
+  File "/testbed/tests/migrations/test_optimizer.py", line 31, in assertOptimizesTo
+    self.assertEqual(expected, result)
+AssertionError: Lists differ: ["mig[171 chars]indexes': [models.Index(fields=['age', 'weight[41 chars]\n)"] != ["mig[171 chars]index_together': [('age', 'weight')],\n    },\[125 chars]\n)"]
+
+First differing element 0:
+"migr[170 chars]indexes': [models.Index(fields=['age', 'weight[40 chars],\n)"
+"migr[170 chars]index_together': [('age', 'weight')],\n    },\n)"
+
+Second list contains 1 additional elements.
+First extra element 1:
+"migrations.RenameIndex(\n    model_name='Pony',\n    new_name='idx_pony_age_weight',\n    old_fields=('age', 'weight'),\n)"
+
+  ['migrations.CreateModel(\n'
+   "    name='Pony',\n"
+   '    fields=[\n'
+   "        ('weight', models.IntegerField()),\n"
+   "        ('age', models.IntegerField()),\n"
+   '    ],\n'
+   '    options={\n'
++  "        'index_together': [('age', 'weight')],\n"
+-  "        'indexes': [models.Index(fields=['age', 'weight'], "
+-  "name='idx_pony_age_weight')],\n"
+   '    },\n'
++  ')',
++  'migrations.RenameIndex(\n'
++  "    model_name='Pony',\n"
++  "    new_name='idx_pony_age_weight',\n"
++  "    old_fields=('age', 'weight'),\n"
+   ')']
+
+----------------------------------------------------------------------
+Ran 217 tests in 0.087s
+
+FAILED (failures=7)

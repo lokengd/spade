@@ -1,0 +1,140 @@
+=================================== FAILURES ===================================
+_________________ TestAssertionRewrite.test_unroll_expression __________________
+
+self = <test_assertrewrite.TestAssertionRewrite object at 0x7ffffdee09a0>
+
+    def test_unroll_expression(self):
+        def f():
+            assert all(x == 1 for x in range(10))
+
+>       assert "0 == 1" in getmsg(f)
+E       AssertionError: assert '0 == 1' in 'assert False\n +  where False = all(<generator object f.<locals>.<genexpr> at 0x7ffffde6e660>)'
+E        +  where 'assert False\n +  where False = all(<generator object f.<locals>.<genexpr> at 0x7ffffde6e660>)' = getmsg(<function TestAssertionRewrite.test_unroll_expression.<locals>.f at 0x7ffffe5ef1f0>)
+
+testing/test_assertrewrite.py:663: AssertionError
+__________________ TestAssertionRewrite.test_unroll_generator __________________
+
+self = <test_assertrewrite.TestAssertionRewrite object at 0x7ffffdf5fc40>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_unroll_generator0')>
+
+    def test_unroll_generator(self, testdir):
+        testdir.makepyfile(
+            """
+            def check_even(num):
+                if num % 2 == 0:
+                    return True
+                return False
+
+            def test_generator():
+                odd_list = list(range(1,9,2))
+                assert all(check_even(num) for num in odd_list)"""
+        )
+        result = testdir.runpytest()
+>       result.stdout.fnmatch_lines(["*assert False*", "*where False = check_even(1)*"])
+E       Failed: nomatch: '*assert False*'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-4.5.1.dev40+g10ca84ffc, py-1.11.0, pluggy-0.11.0'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_unroll_generator0'
+E           and: 'collected 1 item'
+E           and: ''
+E           and: 'test_unroll_generator.py F                                               [100%]'
+E           and: ''
+E           and: '=================================== FAILURES ==================================='
+E           and: '________________________________ test_generator ________________________________'
+E           and: ''
+E           and: '    def test_generator():'
+E           and: '        odd_list = list(range(1,9,2))'
+E           and: '>       assert all(check_even(num) for num in odd_list)'
+E       fnmatch: '*assert False*'
+E          with: 'E       assert False'
+E       nomatch: '*where False = check_even(1)*'
+E           and: 'E        +  where False = all(<generator object test_generator.<locals>.<genexpr> at 0x7ffffdf3d890>)'
+E           and: ''
+E           and: 'test_unroll_generator.py:8: AssertionError'
+E           and: '=========================== 1 failed in 0.00 seconds ==========================='
+E           and: ''
+E       remains unmatched: '*where False = check_even(1)*'
+
+/testbed/testing/test_assertrewrite.py:693: Failed
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.5.1.dev40+g10ca84ffc, py-1.11.0, pluggy-0.11.0
+rootdir: /tmp/pytest-of-root/pytest-0/test_unroll_generator0
+collected 1 item
+
+test_unroll_generator.py F                                               [100%]
+
+=================================== FAILURES ===================================
+________________________________ test_generator ________________________________
+
+    def test_generator():
+        odd_list = list(range(1,9,2))
+>       assert all(check_even(num) for num in odd_list)
+E       assert False
+E        +  where False = all(<generator object test_generator.<locals>.<genexpr> at 0x7ffffdf3d890>)
+
+test_unroll_generator.py:8: AssertionError
+=========================== 1 failed in 0.00 seconds ===========================
+_____________ TestAssertionRewrite.test_unroll_list_comprehension ______________
+
+self = <test_assertrewrite.TestAssertionRewrite object at 0x7ffffe1826d0>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_unroll_list_comprehension0')>
+
+    def test_unroll_list_comprehension(self, testdir):
+        testdir.makepyfile(
+            """
+            def check_even(num):
+                if num % 2 == 0:
+                    return True
+                return False
+
+            def test_list_comprehension():
+                odd_list = list(range(1,9,2))
+                assert all([check_even(num) for num in odd_list])"""
+        )
+        result = testdir.runpytest()
+>       result.stdout.fnmatch_lines(["*assert False*", "*where False = check_even(1)*"])
+E       Failed: nomatch: '*assert False*'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-4.5.1.dev40+g10ca84ffc, py-1.11.0, pluggy-0.11.0'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_unroll_list_comprehension0'
+E           and: 'collected 1 item'
+E           and: ''
+E           and: 'test_unroll_list_comprehension.py F                                      [100%]'
+E           and: ''
+E           and: '=================================== FAILURES ==================================='
+E           and: '___________________________ test_list_comprehension ____________________________'
+E           and: ''
+E           and: '    def test_list_comprehension():'
+E           and: '        odd_list = list(range(1,9,2))'
+E           and: '>       assert all([check_even(num) for num in odd_list])'
+E       fnmatch: '*assert False*'
+E          with: 'E       assert False'
+E       nomatch: '*where False = check_even(1)*'
+E           and: 'E        +  where False = all([False, False, False, False])'
+E           and: ''
+E           and: 'test_unroll_list_comprehension.py:8: AssertionError'
+E           and: '=========================== 1 failed in 0.00 seconds ==========================='
+E           and: ''
+E       remains unmatched: '*where False = check_even(1)*'
+
+/testbed/testing/test_assertrewrite.py:708: Failed
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.5.1.dev40+g10ca84ffc, py-1.11.0, pluggy-0.11.0
+rootdir: /tmp/pytest-of-root/pytest-0/test_unroll_list_comprehension0
+collected 1 item
+
+test_unroll_list_comprehension.py F                                      [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_list_comprehension ____________________________
+
+    def test_list_comprehension():
+        odd_list = list(range(1,9,2))
+>       assert all([check_even(num) for num in odd_list])
+E       assert False
+E        +  where False = all([False, False, False, False])
+
+test_unroll_list_comprehension.py:8: AssertionError
+=========================== 1 failed in 0.00 seconds ===========================

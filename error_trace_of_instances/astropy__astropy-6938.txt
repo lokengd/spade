@@ -1,0 +1,4 @@
+astropy/io/fits/tests/test_checksum.py::TestChecksumFunctions::test_ascii_table_data FAILED
+astropy/io/fits/tests/test_table.py::TestTableFunctions::test_ascii_table FAILED
+========= 2 failed, 103 passed, 2 skipped, 1 warnings in 1.47 seconds ==========
+sys:1: ResourceWarning: unclosed file <_io.FileIO name='/testbed/astropy/io/fits/tests/data/ascii.fits' mode='rb' closefd=True'>

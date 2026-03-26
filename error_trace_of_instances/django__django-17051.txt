@@ -1,0 +1,67 @@
+======================================================================
+FAIL: test_update_conflicts_two_fields_unique_fields_first (bulk_create.tests.BulkCreateTests.test_update_conflicts_two_fields_unique_fields_first)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 1428, in skip_wrapper
+    return test_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/testbed/tests/bulk_create/tests.py", line 608, in test_update_conflicts_two_fields_unique_fields_first
+    self._test_update_conflicts_two_fields(["f1"])
+  File "/testbed/tests/bulk_create/tests.py", line 594, in _test_update_conflicts_two_fields
+    self.assertIsNotNone(instance.pk)
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_update_conflicts_two_fields_unique_fields_second (bulk_create.tests.BulkCreateTests.test_update_conflicts_two_fields_unique_fields_second)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 1428, in skip_wrapper
+    return test_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/testbed/tests/bulk_create/tests.py", line 614, in test_update_conflicts_two_fields_unique_fields_second
+    self._test_update_conflicts_two_fields(["f2"])
+  File "/testbed/tests/bulk_create/tests.py", line 594, in _test_update_conflicts_two_fields
+    self.assertIsNotNone(instance.pk)
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_update_conflicts_unique_fields (bulk_create.tests.BulkCreateTests.test_update_conflicts_unique_fields)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 1428, in skip_wrapper
+    return test_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/testbed/tests/bulk_create/tests.py", line 802, in test_update_conflicts_unique_fields
+    self._test_update_conflicts(unique_fields=["number"])
+  File "/testbed/tests/bulk_create/tests.py", line 766, in _test_update_conflicts
+    self.assertIsNotNone(instance.pk)
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_update_conflicts_unique_fields_update_fields_db_column (bulk_create.tests.BulkCreateTests.test_update_conflicts_unique_fields_update_fields_db_column)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 1428, in skip_wrapper
+    return test_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/testbed/tests/bulk_create/tests.py", line 834, in test_update_conflicts_unique_fields_update_fields_db_column
+    self.assertIsNotNone(instance.pk)
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_update_conflicts_unique_two_fields_unique_fields_both (bulk_create.tests.BulkCreateTests.test_update_conflicts_unique_two_fields_unique_fields_both)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 1428, in skip_wrapper
+    return test_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/testbed/tests/bulk_create/tests.py", line 728, in test_update_conflicts_unique_two_fields_unique_fields_both
+    self._test_update_conflicts_unique_two_fields(["iso_two_letter", "name"])
+  File "/testbed/tests/bulk_create/tests.py", line 699, in _test_update_conflicts_unique_two_fields
+    self.assertIsNotNone(instance.pk)
+AssertionError: unexpectedly None
+
+----------------------------------------------------------------------
+Ran 52 tests in 0.145s
+
+FAILED (failures=5, skipped=7)

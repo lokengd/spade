@@ -1,0 +1,30 @@
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_8292 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5944, in test_issue_8292
+    e = sympify('((x+x**4)/(x-1))-(2*(x-1)**4/(x-1)**4)', evaluate=False)
+  File "/testbed/sympy/core/sympify.py", line 384, in sympify
+    expr = parse_expr(a, local_dict=locals, transformations=transformations, evaluate=evaluate)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 964, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_8344 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5986, in test_issue_8344
+    e = sympify('2*x*y**2/1**2 + 1', evaluate=False)
+  File "/testbed/sympy/core/sympify.py", line 384, in sympify
+    expr = parse_expr(a, local_dict=locals, transformations=transformations, evaluate=evaluate)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 964, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_pretty_sum __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 4439, in test_pretty_sum
+    assert upretty(expr) == ucode_str
+AssertionError
+
+===== tests finished: 122 passed, 1 failed, 2 exceptions, in 3.79 seconds ======
+DO *NOT* COMMIT!

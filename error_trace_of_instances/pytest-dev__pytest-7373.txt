@@ -1,0 +1,152 @@
+=================================== FAILURES ===================================
+_________________ TestFunctional.test_reevaluate_dynamic_expr __________________
+
+self = <test_mark.TestFunctional object at 0x7ffffcb8b6a0>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_reevaluate_dynamic_expr0')>
+
+    def test_reevaluate_dynamic_expr(self, testdir):
+        """#7360"""
+        py_file1 = testdir.makepyfile(
+            test_reevaluate_dynamic_expr1="""
+            import pytest
+    
+            skip = True
+    
+            @pytest.mark.skipif("skip")
+            def test_should_skip():
+                assert True
+        """
+        )
+        py_file2 = testdir.makepyfile(
+            test_reevaluate_dynamic_expr2="""
+            import pytest
+    
+            skip = False
+    
+            @pytest.mark.skipif("skip")
+            def test_should_not_skip():
+                assert True
+        """
+        )
+    
+        file_name1 = os.path.basename(py_file1.strpath)
+        file_name2 = os.path.basename(py_file2.strpath)
+        reprec = testdir.inline_run(file_name1, file_name2)
+>       reprec.assertoutcome(passed=1, skipped=1)
+E       AssertionError: ([], [<TestReport 'test_reevaluate_dynamic_expr1.py::test_should_skip' when='setup' outcome='skipped'>, <TestReport 'test_reevaluate_dynamic_expr2.py::test_should_not_skip' when='setup' outcome='skipped'>], [])
+E       assert {'failed': 0,... 'skipped': 2} == {'failed': 0,... 'skipped': 1}
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'skipped': 2} != {'skipped': 1}
+E         {'passed': 0} != {'passed': 1}
+E         Use -v to get the full diff
+
+/testbed/testing/test_mark.py:737: AssertionError
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-5.4.1.dev522+g7b77fc086, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_reevaluate_dynamic_expr0
+collected 2 items
+
+test_reevaluate_dynamic_expr1.py s                                       [ 50%]
+test_reevaluate_dynamic_expr2.py s                                       [100%]
+
+============================== 2 skipped in 0.00s ==============================
+==================================== ERRORS ====================================
+________ ERROR collecting test_strict_prohibits_unregistered_markers.py ________
+'unregisteredmark' not found in `markers` configuration option
+=========================== short test summary info ============================
+ERROR test_strict_prohibits_unregistered_markers.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.03s ===============================
+==================================== ERRORS ====================================
+________ ERROR collecting test_strict_prohibits_unregistered_markers.py ________
+'unregisteredmark' not found in `markers` configuration option
+=========================== short test summary info ============================
+ERROR test_strict_prohibits_unregistered_markers.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.03s ===============================
+==================================== ERRORS ====================================
+________ ERROR collecting test_parametrized_collect_with_wrong_args.py _________
+test_parametrized_collect_with_wrong_args.py::test_func: in "parametrize" the number of names (2):
+  ['foo', 'bar']
+must be equal to the number of values (3):
+  (1, 2, 3)
+=========================== short test summary info ============================
+ERROR test_parametrized_collect_with_wrong_args.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.02s ===============================
+==================================== ERRORS ====================================
+_______________ ERROR collecting test_mark_with_wrong_marker.py ________________
+/testbed/src/_pytest/runner.py:286: in from_call
+    result = func()  # type: Optional[_T]
+/testbed/src/_pytest/runner.py:316: in <lambda>
+    call = CallInfo.from_call(lambda: list(collector.collect()), "collect")
+/testbed/src/_pytest/python.py:488: in collect
+    self._inject_setup_module_fixture()
+/testbed/src/_pytest/python.py:501: in _inject_setup_module_fixture
+    self.obj, ("setUpModule", "setup_module")
+/testbed/src/_pytest/python.py:293: in obj
+    self.own_markers.extend(get_unpacked_marks(self.obj))
+/testbed/src/_pytest/mark/structures.py:352: in get_unpacked_marks
+    return normalize_mark_list(mark_list)
+/testbed/src/_pytest/mark/structures.py:367: in normalize_mark_list
+    raise TypeError("got {!r} instead of Mark".format(mark))
+E   TypeError: got <class 'test_mark_with_wrong_marker.pytestmark'> instead of Mark
+=========================== short test summary info ============================
+ERROR test_mark_with_wrong_marker.py - TypeError: got <class 'test_mark_with_...
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.05s ===============================
+=================================== FAILURES ===================================
+___________________________________ test_one ___________________________________
+
+    def test_one():
+>       assert 0
+E       assert 0
+
+test_select_simple.py:2: AssertionError
+=========================== short test summary info ============================
+FAILED test_select_simple.py::test_one - assert 0
+======================= 1 failed, 1 deselected in 0.00s ========================
+=================================== FAILURES ===================================
+___________________________________ test_one ___________________________________
+
+    def test_one():
+>       assert 0
+E       assert 0
+
+test_select_simple.py:2: AssertionError
+=========================== short test summary info ============================
+FAILED test_select_simple.py::test_one - assert 0
+======================= 1 failed, 1 deselected in 0.00s ========================
+=================================== FAILURES ===================================
+__________________________ TestClass.test_method_one ___________________________
+
+self = <test_select_simple.TestClass object at 0x7ffffca9eca0>
+
+    def test_method_one(self):
+>       assert 42 == 43
+E       assert 42 == 43
+
+test_select_simple.py:5: AssertionError
+=========================== short test summary info ============================
+FAILED test_select_simple.py::TestClass::test_method_one - assert 42 == 43
+======================= 1 failed, 1 deselected in 0.00s ========================
+=================================== FAILURES ===================================
+___________________________________ test_one ___________________________________
+
+    def test_one():
+>       assert 0
+E       assert 0
+
+test_keyword_extra.py:2: AssertionError
+=========================== short test summary info ============================
+FAILED test_keyword_extra.py::test_one - assert 0
+============================== 1 failed in 0.00s ===============================
+==================================== ERRORS ====================================
+__________ ERROR collecting test_parameterset_for_fail_at_collect.py ___________
+Empty parameter set in 'test' at line 3
+=========================== short test summary info ============================
+ERROR test_parameterset_for_fail_at_collect.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.02s ===============================

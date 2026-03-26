@@ -1,0 +1,24 @@
+=================================== FAILURES ===================================
+_______________________ test_template_option_with_header _______________________
+
+linter = Checker 'main' (responsible for 'F0001', 'F0002', 'F0010', 'F0011', 'I0001', 'I0010', 'I0011', 'I0013', 'I0020', 'I0021', 'I0022', 'E0001', 'E0011', 'W0012', 'R0022', 'E0013', 'E0014', 'E0015')
+
+    def test_template_option_with_header(linter: PyLinter) -> None:
+        output = StringIO()
+        linter.reporter.out = output
+        linter.config.msg_template = '{{ "Category": "{category}" }}'
+        linter.open()
+        linter.set_current_module("my_mod")
+    
+        linter.add_message("C0301", line=1, args=(1, 2))
+        linter.add_message(
+            "line-too-long", line=2, end_lineno=2, end_col_offset=4, args=(3, 4)
+        )
+    
+        out_lines = output.getvalue().split("\n")
+>       assert out_lines[1] == '{ "Category": "convention" }'
+E       assert '" }' == '{ "Category": "convention" }'
+E         - { "Category": "convention" }
+E         + " }
+
+tests/reporters/unittest_reporting.py:126: AssertionError

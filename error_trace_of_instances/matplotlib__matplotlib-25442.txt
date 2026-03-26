@@ -1,0 +1,34 @@
+=================================== FAILURES ===================================
+____________________________ test_remove_draggable _____________________________
+
+    def test_remove_draggable():
+        fig, ax = plt.subplots()
+        an = ax.annotate("foo", (.5, .5))
+        an.draggable(True)
+        an.remove()
+>       MouseEvent("button_release_event", fig.canvas, 1, 1)._process()
+
+lib/matplotlib/tests/test_offsetbox.py:460: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/backend_bases.py:1264: in _process
+    self.canvas.callbacks.process(self.name, self)
+lib/matplotlib/cbook.py:293: in process
+    self.exception_handler(exc)
+lib/matplotlib/cbook.py:80: in _exception_printer
+    raise exc
+lib/matplotlib/cbook.py:288: in process
+    func(*args, **kwargs)
+lib/matplotlib/offsetbox.py:1544: in on_release
+    if self._check_still_parented() and self.got_artist:
+lib/matplotlib/offsetbox.py:1554: in _check_still_parented
+    self.disconnect()
+lib/matplotlib/offsetbox.py:1562: in disconnect
+    self.canvas.mpl_disconnect(cid)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+                                                                                           
+self = <matplotlib.offsetbox.DraggableAnnotation object at 0x7fffe8d70a50>
+
+>   canvas = property(lambda self: self.ref_artist.figure.canvas)
+E   AttributeError: 'NoneType' object has no attribute 'canvas'
+
+lib/matplotlib/offsetbox.py:1511: AttributeError

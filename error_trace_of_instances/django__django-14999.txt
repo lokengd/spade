@@ -1,0 +1,15 @@
+======================================================================
+FAIL: test_rename_model_with_db_table_noop (migrations.test_operations.OperationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_operations.py", line 813, in test_rename_model_with_db_table_noop
+    operation.database_forwards(app_label, editor, project_state, new_state)
+  File "/testbed/django/test/testcases.py", line 84, in __exit__
+    self.test_case.assertEqual(
+AssertionError: 5 != 0 : 5 queries executed, 0 expected
+Captured queries were:
+1. CREATE TABLE "new__test_rmwdbtn_pony" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "rider_id" integer NOT NULL REFERENCES "rider" ("id") DEFERRABLE INITIALLY DEFERRED)
+2. INSERT INTO "new__test_rmwdbtn_pony" ("id", "rider_id") SELECT "id", "rider_id" FROM "test_rmwdbtn_pony"
+3. DROP TABLE "test_rmwdbtn_pony"
+4. ALTER TABLE "new__test_rmwdbtn_pony" RENAME TO "test_rmwdbtn_pony"
+5. CREATE INDEX "test_rmwdbtn_pony_rider_id_7b3213e0" ON "test_rmwdbtn_pony" ("rider_id")

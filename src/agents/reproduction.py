@@ -80,12 +80,12 @@ def run(state: SpadeState):
         #     with open(trace_file, "r") as f:
         #         test_output = f.read()
         #         bug_context.error_trace = test_output
-        
+
         return {
             "bug_context": bug_context,
             "reproduction_evaluation_result": evaluation_result
         }
-    
+
     except Exception as e:
         log(f"Reproduction captured an exception: {str(e)}", caller=agent_name, level=logging.ERROR)
         return {

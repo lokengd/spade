@@ -1,0 +1,16 @@
+________________________________ slowest tests _________________________________
+test_equals - Took 76.831 seconds
+________________________________________________________________________________
+____________ sympy/core/tests/test_expr.py:test_non_string_equality ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_expr.py", line 1911, in test_non_string_equality
+    assert (x == 'x') is False
+AssertionError
+________________________________________________________________________________
+____________________ sympy/core/tests/test_var.py:test_var _____________________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_var.py", line 22, in test_var
+    assert v != ['d', 'e', 'fg']
+AssertionError
+
+== tests finished: 99 passed, 2 failed, 2 expected to fail, in 93.00 seconds ===

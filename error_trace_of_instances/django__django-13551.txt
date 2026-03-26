@@ -1,0 +1,31 @@
+======================================================================
+FAIL: test_token_with_different_email (auth_tests.test_tokens.TokenGeneratorTest) (email=None, model='CustomEmailField')
+Updating the user email address invalidates the token.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_tokens.py", line 61, in test_token_with_different_email
+    self.assertIs(p0.check_token(user, tk1), False)
+AssertionError: True is not False
+
+======================================================================
+FAIL: test_token_with_different_email (auth_tests.test_tokens.TokenGeneratorTest) (email='test4@example.com', model='CustomEmailField')
+Updating the user email address invalidates the token.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_tokens.py", line 61, in test_token_with_different_email
+    self.assertIs(p0.check_token(user, tk1), False)
+AssertionError: True is not False
+
+======================================================================
+FAIL: test_token_with_different_email (auth_tests.test_tokens.TokenGeneratorTest) (email='test4@example.com', model='User')
+Updating the user email address invalidates the token.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_tokens.py", line 61, in test_token_with_different_email
+    self.assertIs(p0.check_token(user, tk1), False)
+AssertionError: True is not False
+
+----------------------------------------------------------------------
+Ran 58 tests in 0.630s
+
+FAILED (failures=3)

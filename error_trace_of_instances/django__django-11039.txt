@@ -1,0 +1,14 @@
+======================================================================
+FAIL: test_sqlmigrate_for_non_transactional_databases (migrations.test_commands.MigrateTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 371, in inner
+    return func(*args, **kwargs)
+  File "/testbed/tests/migrations/test_commands.py", line 635, in test_sqlmigrate_for_non_transactional_databases
+    self.assertNotIn(start_transaction_sql.lower(), queries)
+AssertionError: 'begin;' unexpectedly found in ['begin;', '--', '-- create model author', '--', 'create table "migrations_author" ("id" integer not null primary key autoincrement, "name" varchar(255) not null, "slug" varchar(50) null, "age" integer not null, "silly_field" bool not null);', '--', '-- create model tribble', '--', 'create table "migrations_tribble" ("id" integer not null primary key autoincrement, "fluffy" bool not null);', '--', '-- add field bool to tribble', '--', 'create table "new__migrations_tribble" ("id" integer not null primary key autoincrement, "fluffy" bool not null, "bool" bool not null);', 'insert into "new__migrations_tribble" ("id", "fluffy", "bool") select "id", "fluffy", 0 from "migrations_tribble";', 'drop table "migrations_tribble";', 'alter table "new__migrations_tribble" rename to "migrations_tribble";', 'create index "migrations_author_slug_43a992db" on "migrations_author" ("slug");', '--', '-- alter unique_together for author (1 constraint(s))', '--', 'create unique index "migrations_author_name_slug_0ef2ba54_uniq" on "migrations_author" ("name", "slug");', 'commit;']
+
+----------------------------------------------------------------------
+Ran 89 tests in 0.580s
+
+FAILED (failures=1)

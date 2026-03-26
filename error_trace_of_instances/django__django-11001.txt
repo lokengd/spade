@@ -1,0 +1,58 @@
+======================================================================
+ERROR: test_order_by_multiline_sql (expressions.tests.BasicExpressionsTests) (qs=<QuerySet []>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 391, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: near ")": syntax error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/tests/expressions/tests.py", line 407, in test_order_by_multiline_sql
+    [self.example_inc, self.gmbh, self.foobar_ltd],
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/case.py", line 940, in assertSequenceEqual
+    len1 = len(seq1)
+  File "/testbed/django/db/models/query.py", line 255, in __len__
+    self._fetch_all()
+  File "/testbed/django/db/models/query.py", line 1231, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/testbed/django/db/models/query.py", line 54, in __iter__
+    results = compiler.execute_sql(chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size)
+  File "/testbed/django/db/models/sql/compiler.py", line 1080, in execute_sql
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 68, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 77, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 391, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: near ")": syntax error
+
+======================================================================
+FAIL: test_order_by_multiline_sql (expressions.tests.BasicExpressionsTests) (qs=<QuerySet []>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/expressions/tests.py", line 407, in test_order_by_multiline_sql
+    [self.example_inc, self.gmbh, self.foobar_ltd],
+AssertionError: Sequences differ: <QuerySet [<Company: Example Inc.>, <Comp[36 chars]bH>]> != [<Company: Example Inc.>, <Company: Test [25 chars]td.>]
+
+First differing element 1:
+<Company: Foobar Ltd.>
+<Company: Test GmbH>
+
+- <QuerySet [<Company: Example Inc.>, <Company: Foobar Ltd.>, <Company: Test GmbH>]>
++ [<Company: Example Inc.>, <Company: Test GmbH>, <Company: Foobar Ltd.>]
+
+----------------------------------------------------------------------
+Ran 121 tests in 0.112s
+
+FAILED (failures=1, errors=1, skipped=1)

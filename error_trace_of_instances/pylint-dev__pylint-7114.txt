@@ -1,0 +1,159 @@
+=================================== FAILURES ===================================
+_________________ TestImportsChecker.test_wildcard_import_init _________________
+
+self = <checkers.unittest_imports.TestImportsChecker object at 0x7ffffca57520>
+
+    def test_wildcard_import_init(self) -> None:
+        module = astroid.MANAGER.ast_from_module_name("init_wildcard", REGR_DATA)
+        import_from = module.body[0]
+    
+        with self.assertNoMessages():
+>           self.checker.visit_importfrom(import_from)
+
+tests/checkers/unittest_imports.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/miniconda3/envs/testbed/lib/python3.9/contextlib.py:126: in __exit__
+    next(self.gen)
+pylint/testutils/checker_test_case.py:40: in assertNoMessages
+    yield
+/opt/miniconda3/envs/testbed/lib/python3.9/contextlib.py:126: in __exit__
+    next(self.gen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+
+
+self = <checkers.unittest_imports.TestImportsChecker object at 0x7ffffca57520>
+ignore_position = False, messages = ()
+got = [MessageTest(msg_id='import-error', line=1, node=<ImportFrom l.1 at 0x7ffffca57b80>, args="'empty'", confidence=Confid...EFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)]
+no_msg = 'No message.'
+
+    @contextlib.contextmanager
+    def assertAddsMessages(
+        self, *messages: MessageTest, ignore_position: bool = False
+    ) -> Generator[None, None, None]:
+        """Assert that exactly the given method adds the given messages.
+
+        The list of messages must exactly match *all* the messages added by the
+        method. Additionally, we check to see whether the args in each message can
+        actually be substituted into the message string.
+
+        Using the keyword argument `ignore_position`, all checks for position
+        arguments (line, col_offset, ...) will be skipped. This can be used to
+        just test messages for the correct node.
+        """
+        yield
+        got = self.linter.release_messages()
+        no_msg = "No message."
+        expected = "\n".join(repr(m) for m in messages) or no_msg
+        got_str = "\n".join(repr(m) for m in got) or no_msg
+        msg = (
+            "Expected messages did not match actual.\n"
+            f"\nExpected:\n{expected}\n\nGot:\n{got_str}\n"
+        )
+
+>       assert len(messages) == len(got), msg
+E       AssertionError: Expected messages did not match actual.
+E         
+E         Expected:
+E         No message.
+E         
+E         Got:
+E         MessageTest(msg_id='import-error', line=1, node=<ImportFrom l.1 at 0x7ffffca57b80>, args="'empty'", confidence=Confidence(name='UNDEFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)
+E         
+E       assert 0 == 1
+E        +  where 0 = len(())
+E        +  and   1 = len([MessageTest(msg_id='import-error', line=1, node=<ImportFrom l.1 at 0x7ffffca57b80>, args="'empty'", confidence=Confid...EFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)])
+
+
+
+pylint/testutils/checker_test_case.py:66: AssertionError
+_______________ TestImportsChecker.test_wildcard_import_non_init _______________
+
+self = <checkers.unittest_imports.TestImportsChecker object at 0x7ffffca57340>
+
+    def test_wildcard_import_non_init(self) -> None:
+        module = astroid.MANAGER.ast_from_module_name("wildcard", REGR_DATA)
+        import_from = module.body[0]
+
+        msg = MessageTest(
+            msg_id="wildcard-import",
+            node=import_from,
+            args="empty",
+            confidence=UNDEFINED,
+            line=1,
+            col_offset=0,
+            end_line=1,
+            end_col_offset=19,
+        )
+        with self.assertAddsMessages(msg):
+>           self.checker.visit_importfrom(import_from)
+
+tests/checkers/unittest_imports.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/miniconda3/envs/testbed/lib/python3.9/contextlib.py:126: in __exit__
+    next(self.gen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+
+
+self = <checkers.unittest_imports.TestImportsChecker object at 0x7ffffca57340>
+ignore_position = False
+messages = (MessageTest(msg_id='wildcard-import', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args='empty', confidence=Confi...FINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19),)
+got = [MessageTest(msg_id='import-error', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args="'empty'", confidence=Confid...EFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)]
+no_msg = 'No message.'
+
+    @contextlib.contextmanager
+    def assertAddsMessages(
+        self, *messages: MessageTest, ignore_position: bool = False
+    ) -> Generator[None, None, None]:
+        """Assert that exactly the given method adds the given messages.
+
+        The list of messages must exactly match *all* the messages added by the
+        method. Additionally, we check to see whether the args in each message can
+        actually be substituted into the message string.
+
+        Using the keyword argument `ignore_position`, all checks for position
+        arguments (line, col_offset, ...) will be skipped. This can be used to
+        just test messages for the correct node.
+        """
+        yield
+        got = self.linter.release_messages()
+        no_msg = "No message."
+        expected = "\n".join(repr(m) for m in messages) or no_msg
+        got_str = "\n".join(repr(m) for m in got) or no_msg
+        msg = (
+            "Expected messages did not match actual.\n"
+            f"\nExpected:\n{expected}\n\nGot:\n{got_str}\n"
+        )
+
+>       assert len(messages) == len(got), msg
+E       AssertionError: Expected messages did not match actual.
+E         
+E         Expected:
+E         MessageTest(msg_id='wildcard-import', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args='empty', confidence=Confidence(name='UNDEFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)
+E         
+E         Got:
+E         MessageTest(msg_id='import-error', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args="'empty'", confidence=Confidence(name='UNDEFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)
+E         MessageTest(msg_id='wildcard-import', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args='empty', confidence=Confidence(name='UNDEFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)
+E         
+E       assert 1 == 2
+E        +  where 1 = len((MessageTest(msg_id='wildcard-import', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args='empty', confidence=Confi...FINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19),))
+E        +  and   2 = len([MessageTest(msg_id='import-error', line=1, node=<ImportFrom l.1 at 0x7ffffc9fac40>, args="'empty'", confidence=Confid...EFINED', description='Warning without any associated confidence level.'), col_offset=0, end_line=1, end_col_offset=19)])
+
+
+
+pylint/testutils/checker_test_case.py:66: AssertionError
+_____________________ test_identically_named_nested_module _____________________
+
+initialized_linter = Checker 'main' (responsible for 'F0001', 'F0002', 'F0010', 'F0011', 'I0001', 'I0010', 'I0011', 'I0013', 'I0020', 'I0021', 'I0022', 'E0001', 'E0011', 'W0012', 'R0022', 'E0013', 'E0014', 'E0015')
+
+    def test_identically_named_nested_module(initialized_linter: PyLinter) -> None:
+        with tempdir():
+            create_files(["identical/identical.py"])
+            with open("identical/identical.py", "w", encoding="utf-8") as f:
+                f.write("import imp")
+            initialized_linter.check(["identical"])
+>       assert initialized_linter.stats.by_msg["deprecated-module"] == 1
+E       KeyError: 'deprecated-module'
+
+tests/lint/unittest_lint.py:953: KeyError

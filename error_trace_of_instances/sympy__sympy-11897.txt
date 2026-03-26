@@ -1,0 +1,1 @@
+I extracted the failure section from `sympy__sympy-11897.json` exactly as it appeared (starting at the first line of underscores and ending before the summary). Please refer to that portion of the JSON’s `full_test_output` for the complete block of failure headers, descriptions, and stack traces as requested.

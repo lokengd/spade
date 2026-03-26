@@ -1,0 +1,68 @@
+=================================== FAILURES ===================================
+[31m[1m___________ test_prepend_prolog_with_roles_in_sections_with_newline ____________[0m
+
+app = <SphinxTestApp buildername='html'>
+
+    [0m[94mdef[39;49;00m [92mtest_prepend_prolog_with_roles_in_sections_with_newline[39;49;00m(app):[90m[39;49;00m
+        [90m# prologue with trailing line break[39;49;00m[90m[39;49;00m
+        prolog = [33m'[39;49;00m[33mthis is rst_prolog[39;49;00m[33m\n[39;49;00m[33mhello reST![39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+        content = StringList([[33m'[39;49;00m[33m:mod:`foo`[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m-[39;49;00m[33m'[39;49;00m * [94m10[39;49;00m, [33m'[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mhello[39;49;00m[33m'[39;49;00m], [33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+        prepend_prolog(content, prolog)[90m[39;49;00m
+    [90m[39;49;00m
+>       [94massert[39;49;00m [96mlist[39;49;00m(content.xitems()) == [([33m'[39;49;00m[33m<rst_prolog>[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33mthis is rst_prolog[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33m<rst_prolog>[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m, [33m'[39;49;00m[33mhello reST![39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33m<generated>[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33m:mod:`foo`[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m, [33m'[39;49;00m[33m----------[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m2[39;49;00m, [33m'[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m3[39;49;00m, [33m'[39;49;00m[33mhello[39;49;00m[33m'[39;49;00m)][90m[39;49;00m
+[1m[31mE       AssertionError: assert [('dummy.rst'...------'), ...] == [('<rst_prolo..., 2, ''), ...][0m
+[1m[31mE         [0m
+[1m[31mE         At index 0 diff: [0m([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33m:mod:`foo`[39;49;00m[33m'[39;49;00m)[90m[39;49;00m != [0m([33m'[39;49;00m[33m<rst_prolog>[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33mthis is rst_prolog[39;49;00m[33m'[39;49;00m)[90m[39;49;00m[0m
+[1m[31mE         Left contains one more item: [0m([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m3[39;49;00m, [33m'[39;49;00m[33mhello[39;49;00m[33m'[39;49;00m)[90m[39;49;00m[0m
+[1m[31mE         Use -v to get more diff[0m
+
+[1m[31mtests/test_util_rst.py[0m:112: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: html
+# srcdir: /tmp/pytest-of-root/pytest-0/root
+# outdir: /tmp/pytest-of-root/pytest-0/root/_build/html
+# status: 
+[01mRunning Sphinx v7.1.0+/57b0661d9[39;49;00m
+
+# warning: 
+
+[31m[1m__________ test_prepend_prolog_with_roles_in_sections_without_newline __________[0m
+
+app = <SphinxTestApp buildername='html'>
+
+    [0m[94mdef[39;49;00m [92mtest_prepend_prolog_with_roles_in_sections_without_newline[39;49;00m(app):[90m[39;49;00m
+        [90m# prologue with no trailing line break[39;49;00m[90m[39;49;00m
+        prolog = [33m'[39;49;00m[33mthis is rst_prolog[39;49;00m[33m\n[39;49;00m[33mhello reST![39;49;00m[33m'[39;49;00m[90m[39;49;00m
+        content = StringList([[33m'[39;49;00m[33m:mod:`foo`[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m-[39;49;00m[33m'[39;49;00m * [94m10[39;49;00m, [33m'[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mhello[39;49;00m[33m'[39;49;00m], [33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+        prepend_prolog(content, prolog)[90m[39;49;00m
+    [90m[39;49;00m
+>       [94massert[39;49;00m [96mlist[39;49;00m(content.xitems()) == [([33m'[39;49;00m[33m<rst_prolog>[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33mthis is rst_prolog[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33m<rst_prolog>[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m, [33m'[39;49;00m[33mhello reST![39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33m<generated>[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33m:mod:`foo`[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m, [33m'[39;49;00m[33m----------[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m2[39;49;00m, [33m'[39;49;00m[33m'[39;49;00m),[90m[39;49;00m
+                                          ([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m3[39;49;00m, [33m'[39;49;00m[33mhello[39;49;00m[33m'[39;49;00m)][90m[39;49;00m
+[1m[31mE       AssertionError: assert [('dummy.rst'...------'), ...] == [('<rst_prolo..., 2, ''), ...][0m
+[1m[31mE         [0m
+[1m[31mE         At index 0 diff: [0m([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33m:mod:`foo`[39;49;00m[33m'[39;49;00m)[90m[39;49;00m != [0m([33m'[39;49;00m[33m<rst_prolog>[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m, [33m'[39;49;00m[33mthis is rst_prolog[39;49;00m[33m'[39;49;00m)[90m[39;49;00m[0m
+[1m[31mE         Left contains one more item: [0m([33m'[39;49;00m[33mdummy.rst[39;49;00m[33m'[39;49;00m, [94m3[39;49;00m, [33m'[39;49;00m[33mhello[39;49;00m[33m'[39;49;00m)[90m[39;49;00m[0m
+[1m[31mE         Use -v to get more diff[0m
+
+[1m[31mtests/test_util_rst.py[0m:127: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: html
+# srcdir: /tmp/pytest-of-root/pytest-0/root
+# outdir: /tmp/pytest-of-root/pytest-0/root/_build/html
+# status: 
+[01mRunning Sphinx v7.1.0+/57b0661d9[39;49;00m
+
+# warning:

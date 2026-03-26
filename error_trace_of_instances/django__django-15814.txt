@@ -1,0 +1,25 @@
+======================================================================
+ERROR: test_select_related_only (proxy_models.tests.ProxyModelTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/proxy_models/tests.py", line 402, in test_select_related_only
+    self.assertEqual(qs.get(), issue)
+  File "/testbed/django/db/models/query.py", line 646, in get
+    num = len(clone)
+  File "/testbed/django/db/models/query.py", line 376, in __len__
+    self._fetch_all()
+  File "/testbed/django/db/models/query.py", line 1876, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/testbed/django/db/models/query.py", line 101, in __iter__
+    related_populators = get_related_populators(klass_info, select, db)
+  File "/testbed/django/db/models/query.py", line 2624, in get_related_populators
+    rel_cls = RelatedPopulator(rel_klass_info, select, db)
+  File "/testbed/django/db/models/query.py", line 2599, in __init__
+    self.pk_idx = self.init_list.index(self.model_cls._meta.pk.attname)
+ValueError: 'baseuser_ptr_id' is not in list
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.089s
+
+FAILED (errors=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

@@ -1,0 +1,73 @@
+=================================== FAILURES ===================================
+__________ TestCustomConftests.test_pytest_fs_collect_hooks_are_seen ___________
+
+self = <test_collection.TestCustomConftests object at 0x7ffffe47d790>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_pytest_fs_collect_hooks_are_seen0')>
+
+    def test_pytest_fs_collect_hooks_are_seen(self, testdir):
+        testdir.makeconftest(
+            """
+            import pytest
+            class MyModule(pytest.Module):
+                pass
+            def pytest_collect_file(path, parent):
+                if path.ext == ".py":
+                    return MyModule(path, parent)
+        """
+        )
+        testdir.mkdir("sub")
+        testdir.makepyfile("def test_x(): pass")
+        result = testdir.runpytest("--co")
+>       result.stdout.fnmatch_lines(["*MyModule*", "*test_x*"])
+E       Failed: remains unmatched: '*MyModule*'
+
+/testbed/testing/test_collection.py:406: Failed
+----------------------------- Captured stderr call -----------------------------
+ERROR: usage: pytest [options] [file_or_dir] [file_or_dir] [...]
+pytest: error: unrecognized arguments: --co
+  inifile: None
+  rootdir: /tmp/pytest-of-root/pytest-0/test_pytest_fs_collect_hooks_are_seen0
+
+_________ TestCustomConftests.test_pytest_collect_file_from_sister_dir _________
+
+self = <test_collection.TestCustomConftests object at 0x7ffffd7321c0>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_pytest_collect_file_from_sister_dir0')>
+
+    def test_pytest_collect_file_from_sister_dir(self, testdir):
+        sub1 = testdir.mkpydir("sub1")
+        sub2 = testdir.mkpydir("sub2")
+        conf1 = testdir.makeconftest(
+            """
+            import pytest
+            class MyModule1(pytest.Module):
+                pass
+            def pytest_collect_file(path, parent):
+                if path.ext == ".py":
+                    return MyModule1(path, parent)
+        """
+        )
+        conf1.move(sub1.join(conf1.basename))
+        conf2 = testdir.makeconftest(
+            """
+            import pytest
+            class MyModule2(pytest.Module):
+                pass
+            def pytest_collect_file(path, parent):
+                if path.ext == ".py":
+                    return MyModule2(path, parent)
+        """
+        )
+        conf2.move(sub2.join(conf2.basename))
+        p = testdir.makepyfile("def test_x(): pass")
+        p.copy(sub1.join(p.basename))
+        p.copy(sub2.join(p.basename))
+        result = testdir.runpytest("--co")
+>       result.stdout.fnmatch_lines(["*MyModule1*", "*MyModule2*", "*test_x*"])
+E       Failed: remains unmatched: '*MyModule1*'
+
+/testbed/testing/test_collection.py:437: Failed
+----------------------------- Captured stderr call -----------------------------
+ERROR: usage: pytest [options] [file_or_dir] [file_or_dir] [...]
+pytest: error: unrecognized arguments: --co
+  inifile: None
+  rootdir: /tmp/pytest-of-root/pytest-0/test_pytest_collect_file_from_sister_dir0

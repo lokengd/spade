@@ -1,0 +1,248 @@
+=================================== FAILURES ===================================
+[31m[1m___________________ test_autodoc_typehints_none_for_overload ___________________[0m
+
+app = <SphinxTestApp buildername='html'>
+
+    [0m[37m@pytest[39;49;00m.mark.sphinx([33m'[39;49;00m[33mhtml[39;49;00m[39;49;00m, testroot=[33m'[39;49;00m[33mext-autodoc[39;49;00m[33m'[90m[39;49;00m,
+                        confoverrides={[33m'[39;49;00m[33mautodoc_typehints[39;49;00m[33m'[39;49;00m: [33m'[39;49;00m[33mnone[39;49;00m[33m'[90m[39;49;00m})[90m[39;49;00m
+    [94mdef[39;49;00m [92mtest_autodoc_typehints_none_for_overload[39;49;00m(app):[90m[39;49;00m
+        options = {[33m"[39;49;00m[33mmembers[39;49;00m[33m"[39;49;00m: [94mNone[39;49;00m}[90m[39;49;00m
+        actual = do_autodoc(app, [33m'[39;49;00m[33mmodule[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mtarget.overload[39;49;00m[33m'[39;49;00m, options)[90m[39;49;00m
+>       [94massert[39;49;00m [96mlist[39;49;00m(actual) == [[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:module:: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:class:: Bar(x, y)[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   :module: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:class:: Baz(x, y)[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   :module: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:class:: Foo(x, y)[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   :module: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:class:: Math()[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   :module: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   .. py:method:: Math.sum(x, y)[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m      :module: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m      docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m.. py:function:: sum(x, y)[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   :module: target.overload[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m   docstring[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+        ][90m[39;49;00m
+[1m[31mE       AssertionError: assert ['', '.. py:m...y: str)', ...] == ['', '.. py:m...verload', ...][0m
+[1m[31mE         [0m
+[1m[31mE         At index 4 diff: [0m[33m'[39;49;00m[33m.. py:class:: Bar(x: int, y: int)[39;49;00m[90m[39;49;00m != [0m[33m'[39;49;00m[33m.. py:class:: Bar(x, y)[39;49;00m[90m[39;49;00m[0m
+[1m[31mE         Left contains 7 more items, first extra item: [0m[33m'[39;49;00m[33m.. py:function:: sum(x: int, y: int) -> int[39;49;00m[90m[39;49;00m[0m
+[1m[31mE         Use -v to get more diff[0m
+
+[1m[31mtests/test_ext_autodoc_configs.py[0m:618: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: html
+# srcdir: /tmp/pytest-of-root/pytest-0/ext-autodoc
+# outdir: /tmp/pytest-of-root/pytest-0/ext-autodoc/_build/html
+# status: 
+[01mRunning Sphinx v3.3.0+/2c2335bbb[39;49;00m
+
+# warning: 
+[91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden[39;49;00m
+
+[33m=============================== warnings summary ===============================[0m
+sphinx/util/docutils.py:45
+  /testbed/sphinx/util/docutils.py:45: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+    __version_info__ = tuple(LooseVersion(docutils.__version__).version)
+
+sphinx/registry.py:22
+  /testbed/sphinx/registry.py:22: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import iter_entry_points
+
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154
+  /opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('sphinxcontrib')`.
+  Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+    declare_namespace(pkg)
+
+sphinx/directives/patches.py:15
+  /testbed/sphinx/directives/patches.py:15: DeprecationWarning: The `docutils.parsers.rst.directive.html` module will be removed in Docutils 2.0. Since Docutils 0.18, the "Meta" node is defined in `docutils.parsers.rst.directives.misc`.
+    from docutils.parsers.rst.directives import images, html, tables
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:211: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse():  # type: Node
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/i18n.py:95: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.translatable):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:111: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for ref in self.document.traverse(nodes.substitution_reference):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:132: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.target):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:151: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.block_quote):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:176: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.Element):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:223: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.index):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/references.py:30: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.substitution_definition):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:190: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.section):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:280: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.doctest_block):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/domains/citation.py:117: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.citation):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/domains/citation.py:136: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.citation_reference):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/builders/latex/transforms.py:37: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(matcher):  # type: nodes.Element
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:292: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(matcher):  # type: Element
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/util/compat.py:44: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.index):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/domains/index.py:52: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in document.traverse(addnodes.index):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/domains/math.py:85: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    self.data['has_equations'][docname] = any(document.traverse(math_node))
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/environment/collectors/asset.py:47: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in doctree.traverse(nodes.image):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/environment/collectors/asset.py:128: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in doctree.traverse(addnodes.download_reference):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/environment/collectors/title.py:46: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in doctree.traverse(nodes.section):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:302: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.system_message):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description_for_invalid_node
+  /testbed/sphinx/transforms/__init__.py:391: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.manpage):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/i18n.py:488: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for inline in self.document.traverse(matcher):  # type: nodes.inline
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/domains/c.py:3488: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(AliasNode):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/domains/cpp.py:7053: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(AliasNode):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/__init__.py:71: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.pending_xref):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/util/nodes.py:598: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in document.traverse(addnodes.only):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/images.py:35: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.image):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/__init__.py:215: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.desc_sig_element):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/builders/latex/transforms.py:595: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(nodes.title):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/code.py:44: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for node in self.document.traverse(addnodes.highlightlang):
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/code.py:96: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for lbnode in self.document.traverse(nodes.literal_block):  # type: nodes.literal_block
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/transforms/post_transforms/code.py:100: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for dbnode in self.document.traverse(nodes.doctest_block):  # type: nodes.doctest_block
+
+tests/test_ext_autodoc_configs.py::test_autodoc_typehints_description
+  /testbed/sphinx/environment/__init__.py:542: PendingDeprecationWarning: nodes.Node.traverse() is obsoleted by Node.findall().
+    for toctreenode in doctree.traverse(addnodes.toctree):

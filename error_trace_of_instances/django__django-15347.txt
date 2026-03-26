@@ -1,0 +1,18 @@
+======================================================================
+FAIL: test_extra_tags (messages_tests.test_cookie.CookieTests) (extra_tags='')
+A message's extra_tags attribute is correctly preserved when retrieved
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/messages_tests/test_cookie.py", line 193, in test_extra_tags
+    self.assertEqual(
+AssertionError: None != ''
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.076s
+
+FAILED (failures=1)
+Testing against Django installed in '/testbed/django'
+Importing application messages_tests
+Found 30 test(s).
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

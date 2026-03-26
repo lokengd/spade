@@ -1,0 +1,122 @@
+=================================== FAILURES ===================================
+_______________ TestRunTC.test_ignore_path_recursive_current_dir _______________
+
+self = <test_self.TestRunTC object at 0x7ffffc59ea00>
+
+    def test_ignore_path_recursive_current_dir(self) -> None:
+        """Tests that path is normalized before checked that is ignored. GitHub issue #6964"""
+        with _test_sys_path():
+            # pytest is including directory HERE/regrtest_data to sys.path which causes
+            # astroid to believe that directory is a package.
+            sys.path = [
+                path
+                for path in sys.path
+                if not os.path.basename(path) == "regrtest_data"
+            ]
+            with _test_cwd():
+                os.chdir(join(HERE, "regrtest_data", "directory"))
+>               self._runtest(
+                    [
+                        ".",
+                        "--recursive=y",
+                        "--ignore-paths=^ignored_subdirectory/.*",
+                    ],
+                    code=0,
+                )
+
+tests/test_self.py:1345: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_self.TestRunTC object at 0x7ffffc59ea00>
+args = ['--rcfile=/testbed/pylint/testutils/testing_pylintrc', '.', '--recursive=y', '--ignore-paths=^ignored_subdirectory/.*']
+reporter = None, out = <_io.StringIO object at 0x7ffff89ab4c0>, code = 0
+
+    def _runtest(
+        self,
+        args: list[str],
+        reporter: Any = None,
+        out: StringIO | None = None,
+        code: int | None = None,
+    ) -> None:
+        if out is None:
+            out = StringIO()
+        args = _add_rcfile_default_pylintrc(args)
+        pylint_code = self._run_pylint(args, reporter=reporter, out=out)
+        if reporter:
+            output = reporter.out.getvalue()
+        elif hasattr(out, "getvalue"):
+            output = out.getvalue()
+        else:
+            output = None
+        msg = f"expected output status {code}, got {pylint_code}"
+        if output is not None:
+            msg = f"{msg}. Below pylint output: \n{output}"
+>       assert pylint_code == code, msg
+E       AssertionError: expected output status 0, got 20. Below pylint output: 
+E         ************* Module failing
+E         ignored_subdirectory/failing.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+E         ignored_subdirectory/failing.py:1:0: W0611: Unused import re (unused-import)
+E         
+E         -----------------------------------
+E         Your code has been rated at 0.00/10
+E         
+E         
+E       assert 20 == 0
+
+tests/test_self.py:146: AssertionError
+________________ TestCallbackOptions.test_generate_toml_config _________________
+
+    @staticmethod
+    def test_generate_toml_config() -> None:
+        """Test the --generate-toml-config flag."""
+        args = _add_rcfile_default_pylintrc(
+            [
+                "--preferred-modules=a:b",
+                "--generate-toml-config",
+            ]
+        )
+        process = subprocess.run(
+            [sys.executable, "-m", "pylint"] + args,
+            capture_output=True,
+            encoding="utf-8",
+            check=False,
+        )
+>       assert "[tool.pylint.main]" in process.stdout
+E       assert '[tool.pylint.main]' in ''
+E        +  where '' = CompletedProcess(args=['/opt/miniconda3/envs/testbed/bin/python', '-m', 'pylint', '--rcfile=/testbed/pylint/testutils/testing_pylintrc', '--preferred-modules=a:b', '--generate-toml-config'], returncode=1, stdout='', stderr="Traceback (most recent call last):\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/runpy.py\", line 197, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/runpy.py\", line 87, in _run_code\n    exec(code, run_globals)\n  File \"/Users/jai/Downloads/SMU_PhD/CS706/Project/spade/instance_test_outputs/pylint/__main__.py\", line 7, in <module>\n    from pylint.__main__ import main\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/__main__.py\", line 20, in <module>\n    from pylint.lint import Run\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/lint/run.py\", line 30, in <module>\n    from pylint import lint\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/lint/__init__.py\", line 98, in <module>\n    from pylint.config.config_initialization import _config_initialization\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/config/config_initialization.py\", line 73, in _config_initialization\n    parsed_args_list = linter._parse_command_line_configuration(args_list)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/config/arguments_manager.py\", line 271, in _parse_command_line_configuration\n    self.config, parsed_args = self._arg_parser.parse_known_args(\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/argparse.py\", line 1858, in parse_known_args\n    namespace, args = self._parse_known_args(args, namespace)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/argparse.py\", line 2067, in _parse_known_args\n    start_index = consume_optional(start_index)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/argparse.py\", line 2007, in consume_optional\n    take_action(action, args, option_string)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/argparse.py\", line 1935, in take_action\n    action(self, namespace, argument_values, option_string)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/config/callback_actions.py\", line 689, in __call__\n    print(self.run.linter._generate_config_file())\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/pylint/config/arguments_manager.py\", line 681, in _generate_config_file\n    toml_doc.add(tomlkit.key([\"tool\", \"pylint\"]), pylint_tool_table)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/tomlkit/container.py\", line 116, in add\n    return self.append(key, item)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/tomlkit/container.py\", line 171, in append\n    self._handle_dotted_key(key, item)\n  File \"/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/tomlkit/container.py\", line 120, in _handle_dotted_key\n    raise TOMLKitError(\"Can't add a table to a dotted key\")\ntomlkit.exceptions.TOMLKitError: Can't add a table to a dotted key\n")
+
+tests/test_self.py:1493: AssertionError
+_____ TestCallbackOptions.test_generate_toml_config_disable_symbolic_names _____
+
+    @staticmethod
+    def test_generate_toml_config_disable_symbolic_names() -> None:
+        """Test that --generate-toml-config puts symbolic names in the --disable option."""
+        output_stream = StringIO()
+        with _patch_streams(output_stream):
+            with pytest.raises(SystemExit):
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+>                   Run(["--generate-toml-config"])
+
+tests/test_self.py:1528: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pylint.lint.run.Run object at 0x7ffffc581bb0>, args = ['--generate-toml-config'], reporter = None, exit = True, do_exit = True
+
+    def __init__(self, args: list[str], reporter: Any | None = None, exit: bool = True, do_exit: bool = True):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            args = _normalize_args(args)
+            args = _add_rcfile_default_pylintrc(args)
+            if exit:
+                out = StringIO()
+                status = -1
+                try:
+>                   status = lint.Run._execute(args, reporter, do_exit)
+E                   tomlkit.exceptions.TOMLKitError: Can't add a table to a dotted key
+
+pylint/testutils/_run.py:45: TOMLKitError
+=============================== warnings summary ===============================
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/astroid/interpreter/_import/util.py:6
+  /opt/miniconda3/envs/testbed/lib/python3.9/site-packages/astroid/interpreter/_import/util.py:6: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    import pkg_resources

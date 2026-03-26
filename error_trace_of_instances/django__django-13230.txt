@@ -1,0 +1,14 @@
+======================================================================
+ERROR: test_rss2_feed (syndication_tests.tests.SyndicationFeedTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/syndication_tests/tests.py", line 139, in test_rss2_feed
+    'comments': '/blog/1/comments',
+  File "/testbed/tests/syndication_tests/tests.py", line 51, in assertChildNodeContent
+    elem.getElementsByTagName(k)[0].firstChild.wholeText, v)
+IndexError: list index out of range
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.079s
+
+FAILED (errors=1)

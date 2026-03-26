@@ -1,0 +1,20 @@
+sympy/physics/quantum/tests/test_tensorproduct.py[8] 
+test_sparse_matrices ok
+test_tensor_product_dagger ok
+test_tensor_product_abstract ok
+test_tensor_product_expand F
+test_tensor_product_commutator ok
+test_tensor_product_simp ok
+test_issue_5923 ok
+test_eval_trace ok                                                        [FAIL]
+
+
+________________________________________________________________________________
+_ sympy/physics/quantum/tests/test_tensorproduct.py:test_tensor_product_expand _
+Traceback (most recent call last):
+  File "/testbed/sympy/physics/quantum/tests/test_tensorproduct.py", line 48, in test_tensor_product_expand
+    assert TP(A-B, B-A).expand(tensorproduct=True) == \
+AssertionError
+
+============= tests finished: 7 passed, 1 failed, in 0.26 seconds ==============
+DO *NOT* COMMIT!

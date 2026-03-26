@@ -1,0 +1,8 @@
+______________________________
+__________ sympy/solvers/tests/test_polysys.py:test_solve_poly_system __________
+Traceback (most recent call last):
+  File "/testbed/sympy/solvers/tests/test_polysys.py", line 54, in test_solve_poly_system
+    raises(NotImplementedError, lambda: solve_poly_system(
+  File "/testbed/sympy/testing/pytest.py", line 104, in raises
+    raise Failed("DID NOT RAISE")
+sympy.testing.pytest.Failed: DID NOT RAISE

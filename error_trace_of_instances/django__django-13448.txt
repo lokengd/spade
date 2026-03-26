@@ -1,0 +1,13 @@
+======================================================================
+FAIL: test_migrate_test_setting_false (backends.base.test_creation.TestDbCreationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 1183, in patched
+    return func(*args, **keywargs)
+  File "/testbed/tests/backends/base/test_creation.py", line 74, in test_migrate_test_setting_false
+    mocked_migrate.assert_called()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 786, in assert_called
+    raise AssertionError(msg)
+AssertionError: Expected 'migrate' to have been called.
+
+----------------------------------------------------------------------

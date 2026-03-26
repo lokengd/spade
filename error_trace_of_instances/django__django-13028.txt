@@ -1,0 +1,51 @@
+======================================================================
+ERROR: test_field_with_filterable (queries.tests.Queries1Tests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/queries/tests.py", line 1215, in test_field_with_filterable
+    Author.objects.filter(extra=self.e2),
+  File "/testbed/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/testbed/django/db/models/query.py", line 942, in filter
+    return self._filter_or_exclude(False, *args, **kwargs)
+  File "/testbed/django/db/models/query.py", line 962, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, *args, **kwargs)
+  File "/testbed/django/db/models/query.py", line 969, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/testbed/django/db/models/sql/query.py", line 1356, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/testbed/django/db/models/sql/query.py", line 1378, in _add_q
+    split_subq=split_subq, check_filterable=check_filterable,
+  File "/testbed/django/db/models/sql/query.py", line 1269, in build_filter
+    self.check_filterable(value)
+  File "/testbed/django/db/models/sql/query.py", line 1129, in check_filterable
+    expression.__class__.__name__ + ' is disallowed in the filter '
+django.db.utils.NotSupportedError: ExtraInfo is disallowed in the filter clause.
+
+======================================================================
+ERROR: test_ticket8439 (queries.tests.Queries1Tests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/queries/tests.py", line 864, in test_ticket8439
+    Author.objects.filter(Q(item__note__extrainfo=self.e2) | Q(report=self.r1, name='xyz')),
+  File "/testbed/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/testbed/django/db/models/query.py", line 942, in filter
+    return self._filter_or_exclude(False, *args, **kwargs)
+  File "/testbed/django/db/models/query.py", line 962, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, *args, **kwargs)
+  File "/testbed/django/db/models/query.py", line 969, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/testbed/django/db/models/sql/query.py", line 1356, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/testbed/django/db/models/sql/query.py", line 1378, in _add_q
+    split_subq=split_subq, check_filterable=check_filterable,
+  File "/testbed/django/db/models/sql/query.py", line 1242, in build_filter
+    check_filterable=check_filterable,
+  File "/testbed/django/db/models/sql/query.py", line 1378, in _add_q
+    split_subq=split_subq, check_filterable=check_filterable,
+  File "/testbed/django/db/models/sql/query.py", line 1269, in build_filter
+    self.check_filterable(value)
+  File "/testbed/django/db/models/sql/query.py", line 1129, in check_filterable
+    expression.__class__.__name__ + ' is disallowed in the filter '
+django.db.utils.NotSupportedError: ExtraInfo is disallowed in the filter clause.

@@ -1,0 +1,6 @@
+________________________________________________________________________________
+_____________ sympy/vector/tests/test_printing.py:test_issue_23058 _____________
+Traceback (most recent call last):
+  File "/testbed/sympy/vector/tests/test_printing.py", line 198, in test_issue_23058
+    assert upretty(vecB) == vecB_str
+AssertionError

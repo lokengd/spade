@@ -1,0 +1,11 @@
+test_MatrixElement_with_values ok                                         [FAIL]
+
+
+________________________________________________________________________________
+________ sympy/matrices/expressions/tests/test_matexpr.py:test_Identity ________
+  File "/testbed/sympy/matrices/expressions/tests/test_matexpr.py", line 90, in test_Identity
+    assert In[i, j] != 0
+AssertionError
+
+============= tests finished: 26 passed, 1 failed, in 0.43 seconds =============
+DO *NOT* COMMIT!

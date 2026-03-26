@@ -8,6 +8,9 @@ EVAL_DIR/
 src/evaluation/gold_patch_results/
 src/evaluation/scraping_resolved_instances.txt
 src/evaluation/scraping_unresolved_instances.txt
+instance_test_outputs/
+error_trace_of_instances_1/
+
 
 # C extensions
 *.so

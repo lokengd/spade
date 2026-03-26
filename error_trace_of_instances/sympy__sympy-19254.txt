@@ -1,0 +1,6 @@
+________________________________________________________________________________
+_______ sympy/polys/tests/test_factortools.py:test_dup_zz_mignotte_bound _______
+Traceback (most recent call last):
+  File "/testbed/sympy/polys/tests/test_factortools.py", line 30, in test_dup_zz_mignotte_bound
+    assert R.dup_zz_mignotte_bound(2*x**2 + 3*x + 4) == 6
+AssertionError

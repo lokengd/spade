@@ -1,0 +1,19 @@
+======================================================================
+ERROR: test_was_modified_since_empty_string (view_tests.tests.test_static.StaticUtilsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/view_tests/tests/test_static.py", line 196, in test_was_modified_since_empty_string
+    self.assertTrue(was_modified_since(header="", mtime=1))
+  File "/testbed/django/views/static.py", line 132, in was_modified_since
+    header_mtime = parse_http_date(matches[1])
+TypeError: 'NoneType' object is not subscriptable
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.034s
+
+FAILED (errors=1)
+Testing against Django installed in '/testbed/django'
+Importing application view_tests
+Found 30 test(s).
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

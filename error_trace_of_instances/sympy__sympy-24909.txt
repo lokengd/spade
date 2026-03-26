@@ -1,0 +1,16 @@
+sympy/physics/units/tests/test_prefixes.py[4] 
+test_prefix_operations F
+test_prefix_unit ok
+test_bases ok
+test_repr ok                                                              [FAIL]
+
+
+________________________________________________________________________________
+______ sympy/physics/units/tests/test_prefixes.py::test_prefix_operations ______
+Traceback (most recent call last):
+  File "/testbed/sympy/physics/units/tests/test_prefixes.py", line 20, in test_prefix_operations
+    assert m * k is S.One
+AssertionError
+
+============= tests finished: 3 passed, 1 failed, in 0.16 seconds ==============
+DO *NOT* COMMIT!

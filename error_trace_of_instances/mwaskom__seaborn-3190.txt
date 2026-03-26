@@ -1,0 +1,54 @@
+=================================== FAILURES ===================================
+___________________ TestContinuous.test_interval_with_bools ____________________
+
+self = <tests._core.test_scales.TestContinuous object at 0x7fffe03afeb0>
+
+    def test_interval_with_bools(self):
+    
+        x = pd.Series([True, False, False])
+>       s = Continuous()._setup(x, IntervalProperty())
+
+tests/_core/test_scales.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Continuous(values=None, norm=None, trans=None)
+data = 0     True
+1    False
+2    False
+dtype: bool
+prop = <seaborn._core.properties.IntervalProperty object at 0x7fffe06c3430>
+axis = <seaborn._core.scales.PseudoAxis object at 0x7fffe071f3d0>
+
+    def _setup(
+        self, data: Series, prop: Property, axis: Axis | None = None,
+    ) -> Scale:
+    
+        new = copy(self)
+        if new._tick_params is None:
+            new = new.tick()
+        if new._label_params is None:
+            new = new.label()
+    
+        forward, inverse = new._get_transform()
+    
+        mpl_scale = new._get_scale(str(data.name), forward, inverse)
+    
+        if axis is None:
+            axis = PseudoAxis(mpl_scale)
+            axis.update_units(data)
+    
+        mpl_scale.set_default_locators_and_formatters(axis)
+        new._matplotlib_scale = mpl_scale
+    
+        normalize: Optional[Callable[[ArrayLike], ArrayLike]]
+        if prop.normed:
+            if new.norm is None:
+                vmin, vmax = data.min(), data.max()
+            else:
+                vmin, vmax = new.norm
+            vmin, vmax = axis.convert_units((vmin, vmax))
+            a = forward(vmin)
+>           b = forward(vmax) - forward(vmin)
+E           TypeError: numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.
+
+seaborn/_core/scales.py:351: TypeError

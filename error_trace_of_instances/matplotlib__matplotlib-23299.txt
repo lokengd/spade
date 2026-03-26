@@ -1,0 +1,127 @@
+=================================== FAILURES ===================================
+_____________________________ test_rcparams_update _____________________________
+
+    def test_rcparams_update():
+        rc = mpl.RcParams({'figure.figsize': (3.5, 42)})
+        bad_dict = {'figure.figsize': (3.5, 42, 1)}
+        # make sure validation happens on input
+        with pytest.raises(ValueError), \
+             pytest.warns(UserWarning, match="validate"):
+>           rc.update(bad_dict)
+
+lib/matplotlib/tests/test_rcparams.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+<frozen _collections_abc>:949: in update
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = RcParams({'figure.figsize': [3.5, 42.0]}), key = 'figure.figsize'
+val = (3.5, 42, 1)
+
+    def __setitem__(self, key, val):
+        try:
+            if key in _deprecated_map:
+                version, alt_key, alt_val, inverse_alt = _deprecated_map[key]
+                _api.warn_deprecated(
+                    version, name=key, obj_type="rcparam", alternative=alt_key)
+                key = alt_key
+                val = alt_val(val)
+            elif key in _deprecated_remain_as_none and val is not None:
+                version, = _deprecated_remain_as_none[key]
+                _api.warn_deprecated(version, name=key, obj_type="rcparam")
+            elif key in _deprecated_ignore_map:
+                version, alt_key = _deprecated_ignore_map[key]
+                _api.warn_deprecated(
+                    version, name=key, obj_type="rcparam", alternative=alt_key)
+                return
+            elif key == 'backend':
+                if val is rcsetup._auto_backend_sentinel:
+                    if 'backend' in self:
+                        return
+            try:
+                cval = self.validate[key](val)
+            except ValueError as ve:
+>               raise ValueError(f"Key {key}: {ve}") from None
+E               ValueError: Key figure.figsize: Expected 2 values, but there are 3 values in (3.5, 42, 1)
+
+lib/matplotlib/__init__.py:651: ValueError
+
+During handling of the above exception, another exception occurred:
+
+    def test_rcparams_update():
+        rc = mpl.RcParams({'figure.figsize': (3.5, 42)})
+        bad_dict = {'figure.figsize': (3.5, 42, 1)}
+        # make sure validation happens on input
+>       with pytest.raises(ValueError), \
+             pytest.warns(UserWarning, match="validate"):
+E            Failed: DID NOT WARN. No warnings of type (<class 'UserWarning'>,) were emitted.
+E             Emitted warnings: [].
+
+lib/matplotlib/tests/test_rcparams.py:109: Failed
+______________________________ test_rcparams_init ______________________________
+
+    def test_rcparams_init():
+        with pytest.raises(ValueError), \
+             pytest.warns(UserWarning, match="validate"):
+>           mpl.RcParams({'figure.figsize': (3.5, 42, 1)})
+
+lib/matplotlib/tests/test_rcparams.py:117: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/__init__.py:626: in __init__
+    self.update(*args, **kwargs)
+<frozen _collections_abc>:949: in update
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = RcParams({}), key = 'figure.figsize', val = (3.5, 42, 1)
+
+    def __setitem__(self, key, val):
+        try:
+            if key in _deprecated_map:
+                version, alt_key, alt_val, inverse_alt = _deprecated_map[key]
+                _api.warn_deprecated(
+                    version, name=key, obj_type="rcparam", alternative=alt_key)
+                key = alt_key
+                val = alt_val(val)
+            elif key in _deprecated_remain_as_none and val is not None:
+                version, = _deprecated_remain_as_none[key]
+                _api.warn_deprecated(version, name=key, obj_type="rcparam")
+            elif key in _deprecated_ignore_map:
+                version, alt_key = _deprecated_ignore_map[key]
+                _api.warn_deprecated(
+                    version, name=key, obj_type="rcparam", alternative=alt_key)
+                return
+            elif key == 'backend':
+                if val is rcsetup._auto_backend_sentinel:
+                    if 'backend' in self:
+                        return
+            try:
+                cval = self.validate[key](val)
+            except ValueError as ve:
+>               raise ValueError(f"Key {key}: {ve}") from None
+E               ValueError: Key figure.figsize: Expected 2 values, but there are 3 values in (3.5, 42, 1)
+
+lib/matplotlib/__init__.py:651: ValueError
+
+During handling of the above exception, another exception occurred:
+
+    def test_rcparams_init():
+>       with pytest.raises(ValueError), \
+             pytest.warns(UserWarning, match="validate"):
+E            Failed: DID NOT WARN. No warnings of type (<class 'UserWarning'>,) were emitted.
+E             Emitted warnings: [].
+
+lib/matplotlib/tests/test_rcparams.py:115: Failed
+_______________________ test_no_backend_reset_rccontext ________________________
+
+    def test_no_backend_reset_rccontext():
+        assert mpl.rcParams['backend'] != 'module://aardvark'
+        with mpl.rc_context():
+            mpl.rcParams['backend'] = 'module://aardvark'
+>       assert mpl.rcParams['backend'] == 'module://aardvark'
+E       AssertionError: assert 'agg' == 'module://aardvark'
+E         
+E         - module://aardvark
+E         + agg
+
+lib/matplotlib/tests/test_rcparams.py:503: AssertionError
