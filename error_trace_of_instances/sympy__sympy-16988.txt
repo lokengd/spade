@@ -1,0 +1,14 @@
+_________________ sympy/sets/tests/test_sets.py:test_imageset __________________
+Traceback (most recent call last):
+  File "/testbed/sympy/sets/tests/test_sets.py", line 24, in test_imageset
+    assert (1, r) in imageset(x, (x, x), S.Reals) != False
+AssertionError
+________________________________________________________________________________
+_______________ sympy/sets/tests/test_sets.py:test_intersection ________________
+Traceback (most recent call last):
+  File "/testbed/sympy/sets/tests/test_sets.py", line 346, in test_intersection
+    assert Intersection({1}, {1}, {x}) == Intersection({1}, {x})
+AssertionError
+
+== tests finished: 72 passed, 2 failed, 4 expected to fail, in 55.01 seconds ===
+DO *NOT* COMMIT!

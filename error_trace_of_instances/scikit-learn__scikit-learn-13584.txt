@@ -1,0 +1,306 @@
+=================================== FAILURES ===================================
+______________________________ test_changed_only _______________________________
+
+    def test_changed_only():
+        # Make sure the changed_only param is correctly used
+        set_config(print_changed_only=True)
+        lr = LogisticRegression(C=99)
+        expected = """LogisticRegression(C=99)"""
+        assert lr.__repr__() == expected
+    
+        # Check with a repr that doesn't fit on a single line
+        lr = LogisticRegression(C=99, class_weight=.4, fit_intercept=False,
+                                tol=1234, verbose=True)
+        expected = """
+    LogisticRegression(C=99, class_weight=0.4, fit_intercept=False, tol=1234,
+                       verbose=True)"""
+        expected = expected[1:]  # remove first \n
+        assert lr.__repr__() == expected
+    
+        imputer = SimpleImputer(missing_values=0)
+        expected = """SimpleImputer(missing_values=0)"""
+        assert imputer.__repr__() == expected
+    
+        # Defaults to np.NaN, trying with float('NaN')
+        imputer = SimpleImputer(missing_values=float('NaN'))
+        expected = """SimpleImputer()"""
+        assert imputer.__repr__() == expected
+    
+        # make sure array parameters don't throw error (see #13583)
+>       repr(LogisticRegressionCV(Cs=np.array([0.1, 1])))
+
+sklearn/utils/tests/test_pprint.py:217: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/base.py:247: in __repr__
+    repr_ = pp.pformat(self)
+/opt/miniconda3/envs/testbed/lib/python3.6/pprint.py:144: in pformat
+    self._format(object, sio, 0, 0, {}, 0)
+/opt/miniconda3/envs/testbed/lib/python3.6/pprint.py:161: in _format
+    rep = self._repr(object, context, level)
+/opt/miniconda3/envs/testbed/lib/python3.6/pprint.py:393: in _repr
+    self._depth, level)
+sklearn/utils/_pprint.py:170: in format
+    changed_only=self._changed_only)
+sklearn/utils/_pprint.py:413: in _safe_repr
+    params = _changed_params(object)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+estimator = <[ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()',) raised in repr()] LogisticRegressionCV object at 0x7fffff1ddcc0>
+
+    def _changed_params(estimator):
+        """Return dict (param_name: value) of parameters that were given to
+        estimator with non-default values."""
+    
+        params = estimator.get_params(deep=False)
+        filtered_params = {}
+        init_func = getattr(estimator.__init__, 'deprecated_original',
+                            estimator.__init__)
+        init_params = signature(init_func).parameters
+        init_params = {name: param.default for name, param in init_params.items()}
+        for k, v in params.items():
+>           if (v != init_params[k] and
+                    not (is_scalar_nan(init_params[k]) and is_scalar_nan(v))):
+E                   ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+sklearn/utils/_pprint.py:98: ValueError
+________________________________ test_pipeline _________________________________
+
+    def test_pipeline():
+        # Render a pipeline object
+        pipeline = make_pipeline(StandardScaler(), LogisticRegression(C=999))
+        expected = """
+    Pipeline(memory=None,
+             steps=[('standardscaler',
+                     StandardScaler(copy=True, with_mean=True, with_std=True)),
+                    ('logisticregression',
+                     LogisticRegression(C=999, class_weight=None, dual=False,
+                                        fit_intercept=True, intercept_scaling=1,
+                                        l1_ratio=None, max_iter=100,
+                                        multi_class='warn', n_jobs=None,
+                                        penalty='l2', random_state=None,
+                                        solver='warn', tol=0.0001, verbose=0,
+                                        warm_start=False))])"""
+
+        expected = expected[1:]  # remove first \n
+>       assert pipeline.__repr__() == expected
+E       AssertionError: assert 'Pipeline(ste...ion(C=999))])' == 'Pipeline(mem...art=False))])'
+E         + Pipeline(steps=[('standardscaler', StandardScaler()),
+E         +                 ('logisticregression', LogisticRegression(C=999))])
+E         - Pipeline(memory=None,
+E         -          steps=[('standardscaler',
+E         -                  StandardScaler(copy=True, with_mean=True, with_std=True)),
+E         -                 ('logisticregression',
+E         -                  LogisticRegression(C=999, class_weight=None, dual=False,...
+E         
+E         ...Full output truncated (7 lines hidden), use '-vv' to show
+
+sklearn/utils/tests/test_pprint.py:239: AssertionError
+______________________________ test_deeply_nested ______________________________
+
+    def test_deeply_nested():
+        # Render a deeply nested estimator
+        rfe = RFE(RFE(RFE(RFE(RFE(RFE(RFE(LogisticRegression())))))))
+        expected = """
+    RFE(estimator=RFE(estimator=RFE(estimator=RFE(estimator=RFE(estimator=RFE(estimator=RFE(estimator=LogisticRegression(C=1.0,
+                                                                                                                         class_weight=None,
+                                                                                                                         dual=False,
+                                                                                                                         fit_intercept=True,
+                                                                                                                         intercept_scaling=1,
+                                                                                                                         l1_ratio=None,
+                                                                                                                         max_iter=100,
+                                                                                                                         multi_class='warn',
+                                                                                                                         n_jobs=None,
+                                                                                                                         penalty='l2',
+                                                                                                                         random_state=None,
+                                                                                                                         solver='warn',
+                                                                                                                         tol=0.0001,
+                                                                                                                         verbose=0,
+                                                                                                                         warm_start=False),
+                                                                                            n_features_to_select=None,
+                                                                                            step=1,
+                                                                                            verbose=0),
+                                                                              n_features_to_select=None,
+                                                                              step=1,
+                                                                              verbose=0),
+                                                                n_features_to_select=None,
+                                                                step=1, verbose=0),
+                                                  n_features_to_select=None, step=1,
+                                                  verbose=0),
+                                    n_features_to_select=None, step=1, verbose=0),
+                      n_features_to_select=None, step=1, verbose=0),
+        n_features_to_select=None, step=1, verbose=0)"""
+
+        expected = expected[1:]  # remove first \n
+>       assert rfe.__repr__() == expected
+E       AssertionError: assert 'RFE(estimato...sion())))))))' == 'RFE(estimato...1, verbose=0)'
+E         Skipping 107 identical leading characters in diff, use -v to show
+E         + egression())))))))
+E         - egression(C=1.0,
+E         -                                                                                                                      class_weight=None,
+E         -                                                                                                                      dual=False,
+E         -                                                                                                                      fit_intercept=True,
+E         -                                                                   ...
+E         
+E         ...Full output truncated (24 lines hidden), use '-vv' to show
+
+sklearn/utils/tests/test_pprint.py:276: AssertionError
+_______________________________ test_gridsearch ________________________________
+
+    def test_gridsearch():
+        # render a gridsearch
+        param_grid = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
+                       'C': [1, 10, 100, 1000]},
+                      {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+        gs = GridSearchCV(SVC(), param_grid, cv=5)
+
+        expected = """
+    GridSearchCV(cv=5, error_score='raise-deprecating',
+                 estimator=SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+                               decision_function_shape='ovr', degree=3,
+                               gamma='auto_deprecated', kernel='rbf', max_iter=-1,
+                               probability=False, random_state=None, shrinking=True,
+                               tol=0.001, verbose=False),
+                 iid='warn', n_jobs=None,
+                 param_grid=[{'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001],
+                              'kernel': ['rbf']},
+                             {'C': [1, 10, 100, 1000], 'kernel': ['linear']}],
+                 pre_dispatch='2*n_jobs', refit=True, return_train_score=False,
+                 scoring=None, verbose=0)"""
+
+        expected = expected[1:]  # remove first \n
+>       assert gs.__repr__() == expected
+E       assert "GridSearchCV...['linear']}])" == 'GridSearchCV...e, verbose=0)'
+E         + GridSearchCV(cv=5, estimator=SVC(),
+E         - GridSearchCV(cv=5, error_score='raise-deprecating',
+E         -              estimator=SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+E         -                            decision_function_shape='ovr', degree=3,
+E         -                            gamma='auto_deprecated', kernel='rbf', max_iter=-1,
+E         -                            probability=False, random_state=None, shrinking=True,
+E         -                            tol=0.001, verbose=False),...
+E         
+E         ...Full output truncated (10 lines hidden), use '-vv' to show
+
+sklearn/utils/tests/test_pprint.py:301: AssertionError
+___________________________ test_gridsearch_pipeline ___________________________
+
+    def test_gridsearch_pipeline():
+        # render a pipeline inside a gridsearch
+        pp = _EstimatorPrettyPrinter(compact=True, indent=1, indent_at_name=True)
+
+        pipeline = Pipeline([
+            ('reduce_dim', PCA()),
+            ('classify', SVC())
+        ])
+        N_FEATURES_OPTIONS = [2, 4, 8]
+        C_OPTIONS = [1, 10, 100, 1000]
+        param_grid = [
+            {
+                'reduce_dim': [PCA(iterated_power=7), NMF()],
+                'reduce_dim__n_components': N_FEATURES_OPTIONS,
+                'classify__C': C_OPTIONS
+            },
+            {
+                'reduce_dim': [SelectKBest(chi2)],
+                'reduce_dim__k': N_FEATURES_OPTIONS,
+                'classify__C': C_OPTIONS
+            }
+        ]
+        gspipline = GridSearchCV(pipeline, cv=3, n_jobs=1, param_grid=param_grid)
+        expected = """
+    GridSearchCV(cv=3, error_score='raise-deprecating',
+                 estimator=Pipeline(memory=None,
+                                    steps=[('reduce_dim',
+                                            PCA(copy=True, iterated_power='auto',
+                                                n_components=None,
+                                                random_state=None,
+                                                svd_solver='auto', tol=0.0,
+                                                whiten=False)),
+                                           ('classify',
+                                            SVC(C=1.0, cache_size=200,
+                                                class_weight=None, coef0=0.0,
+                                                decision_function_shape='ovr',
+                                                degree=3, gamma='auto_deprecated',
+                                                kernel='rbf', max_iter=-1,
+                                                probability=False,
+                                                random_state=None, shrinking=True,
+                                                tol=0.001, verbose=False))]),
+                 iid='warn', n_jobs=1,
+                 param_grid=[{'classify__C': [1, 10, 100, 1000],
+                              'reduce_dim': [PCA(copy=True, iterated_power=7,
+                                                 n_components=None,
+                                                 random_state=None,
+                                                 svd_solver='auto', tol=0.0,
+                                                 whiten=False),
+                                             NMF(alpha=0.0, beta_loss='frobenius',
+                                                 init=None, l1_ratio=0.0,
+                                                 max_iter=200, n_components=None,
+                                                 random_state=None, shuffle=False,
+                                                 solver='cd', tol=0.0001,
+                                                 verbose=0)],
+                              'reduce_dim__n_components': [2, 4, 8]},
+                             {'classify__C': [1, 10, 100, 1000],
+                              'reduce_dim': [SelectKBest(k=10,
+                                                         score_func=<function chi2 at some_address>)],
+                              'reduce_dim__k': [2, 4, 8]}],
+                 pre_dispatch='2*n_jobs', refit=True, return_train_score=False,
+                 scoring=None, verbose=0)"""
+
+        expected = expected[1:]  # remove first \n
+        repr_ = pp.pformat(gspipline)
+        # Remove address of '<function chi2 at 0x.....>' for reproducibility
+        repr_ = re.sub('function chi2 at 0x.*>',
+                       'function chi2 at some_address>', repr_)
+>       assert repr_ == expected
+E       AssertionError: assert 'GridSearchCV... [2, 4, 8]}])' == 'GridSearchCV...e, verbose=0)'
+E         + GridSearchCV(cv=3,
+E         +              estimator=Pipeline(steps=[('reduce_dim', PCA()),
+E         - GridSearchCV(cv=3, error_score='raise-deprecating',
+E         -              estimator=Pipeline(memory=None,
+E         -                                 steps=[('reduce_dim',
+E         -                                         PCA(copy=True, iterated_power='auto',
+E         -                                             n_components=None,...
+E         
+E         ...Full output truncated (44 lines hidden), use '-vv' to show
+
+sklearn/utils/tests/test_pprint.py:371: AssertionError
+_________________________ test_n_max_elements_to_show __________________________
+
+    def test_n_max_elements_to_show():
+
+        n_max_elements_to_show = 30
+        pp = _EstimatorPrettyPrinter(
+            compact=True, indent=1, indent_at_name=True,
+            n_max_elements_to_show=n_max_elements_to_show
+        )
+
+        # No ellipsis
+        vocabulary = {i: i for i in range(n_max_elements_to_show)}
+        vectorizer = CountVectorizer(vocabulary=vocabulary)
+
+        expected = r"""
+    CountVectorizer(analyzer='word', binary=False, decode_error='strict',
+                    dtype=<class 'numpy.int64'>, encoding='utf-8', input='content',
+                    lowercase=True, max_df=1.0, max_features=None, min_df=1,
+                    ngram_range=(1, 1), preprocessor=None, stop_words=None,
+                    strip_accents=None, token_pattern='(?u)\\b\\w\\w+\\b',
+                    tokenizer=None,
+                    vocabulary={0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7,
+                                8: 8, 9: 9, 10: 10, 11: 11, 12: 12, 13: 13, 14: 14,
+                                15: 15, 16: 16, 17: 17, 18: 18, 19: 19, 20: 20,
+                                21: 21, 22: 22, 23: 23, 24: 24, 25: 25, 26: 26,
+                                27: 27, 28: 28, 29: 29})"""
+
+        expected = expected[1:]  # remove first \n
+>       assert  pp.pformat(vectorizer) == expected
+E       AssertionError: assert 'CountVectori... 28, 29: 29})' == 'CountVectori... 28, 29: 29})'
+E         - CountVectorizer(analyzer='word', binary=False, decode_error='strict',
+E         -                 dtype=<class 'numpy.int64'>, encoding='utf-8', input='content',
+E         -                 lowercase=True, max_df=1.0, max_features=None, min_df=1,
+E         -                 ngram_range=(1, 1), preprocessor=None, stop_words=None,
+E         -                 strip_accents=None, token_pattern='(?u)\\b\\w\\w+\\b',
+E         -                 tokenizer=None,
+E         -                 vocabulary={0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7,...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+sklearn/utils/tests/test_pprint.py:399: AssertionError

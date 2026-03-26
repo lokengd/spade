@@ -1,0 +1,12 @@
+======================================================================
+ERROR: test_no_management_form_warning (forms_tests.tests.test_formsets.DeprecationTests)
+Management forms are already rendered with the new div template.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/tests/test_formsets.py", line 1923, in test_no_management_form_warning
+    str(formset.management_form)
+  File "/testbed/django/forms/utils.py", line 72, in render
+    warnings.warn(
+django.utils.deprecation.RemovedInDjango50Warning: The "default.html" templates for forms and formsets will be removed. These were proxies to the equivalent "table.html" templates, but the new "div.html" templates will be the default from Django 5.0. Transitional renderers are provided to allow you to opt-in to the new output style now. See https://docs.djangoproject.com/en/dev/releases/4.1/ for more details
+
+----------------------------------------------------------------------

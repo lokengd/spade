@@ -1,0 +1,19 @@
+=================================== FAILURES ===================================
+___________________ test_set_constrained_layout[False-False] ___________________
+
+arg = False, state = False
+
+    @pytest.mark.parametrize('arg, state', [
+        (True, True),
+        (False, False),
+        ({}, True),
+        ({'rect': None}, True)
+    ])
+    def test_set_constrained_layout(arg, state):
+        fig, ax = plt.subplots(constrained_layout=arg)
+>       assert fig.get_constrained_layout() is state
+E       assert True is False
+E        +  where True = get_constrained_layout()
+E        +    where get_constrained_layout = <Figure size 640x480 with 1 Axes>.get_constrained_layout
+
+lib/matplotlib/tests/test_constrainedlayout.py:669: AssertionError

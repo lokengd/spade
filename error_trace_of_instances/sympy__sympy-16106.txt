@@ -1,0 +1,66 @@
+________________________________________________________________________________
+___________ sympy/printing/tests/test_mathml.py:test_print_intervals ___________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 922, in test_print_intervals
+    assert mpp.doprint(Interval(0, a)) == '<mrow><mfenced close="]" open="["><mn>0</mn><mi>a</mi></mfenced></mrow>'
+AssertionError
+________________________________________________________________________________
+______________ sympy/printing/tests/test_mathml.py:test_print_Abs ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 948, in test_print_Abs
+    assert mpp.doprint(Abs(x)) == '<mrow><mfenced close="|" open="|"><mi>x</mi></mfenced></mrow>'
+AssertionError
+________________________________________________________________________________
+__________ sympy/printing/tests/test_mathml.py:test_print_Determinant __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 953, in test_print_Determinant
+    assert mpp.doprint(Determinant(Matrix([[1, 2], [3, 4]]))) == '<mrow><mfenced close="|" open="|"><mfenced close="]" open="["><mtable><mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd></mtr><mtr><mtd><mn>3</mn></mtd><mtd><mn>4</mn></mtd></mtr></mtable></mfenced></mfenced></mrow>'
+AssertionError
+________________________________________________________________________________
+___________ sympy/printing/tests/test_mathml.py:test_mat_delim_print ___________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1009, in test_mat_delim_print
+    assert mathml(expr, printer='presentation', mat_delim='[') == '<mfenced close="]" open="["><mtable><mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd></mtr><mtr><mtd><mn>3</mn></mtd><mtd><mn>4</mn></mtd></mtr></mtable></mfenced>'
+AssertionError
+________________________________________________________________________________
+_________ sympy/printing/tests/test_mathml.py:test_print_set_frozenset _________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1041, in test_print_set_frozenset
+    assert mpp.doprint(f) == '<mfenced close="}" open="{"><mn>1</mn><mn>3</mn><mn>5</mn></mfenced>'
+AssertionError
+________________________________________________________________________________
+___________ sympy/printing/tests/test_mathml.py:test_print_FiniteSet ___________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1048, in test_print_FiniteSet
+    assert mpp.doprint(f1) == '<mfenced close="}" open="{"><mn>1</mn><mn>3</mn><mi>x</mi></mfenced>'
+AssertionError
+________________________________________________________________________________
+_____________ sympy/printing/tests/test_mathml.py:test_print_SetOp _____________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1055, in test_print_SetOp
+    assert mpp.doprint(Union(f1, f2, evaluate=False)) == '<mrow><mfenced close="}" open="{"><mn>1</mn><mn>3</mn><mi>x</mi></mfenced><mo>&#x222A;</mo><mfenced close="}" open="{"><mn>2</mn><mn>4</mn><mi>y</mi></mfenced></mrow>'
+AssertionError
+________________________________________________________________________________
+_____________ sympy/printing/tests/test_mathml.py:test_print_floor _____________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1110, in test_print_floor
+    assert mathml(expr, printer='presentation') == '<mrow><mfenced close="&#8971;" open="&#8970;"><mi>x</mi></mfenced></mrow>'
+AssertionError
+________________________________________________________________________________
+____________ sympy/printing/tests/test_mathml.py:test_print_ceiling ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1115, in test_print_ceiling
+    assert mathml(expr, printer='presentation') == '<mrow><mfenced close="&#8969;" open="&#8968;"><mi>x</mi></mfenced></mrow>'
+AssertionError
+________________________________________________________________________________
+__________ sympy/printing/tests/test_mathml.py:test_print_IndexedBase __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1146, in test_print_IndexedBase
+    assert mathml(IndexedBase(a)[b],printer='presentation') == '<msub><mi>a</mi><mi>b</mi></msub>'
+AssertionError
+________________________________________________________________________________
+____________ sympy/printing/tests/test_mathml.py:test_print_Indexed ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_mathml.py", line 1153, in test_print_Indexed
+    assert mathml(IndexedBase(a),printer = 'presentation') == '<mi>a</mi>'
+AssertionError

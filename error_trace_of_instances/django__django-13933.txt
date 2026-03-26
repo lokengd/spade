@@ -1,0 +1,25 @@
+======================================================================
+FAIL: test_modelchoicefield_value_placeholder (forms_tests.tests.test_error_messages.ModelChoiceFieldErrorMessagesTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/tests/test_error_messages.py", line 319, in test_modelchoicefield_value_placeholder
+    self.assertFormErrors(
+  File "/testbed/tests/forms_tests/tests/test_error_messages.py", line 21, in assertFormErrors
+    self.assertEqual(cm.exception.messages, expected)
+AssertionError: Lists differ: ['"%(value)s" is not one of the available choices.'] != ['"invalid" is not one of the available choices.']
+
+First differing element 0:
+'"%(value)s" is not one of the available choices.'
+'"invalid" is not one of the available choices.'
+
+- ['"%(value)s" is not one of the available choices.']
+?    ^^   ^^^^
+
++ ['"invalid" is not one of the available choices.']
+?    ^^   ^^
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.042s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

@@ -1,0 +1,11 @@
+test_issue_14941 F
+
+________________________________________________________________________________
+___________ sympy/utilities/tests/test_lambdify.py:test_issue_14941 ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_lambdify.py", line 1196, in test_issue_14941
+    assert f2b() == (1,)
+AssertionError
+
+======= tests finished: 62 passed, 1 failed, 54 skipped, in 1.76 seconds =======
+DO *NOT* COMMIT!

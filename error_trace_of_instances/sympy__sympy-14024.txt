@@ -1,0 +1,14 @@
+________________________________________________________________________________
+_____________ sympy/core/tests/test_numbers.py:test_powers_Integer _____________
+  File "/testbed/sympy/core/tests/test_numbers.py", line 1044, in test_powers_Integer
+    assert (-2) ** Rational(-10, 3) == \
+AssertionError
+________________________________________________________________________________
+____________ sympy/core/tests/test_numbers.py:test_powers_Rational _____________
+  File "/testbed/sympy/core/tests/test_numbers.py", line 1128, in test_powers_Rational
+    assert Rational(-3, 2)**Rational(-10, 3) == \
+AssertionError
+
+ tests finished: 83 passed, 2 failed, 1 skipped, 1 expected to fail, 
+in 0.70 seconds 
+DO *NOT* COMMIT!

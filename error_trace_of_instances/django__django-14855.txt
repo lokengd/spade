@@ -1,0 +1,11 @@
+======================================================================
+FAIL: test_readonly_foreignkey_links_custom_admin_site (admin_views.tests.ReadonlyTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_views/tests.py", line 5139, in test_readonly_foreignkey_links_custom_admin_site
+    self._test_readonly_foreignkey_links('namespaced_admin')
+  File "/testbed/tests/admin_views/tests.py", line 5117, in _test_readonly_foreignkey_links
+    self.assertContains(
+  File "/testbed/django/test/testcases.py", line 465, in assertContains
+    self.assertTrue(real_count != 0, msg_prefix + "Couldn't find %s in response" % text_repr)
+AssertionError: False is not true : Couldn't find '<div class="readonly"><a href="/test_admin/admin5/auth/user/1/change/">super</a></div>' in response

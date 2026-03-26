@@ -1,0 +1,100 @@
+======================================================================
+FAIL: test_add_model_order_with_respect_to_index_constraint (migrations.test_autodetector.AutodetectorTests) (operation='AddIndex')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2213, in test_add_model_order_with_respect_to_index_constraint
+    'CreateModel', operation,
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['CreateModel', 'AddIndex']):
+  otherapp:
+    auto_1
+      <CreateModel  name='Book', fields=[('id', <django.db.models.fields.AutoField>), ('title', <django.db.models.fields.CharField>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+    auto_2
+      <AddField  model_name='book', name='author', field=<django.db.models.fields.related.ForeignKey: author>>
+  testapp:
+    auto_1
+      <CreateModel 'Author' fields=[('id', <django.db.models.fields.AutoField>), ('name', <django.db.models.fields.CharField>), ('book', <django.db.models.fields.related.ForeignKey: book>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+      <AddIndex  model_name='author', index=<Index: fields='_order'>>
+      <AlterOrderWithRespectTo  name='author', order_with_respect_to='book'>
+
+
+======================================================================
+FAIL: test_add_model_order_with_respect_to_index_constraint (migrations.test_autodetector.AutodetectorTests) (operation='AddConstraint')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2213, in test_add_model_order_with_respect_to_index_constraint
+    'CreateModel', operation,
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['CreateModel', 'AddConstraint']):
+  otherapp:
+    auto_1
+      <CreateModel  name='Book', fields=[('id', <django.db.models.fields.AutoField>), ('title', <django.db.models.fields.CharField>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+    auto_2
+      <AddField  model_name='book', name='author', field=<django.db.models.fields.related.ForeignKey: author>>
+  testapp:
+    auto_1
+      <CreateModel 'Author' fields=[('id', <django.db.models.fields.AutoField>), ('name', <django.db.models.fields.CharField>), ('book', <django.db.models.fields.related.ForeignKey: book>)], options={}, bases=(<class 'django.db.models.base.Model'>,), managers=[]>
+      <AddConstraint  model_name='author', constraint=<CheckConstraint: check='(AND: ('_order__gt', 1))' name='book_order_gt_1'>>
+      <AlterOrderWithRespectTo  name='author', order_with_respect_to='book'>
+
+
+======================================================================
+FAIL: test_set_alter_order_with_respect_to_index_constraint_foo_together (migrations.test_autodetector.AutodetectorTests) (operation='AddIndex')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2260, in test_set_alter_order_with_respect_to_index_constraint_foo_together
+    'AlterOrderWithRespectTo', operation,
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['AlterOrderWithRespectTo', 'AddIndex']):
+  testapp:
+    auto_1
+      <AddIndex  model_name='author', index=<Index: fields='_order'>>
+      <AlterOrderWithRespectTo  name='author', order_with_respect_to='book'>
+
+
+======================================================================
+FAIL: test_set_alter_order_with_respect_to_index_constraint_foo_together (migrations.test_autodetector.AutodetectorTests) (operation='AddConstraint')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2260, in test_set_alter_order_with_respect_to_index_constraint_foo_together
+    'AlterOrderWithRespectTo', operation,
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['AlterOrderWithRespectTo', 'AddConstraint']):
+  testapp:
+    auto_1
+      <AddConstraint  model_name='author', constraint=<CheckConstraint: check='(AND: ('_order__gt', 1))' name='book_order_gt_1'>>
+      <AlterOrderWithRespectTo  name='author', order_with_respect_to='book'>
+
+
+======================================================================
+FAIL: test_set_alter_order_with_respect_to_index_constraint_foo_together (migrations.test_autodetector.AutodetectorTests) (operation='AlterIndexTogether')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2260, in test_set_alter_order_with_respect_to_index_constraint_foo_together
+    'AlterOrderWithRespectTo', operation,
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['AlterOrderWithRespectTo', 'AlterIndexTogether']):
+  testapp:
+    auto_1
+      <AlterIndexTogether  name='author', index_together={('name', '_order')}>
+      <AlterOrderWithRespectTo  name='author', order_with_respect_to='book'>
+
+
+======================================================================
+FAIL: test_set_alter_order_with_respect_to_index_constraint_foo_together (migrations.test_autodetector.AutodetectorTests) (operation='AlterUniqueTogether')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_autodetector.py", line 2260, in test_set_alter_order_with_respect_to_index_constraint_foo_together
+    'AlterOrderWithRespectTo', operation,
+  File "/testbed/tests/migrations/test_autodetector.py", line 517, in assertOperationTypes
+    self.repr_changes(changes),
+AssertionError: Operation type mismatch for testapp.auto_1 (expected ['AlterOrderWithRespectTo', 'AlterUniqueTogether']):
+  testapp:
+    auto_1
+      <AlterUniqueTogether  name='author', unique_together={('id', '_order')}>
+      <AlterOrderWithRespectTo  name='author', order_with_respect_to='book'>

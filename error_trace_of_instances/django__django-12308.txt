@@ -1,0 +1,37 @@
+======================================================================
+FAIL: test_json_display_for_field (admin_utils.tests.UtilsTests) (value={'a': {'b': 'c'}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_utils/tests.py", line 193, in test_json_display_for_field
+    display_value,
+AssertionError: "{'a': {'b': 'c'}}" != '{"a": {"b": "c"}}'
+- {'a': {'b': 'c'}}
++ {"a": {"b": "c"}}
+
+
+======================================================================
+FAIL: test_json_display_for_field (admin_utils.tests.UtilsTests) (value=['a', 'b'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_utils/tests.py", line 193, in test_json_display_for_field
+    display_value,
+AssertionError: 'a, b' != '["a", "b"]'
+- a, b
++ ["a", "b"]
+
+
+======================================================================
+FAIL: test_json_display_for_field (admin_utils.tests.UtilsTests) (value='a')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_utils/tests.py", line 193, in test_json_display_for_field
+    display_value,
+AssertionError: 'a' != '"a"'
+- a
++ "a"
+
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.033s
+
+FAILED (failures=3)

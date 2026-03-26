@@ -1,0 +1,14 @@
+======================================================================
+FAIL: test_label (auth_tests.test_forms.ReadOnlyPasswordHashTest)
+ReadOnlyPasswordHashWidget doesn't contain a for attribute in the
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_forms.py", line 1038, in test_label
+    self.assertEqual(bound_field.field.widget.id_for_label('id'), None)
+AssertionError: 'id' != None
+
+----------------------------------------------------------------------
+Ran 84 tests in 0.121s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

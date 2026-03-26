@@ -1,0 +1,365 @@
+=================================== FAILURES ===================================
+________________ TestAssert_reprcompare.test_bytes_diff_normal _________________
+
+self = <test_assertion.TestAssert_reprcompare object at 0x7ffffeaa1b50>
+
+    def test_bytes_diff_normal(self):
+        """Check special handling for bytes diff (#5260)"""
+        diff = callequal(b"spam", b"eggs")
+    
+>       assert diff == [
+            "b'spam' == b'eggs'",
+            "At index 0 diff: b's' != b'e'",
+            "Use -v to get the full diff",
+        ]
+E       assert ["b'spam' == ...he full diff'] == ["b'spam' == b...he full diff']
+E         At index 1 diff: 'At index 0 diff: 115 != 101' != "At index 0 diff: b's' != b'e'"
+E         Use -v to get the full diff
+
+testing/test_assertion.py:338: AssertionError
+________________ TestAssert_reprcompare.test_bytes_diff_verbose ________________
+
+self = <test_assertion.TestAssert_reprcompare object at 0x7ffffe89be50>
+
+    def test_bytes_diff_verbose(self):
+        """Check special handling for bytes diff (#5260)"""
+        diff = callequal(b"spam", b"eggs", verbose=True)
+>       assert diff == [
+            "b'spam' == b'eggs'",
+            "At index 0 diff: b's' != b'e'",
+            "Full diff:",
+            "- b'spam'",
+            "+ b'eggs'",
+        ]
+E       assert ["b'spam' == ..., "+ b'eggs'"] == ["b'spam' == b..., "+ b'eggs'"]
+E         At index 1 diff: 'At index 0 diff: 115 != 101' != "At index 0 diff: b's' != b'e'"
+E         Use -v to get the full diff
+
+testing/test_assertion.py:347: AssertionError
+_________________ TestAssert_reprcompare_attrsclass.test_attrs _________________
+
+self = <test_assertion.TestAssert_reprcompare_attrsclass object at 0x7ffffe376ac0>
+
+    def test_attrs(self):
+        @attr.s
+        class SimpleDataObject:
+            field_a = attr.ib()
+            field_b = attr.ib()
+    
+        left = SimpleDataObject(1, "b")
+        right = SimpleDataObject(1, "c")
+    
+        lines = callequal(left, right)
+>       assert lines[1].startswith("Omitting 1 identical item")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x7fffff0beb70>('Omitting 1 identical item')
+E        +    where <built-in method startswith of str object at 0x7fffff0beb70> = '(pytest_assertion plugin: representation of details failed.  Probably an object has a faulty __repr__.)'.startswith
+
+testing/test_assertion.py:667: AssertionError
+_____________ TestAssert_reprcompare_attrsclass.test_attrs_verbose _____________
+
+self = <test_assertion.TestAssert_reprcompare_attrsclass object at 0x7ffffe398b80>
+
+    def test_attrs_verbose(self):
+        @attr.s
+        class SimpleDataObject:
+            field_a = attr.ib()
+            field_b = attr.ib()
+    
+        left = SimpleDataObject(1, "b")
+        right = SimpleDataObject(1, "c")
+    
+        lines = callequal(left, right, verbose=2)
+>       assert lines[1].startswith("Matching attributes:")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x7fffff0beb70>('Matching attributes:')
+E        +    where <built-in method startswith of str object at 0x7fffff0beb70> = '(pytest_assertion plugin: representation of details failed.  Probably an object has a faulty __repr__.)'.startswith
+
+testing/test_assertion.py:682: AssertionError
+__ TestAssert_reprcompare_attrsclass.test_attrs_with_attribute_comparison_off __
+
+self = <test_assertion.TestAssert_reprcompare_attrsclass object at 0x7ffffec2f9d0>
+
+    def test_attrs_with_attribute_comparison_off(self):
+        @attr.s
+        class SimpleDataObject:
+            field_a = attr.ib()
+            field_b = attr.ib(cmp=False)
+    
+        left = SimpleDataObject(1, "b")
+        right = SimpleDataObject(1, "b")
+    
+        lines = callequal(left, right, verbose=2)
+>       assert lines[1].startswith("Matching attributes:")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x7fffff0beb70>('Matching attributes:')
+E        +    where <built-in method startswith of str object at 0x7fffff0beb70> = '(pytest_assertion plugin: representation of details failed.  Probably an object has a faulty __repr__.)'.startswith
+
+testing/test_assertion.py:696: AssertionError
+_______ TestImportHookInstallation.test_installed_plugin_rewrite[plain] ________
+
+self = <test_assertion.TestImportHookInstallation object at 0x7ffffe8f2df0>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0')>
+mode = 'plain'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ffffe7872e0>
+
+    @pytest.mark.parametrize("mode", ["plain", "rewrite"])
+    def test_installed_plugin_rewrite(self, testdir, mode, monkeypatch):
+        monkeypatch.delenv("PYTEST_DISABLE_PLUGIN_AUTOLOAD", raising=False)
+        # Make sure the hook is installed early enough so that plugins
+        # installed via setuptools are rewritten.
+        testdir.tmpdir.join("hampkg").ensure(dir=1)
+        contents = {
+            "hampkg/__init__.py": """\
+                import pytest
+    
+                @pytest.fixture
+                def check_first2():
+                    def check(values, value):
+                        assert values.pop(0) == value
+                    return check
+            """,
+            "spamplugin.py": """\
+            import pytest
+            from hampkg import check_first2
+    
+            @pytest.fixture
+            def check_first():
+                def check(values, value):
+                    assert values.pop(0) == value
+                return check
+            """,
+            "mainwrapper.py": """\
+            import pytest, importlib_metadata
+    
+            class DummyEntryPoint(object):
+                name = 'spam'
+                module_name = 'spam.py'
+                group = 'pytest11'
+    
+                def load(self):
+                    import spamplugin
+                    return spamplugin
+    
+            class DummyDistInfo(object):
+                version = '1.0'
+                files = ('spamplugin.py', 'hampkg/__init__.py')
+                entry_points = (DummyEntryPoint(),)
+                metadata = {'name': 'foo'}
+    
+            def distributions():
+                return (DummyDistInfo(),)
+    
+            importlib_metadata.distributions = distributions
+            pytest.main()
+            """,
+            "test_foo.py": """\
+            def test(check_first):
+                check_first([10, 30], 30)
+    
+            def test2(check_first2):
+                check_first([10, 30], 30)
+            """,
+        }
+        testdir.makepyfile(**contents)
+        result = testdir.run(
+            sys.executable, "mainwrapper.py", "-s", "--assert=%s" % mode
+        )
+        if mode == "plain":
+            expected = "E       AssertionError"
+        elif mode == "rewrite":
+            expected = "*assert 10 == 30*"
+        else:
+            assert 0
+>       result.stdout.fnmatch_lines([expected])
+E       Failed: nomatch: 'E       AssertionError'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-4.6.1.dev144+g1aefb24b3, py-1.11.0, pluggy-0.13.1'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0'
+E           and: 'collected 2 items'
+E           and: ''
+E           and: 'test_foo.py EE'
+E           and: ''
+E           and: '==================================== ERRORS ===================================='
+E           and: '____________________________ ERROR at setup of test ____________________________'
+E           and: 'file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py, line 1'
+E           and: '  def test(check_first):'
+E           and: "E       fixture 'check_first' not found"
+E           and: '>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory'
+E           and: ">       use 'pytest --fixtures [testpath]' for help on them."
+E           and: ''
+E           and: '/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py:1'
+E           and: '___________________________ ERROR at setup of test2 ____________________________'
+E           and: 'file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py, line 4'
+E           and: '  def test2(check_first2):'
+E           and: "E       fixture 'check_first2' not found"
+E           and: '>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory'
+E           and: ">       use 'pytest --fixtures [testpath]' for help on them."
+E           and: ''
+E           and: '/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py:4'
+E           and: '=========================== 2 error in 0.01 seconds ============================'
+E       remains unmatched: 'E       AssertionError'
+
+/testbed/testing/test_assertion.py:216: Failed
+----------------------------- Captured stdout call -----------------------------
+running: /opt/miniconda3/envs/testbed/bin/python mainwrapper.py -s --assert=plain
+     in: /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.6.1.dev144+g1aefb24b3, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0
+collected 2 items
+
+test_foo.py EE
+
+==================================== ERRORS ====================================
+____________________________ ERROR at setup of test ____________________________
+file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py, line 1
+  def test(check_first):
+E       fixture 'check_first' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py:1
+___________________________ ERROR at setup of test2 ____________________________
+file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py, line 4
+  def test2(check_first2):
+E       fixture 'check_first2' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite0/test_foo.py:4
+=========================== 2 error in 0.01 seconds ============================
+______ TestImportHookInstallation.test_installed_plugin_rewrite[rewrite] _______
+
+self = <test_assertion.TestImportHookInstallation object at 0x7ffffe8f2910>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1')>
+mode = 'rewrite'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ffffec32a60>
+
+    @pytest.mark.parametrize("mode", ["plain", "rewrite"])
+    def test_installed_plugin_rewrite(self, testdir, mode, monkeypatch):
+        monkeypatch.delenv("PYTEST_DISABLE_PLUGIN_AUTOLOAD", raising=False)
+        # Make sure the hook is installed early enough so that plugins
+        # installed via setuptools are rewritten.
+        testdir.tmpdir.join("hampkg").ensure(dir=1)
+        contents = {
+            "hampkg/__init__.py": """\
+                import pytest
+    
+                @pytest.fixture
+                def check_first2():
+                    def check(values, value):
+                        assert values.pop(0) == value
+                    return check
+            """,
+            "spamplugin.py": """\
+            import pytest
+            from hampkg import check_first2
+    
+            @pytest.fixture
+            def check_first():
+                def check(values, value):
+                    assert values.pop(0) == value
+                return check
+            """,
+            "mainwrapper.py": """\
+            import pytest, importlib_metadata
+    
+            class DummyEntryPoint(object):
+                name = 'spam'
+                module_name = 'spam.py'
+                group = 'pytest11'
+    
+                def load(self):
+                    import spamplugin
+                    return spamplugin
+    
+            class DummyDistInfo(object):
+                version = '1.0'
+                files = ('spamplugin.py', 'hampkg/__init__.py')
+                entry_points = (DummyEntryPoint(),)
+                metadata = {'name': 'foo'}
+    
+            def distributions():
+                return (DummyDistInfo(),)
+    
+            importlib_metadata.distributions = distributions
+            pytest.main()
+            """,
+            "test_foo.py": """\
+            def test(check_first):
+                check_first([10, 30], 30)
+    
+            def test2(check_first2):
+                check_first([10, 30], 30)
+            """,
+        }
+        testdir.makepyfile(**contents)
+        result = testdir.run(
+            sys.executable, "mainwrapper.py", "-s", "--assert=%s" % mode
+        )
+        if mode == "plain":
+            expected = "E       AssertionError"
+        elif mode == "rewrite":
+            expected = "*assert 10 == 30*"
+        else:
+            assert 0
+>       result.stdout.fnmatch_lines([expected])
+E       Failed: nomatch: '*assert 10 == 30*'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-4.6.1.dev144+g1aefb24b3, py-1.11.0, pluggy-0.13.1'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1'
+E           and: 'collected 2 items'
+E           and: ''
+E           and: 'test_foo.py EE'
+E           and: ''
+E           and: '==================================== ERRORS ===================================='
+E           and: '____________________________ ERROR at setup of test ____________________________'
+E           and: 'file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py, line 1'
+E           and: '  def test(check_first):'
+E           and: "E       fixture 'check_first' not found"
+E           and: '>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory'
+E           and: ">       use 'pytest --fixtures [testpath]' for help on them."
+E           and: ''
+E           and: '/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py:1'
+E           and: '___________________________ ERROR at setup of test2 ____________________________'
+E           and: 'file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py, line 4'
+E           and: '  def test2(check_first2):'
+E           and: "E       fixture 'check_first2' not found"
+E           and: '>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory'
+E           and: ">       use 'pytest --fixtures [testpath]' for help on them."
+E           and: ''
+E           and: '/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py:4'
+E           and: '=========================== 2 error in 0.01 seconds ============================'
+E       remains unmatched: '*assert 10 == 30*'
+
+/testbed/testing/test_assertion.py:216: Failed
+----------------------------- Captured stdout call -----------------------------
+running: /opt/miniconda3/envs/testbed/bin/python mainwrapper.py -s --assert=rewrite
+     in: /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.6.1.dev144+g1aefb24b3, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1
+collected 2 items
+
+test_foo.py EE
+
+==================================== ERRORS ====================================
+____________________________ ERROR at setup of test ____________________________
+file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py, line 1
+  def test(check_first):
+E       fixture 'check_first' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py:1
+___________________________ ERROR at setup of test2 ____________________________
+file /tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py, line 4
+  def test2(check_first2):
+E       fixture 'check_first2' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/pytest-of-root/pytest-0/test_installed_plugin_rewrite1/test_foo.py:4
+=========================== 2 error in 0.01 seconds ============================
+===================== 7 failed, 86 passed in 3.72 seconds ======================

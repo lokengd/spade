@@ -1,0 +1,94 @@
+=================================== FAILURES ===================================
+[31m[1m___________ NumpyDocstringTest.test_parameters_with_class_reference ____________
+[0m
+
+self = <tests.test_ext_napoleon_docstring.NumpyDocstringTest testMethod=test_parameters_with_class_reference>
+
+    [0m    [94mdef[39;49;00m [92mtest_parameters_with_class_reference[39;49;00m([96mself[39;49;00m):[90m[39;49;00m
+            docstring = [33m"""[39;49;00m[33m\[39;49;00m
+    [33mParameters[39;49;00m[33m----------[39;49;00m[33mparam1 : :class:`MyClass <name.space.MyClass>` instance[39;49;00m[33m[39;49;00m
+    [33m[39;49;00m
+    [33mOther Parameters[39;49;00m[33m----------------[39;49;00m[33mparam2 : :class:`MyClass <name.space.MyClass>` instance[39;49;00m[33m[39;49;00m
+    [33m[39;49;00m
+    [33m"""[39;49;00m[90m[39;49;00m
+    [90m[39;49;00m
+            config = Config(napoleon_use_param=[94mFalse[39;49;00m)[90m[39;49;00m
+            actual = [96mstr[39;49;00m(NumpyDocstring(docstring, config))[90m[39;49;00m
+            expected = [33m"""[39;49;00m[33m\[39;49;00m
+    [33m:Parameters: **param1** (:class:`MyClass <name.space.MyClass>` instance)[39;49;00m[33m[39;49;00m
+    [33m[39;49;00m
+    [33m:Other Parameters: **param2** (:class:`MyClass <name.space.MyClass>` instance)[39;49;00m[33m[39;49;00m
+    [33m"""[39;49;00m[90m[39;49;00m
+            [96mself[39;49;00m.assertEqual(expected, actual)[90m[39;49;00m
+    [90m[39;49;00m
+            config = Config(napoleon_use_param=[94mTrue[39;49;00m)[90m[39;49;00m
+            actual = [96mstr[39;49;00m(NumpyDocstring(docstring, config))[90m[39;49;00m
+            expected = [33m"""[39;49;00m[33m\[39;49;00m
+    [33m:param param1:[39;49;00m[33m[39;49;00m
+    [33m:type param1: :class:`MyClass <name.space.MyClass>` instance[39;49;00m[33m[39;49;00m
+    [33m[39;49;00m
+    [33m:param param2:[39;49;00m[33m[39;49;00m
+    [33m:type param2: :class:`MyClass <name.space.MyClass>` instance[39;49;00m[33m[39;49;00m
+    [33m"""[39;49;00m[90m[39;49;00m
+>           [96mself[39;49;00m.assertEqual(expected, actual)[90m[39;49;00m
+[1m[31mE           AssertionError: ':par[72 chars]\n\n:param param2:\n:type param2: :class:`MyCl[32 chars]ce\n' != ':par[72 chars]\n\n:Other Parameters: **param2** (:class:`MyC[34 chars]e)\n'[0m
+[1m[31mE             :param param1:
+[1m[31mE             :type param1: :class:`MyClass <name.space.MyClass>` instance
+[1m[31mE             
+[1m[31mE           - :param param2:
+[1m[31mE           - :type param2: :class:`MyClass <name.space.MyClass>` instance
+[1m[31mE           ?   ^^ ^      ^^
+[1m[31mE           + :Other Parameters: **param2** (:class:`MyClass <name.space.MyClass>` instance)
+[1m[31mE           ?  + ^ ^^^^^^^^^^^^^^^^      ^^^^                                              +
+
+[1m[31mtests/test_ext_napoleon_docstring.py[0m:1468: AssertionError
+[31m[1m__________________ TestNumpyDocstring.test_token_type_invalid __________________
+[0m
+
+self = <tests.test_ext_napoleon_docstring.TestNumpyDocstring object at 0x7ffffc527e60>
+warning = <_io.StringIO object at 0x7ffffc4772d0>
+
+    [0m[94mdef[39;49;00m [92mtest_token_type_invalid[39;49;00m([96mself[39;49;00m, warning):[90m[39;49;00m
+        tokens = ([90m[39;49;00m
+            [33m"[39;49;00m[33m{[39;49;00m[33m1, 2[39;49;00m[33m"[39;49;00m,[90m[39;49;00m
+            [33m"[39;49;00m[33m}[39;49;00m[33m"[39;49;00m,[90m[39;49;00m
+            [33m"[39;49;00m[33m'[39;49;00m[33mabc[39;49;00m[33m"[39;49;00m,[90m[39;49;00m
+            [33m"[39;49;00m[33mdef[39;49;00m[33m'[39;49;00m[33m"[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33m"[39;49;00m[33mghi[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+            [33m'[39;49;00m[33mjkl[39;49;00m[33m"[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+        )
+        errors = (
+            [33mr[39;49;00m[33m"[39;49;00m[33m.+: invalid value set [39;49;00m[33m\[39;49;00m[33m(missing closing brace[39;49;00m[33m\[39;49;00m[33m):[39;49;00m[33m",
+            [33mr[39;49;00m[33m"[39;49;00m[33m.+: invalid value set [39;49;00m[33m\[39;49;00m[33m(missing opening brace[39;49;00m[33m\[39;49;00m[33m):[39;49;00m[33m",
+            [33mr[39;49;00m[33m"[39;49;00m[33m.+: malformed string literal [39;49;00m[33m\[39;49;00m[33m(missing closing quote[39;49;00m[33m\[39;49;00m[33m):[39;49;00m[33m",
+            [33mr[39;49;00m[33m"[39;49;00m[33m.+: malformed string literal [39;49;00m[33m\[39;49;00m[33m(missing opening quote[39;49;00m[33m\[39;49;00m[33m):[39;49;00m[33m",
+            [33mr[39;49;00m[33m"[39;49;00m[33m.+: malformed string literal [39;49;00m[33m\[39;49;00m[33m(missing closing quote[39;49;00m[33m\[39;49;00m[33m):[39;49;00m[33m",
+            [33mr[39;49;00m[33m"[39;49;00m[33m.+: malformed string literal [39;49;00m[33m\[39;49;00m[33m(missing opening quote[39;49;00m[33m\[39;49;00m[33m):[39;49;00m[33m",
+        )
+        [94mfor[39;49;00m token, error [95min[39;49;00m [96mzip[39;49;00m(tokens, errors):
+            [94mwith[39;49;00m warns(warning, match=error):
+>               _token_type(token)
+
+[1m[31mtests/test_ext_napoleon_docstring.py[0m:2499: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+[1m[31m/opt/miniconda3/envs/testbed/lib/python3.9/contextlib.py[0m:126: in __exit__
+    [0m[96mnext[39;49;00m([39;49;00mself[39;49;00m.gen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ [0m
+
+warning = <_io.StringIO object at 0x7ffffc4772d0>
+match = '.+: invalid value set \\(missing closing brace\\):'
+
+    [0m[37m@contextmanager[39;49;00m
+    [94mdef[39;49;00m [92mwarns[39;49;00m(warning, match):
+        match_re = re.compile(match)
+        [94mtry[39;49;00m:
+            [94myield[39;49;00m warning
+        [94mfinally[39;49;00m:
+            raw_warnings = warning.getvalue()
+            warnings = [w [94mfor[39;49;00m w [95min[39;49;00m raw_warnings.split([33m"[39;49;00m[33m\n[39;49;00m[33m"[39;49;00m) [94mif[39;49;00m w.strip()]
+
+>           [94massert[39;49;00m [96mlen[39;49;00m(warnings) == [94m1[39;49;00m [95mand[39;49;00m [96mall[39;49;00m(match_re.match(w) [94mfor[39;49;00m w [95min[39;49;00m warnings)
+[1m[31mE           assert (2 == 1)
+[1m[31mE            +  where 2 = len(["\x1b[91mWARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden\x1b[39;49;00m", '\x1b[91mWARNING: invalid value set (missing closing brace): {1, 2\x1b[39;49;00m'])
+
+[1m[31mtests/test_ext_napoleon_docstring.py[0m:2475: AssertionError

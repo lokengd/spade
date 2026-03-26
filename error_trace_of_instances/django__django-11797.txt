@@ -1,0 +1,9 @@
+======================================================================
+FAIL: test_exact_query_rhs_with_selected_columns (lookup.tests.LookupTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/lookup/tests.py", line 971, in test_exact_query_rhs_with_selected_columns
+    self.assertEqual(authors.get(), newest_author)
+AssertionError: <Author: Author object (2)> != <Author: Author object (3)>
+
+----------------------------------------------------------------------

@@ -1,0 +1,21 @@
+======================================================================
+FAIL: test_non_template_changed_in_template_directory (template_tests.test_autoreloader.TemplateReloadTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 437, in inner
+    return func(*args, **kwargs)
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1336, in patched
+    return func(*newargs, **newkeywargs)
+  File "/testbed/tests/template_tests/test_autoreloader.py", line 52, in test_non_template_changed_in_template_directory
+    self.assertIsNone(autoreload.template_changed(None, Path(__file__)))
+AssertionError: True is not None
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.008s
+
+FAILED (failures=1)
+Testing against Django installed in '/testbed/django'
+Importing application template_tests
+Found 10 test(s).
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

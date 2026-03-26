@@ -1,0 +1,15 @@
+======================================================================
+FAIL: test_serialize_result (admin_views.test_autocomplete_view.AutocompleteJsonViewTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_views/test_autocomplete_view.py", line 312, in test_serialize_result
+    self.assertEqual(data, {
+AssertionError: {'res[35 chars]on 1'}, {'id': '2', 'text': 'Question 2'}], 'p[23 chars]lse}} != {'res[35 chars]on 1', 'posted': '2021-08-09'}, {'id': '2', 't[71 chars]lse}}
+  {'pagination': {'more': False},
+-  'results': [{'id': '1', 'text': 'Question 1'},
++  'results': [{'id': '1', 'posted': '2021-08-09', 'text': 'Question 1'},
+?                         ++++++++++++++++++++++++
+
+-              {'id': '2', 'text': 'Question 2'}]}
++              {'id': '2', 'posted': '2021-08-07', 'text': 'Question 2'}]}
+?                         ++++++++++++++++++++++++

@@ -1,0 +1,67 @@
+=================================== FAILURES ===================================
+[31m[1m__________________________ test_rst_with_header_rows ___________________________
+
+    def test_rst_with_header_rows():
+        """Round-trip a table with header_rows specified"""
+        lines = [
+            "======= ======== ====",
+            "   wave response ints",
+            "     nm       ct     ",
+            "float64  float32 int8",
+            "======= ======== ====",
+            "  350.0      1.0    1",
+            "  950.0      2.0    2",
+            "======= ======== ====",
+        ]
+>       tbl = QTable.read(lines, format="ascii.rst", header_rows=["name", "unit", "dtype"])
+
+[1m[31mastropy/io/ascii/tests/test_rst.py[0m:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+[1m[31mastropy/table/connect.py[0m:62: in __call__
+    out = self.registry.read(cls, *args, **kwargs)
+[1m[31mastropy/io/registry/core.py[0m:219: in read
+    data = reader(*args, **kwargs)
+[1m[31mastropy/io/ascii/connect.py[0m:19: in io_read
+    return read(filename, **kwargs)
+[1m[31mastropy/io/ascii/ui.py[0m:425: in read
+    reader = get_reader(**new_kwargs)
+[1m[31mastropy/io/ascii/ui.py[0m:183: in get_reader
+    reader = core._get_reader(Reader, Inputter=Inputter, Outputter=Outputter, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+Reader = <class 'astropy.io.ascii.rst.RST'>, Inputter = None, Outputter = None
+kwargs = {'fill_values': [('', '0')], 'header_rows': ['name', 'unit', 'dtype']}
+FastBasic = <class 'astropy.io.ascii.fastbasic.FastBasic'>
+reader_kwargs = {'header_rows': ['name', 'unit', 'dtype']}
+
+    def _get_reader(Reader, Inputter=None, Outputter=None, **kwargs):
+        """Initialize a table reader allowing for common customizations.  See ui.get_reader()
+        for param docs.  This routine is for internal (package) use only and is useful
+        because it depends only on the "core" module.
+        """
+    
+        from .fastbasic import FastBasic
+    
+        if issubclass(Reader, FastBasic):  # Fast readers handle args separately
+            if Inputter is not None:
+                kwargs["Inputter"] = Inputter
+            return Reader(**kwargs)
+    
+        # If user explicitly passed a fast reader with enable='force'
+        # (e.g. by passing non-default options), raise an error for slow readers
+        if "fast_reader" in kwargs:
+            if kwargs["fast_reader"]["enable"] == "force":
+                raise ParameterError(
+                    "fast_reader required with "
+                    "{}, but this is not a fast C reader: {}".format(
+                        kwargs["fast_reader"], Reader
+                    )
+                )
+            else:
+                del kwargs["fast_reader"]  # Otherwise ignore fast_reader parameter
+    
+        reader_kwargs = {k: v for k, v in kwargs.items() if k not in extra_reader_pars}
+>       reader = Reader(**reader_kwargs)
+[1m[31mE       TypeError: __init__() got an unexpected keyword argument 'header_rows'
+[0m
+[1mastropy/io/ascii/core.py[0m:1692: TypeError

@@ -1,0 +1,19 @@
+======================================================================
+FAIL: test_union_none (queries.test_qs_combinators.QuerySetSetOperationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/queries/test_qs_combinators.py", line 58, in test_union_none
+    self.assertSequenceEqual(qs3.none(), [])
+AssertionError: Sequences differ: <QuerySet [<Number: 0>, <Number: 1>, <Number: 8>, <Number: 9>]> != []
+
+First sequence contains 4 additional elements.
+First extra element 0:
+<Number: 0>
+
+- <QuerySet [<Number: 0>, <Number: 1>, <Number: 8>, <Number: 9>]>
++ []
+
+----------------------------------------------------------------------
+Ran 32 tests in 0.047s
+
+FAILED (failures=1, skipped=2)

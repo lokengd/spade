@@ -1,0 +1,108 @@
+=================================== FAILURES ===================================
+__________________________ test_colorbar_scale_reset ___________________________
+
+    def test_colorbar_scale_reset():
+        x, y = np.ogrid[-4:4:31j, -4:4:31j]
+        z = 120000*np.exp(-x**2 - y**2)
+    
+        fig, ax = plt.subplots()
+        pcm = ax.pcolormesh(z, cmap='RdBu_r', rasterized=True)
+        cbar = fig.colorbar(pcm, ax=ax)
+        cbar.outline.set_edgecolor('red')
+        assert cbar.ax.yaxis.get_scale() == 'linear'
+    
+        pcm.set_norm(LogNorm(vmin=1, vmax=100))
+        assert cbar.ax.yaxis.get_scale() == 'log'
+        pcm.set_norm(Normalize(vmin=-20, vmax=20))
+        assert cbar.ax.yaxis.get_scale() == 'linear'
+    
+        assert cbar.outline.get_edgecolor() == mcolors.to_rgba('red')
+    
+        # log scale with no vmin/vmax set should scale to the data if there
+        # is a mappable already associated with the colorbar, not (0, 1)
+>       pcm.norm = LogNorm()
+
+lib/matplotlib/tests/test_colorbar.py:662: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/cm.py:619: in norm
+    self.changed()
+lib/matplotlib/cm.py:664: in changed
+    self.callbacks.process('changed', self)
+lib/matplotlib/cbook.py:295: in process
+    self.exception_handler(exc)
+lib/matplotlib/cbook.py:82: in _exception_printer
+    raise exc
+lib/matplotlib/cbook.py:290: in process
+    func(*args, **kwargs)
+lib/matplotlib/colorbar.py:512: in update_normal
+    self._reset_locator_formatter_scale()
+lib/matplotlib/colorbar.py:1173: in _reset_locator_formatter_scale
+    self._process_values()
+lib/matplotlib/colorbar.py:1105: in _process_values
+    self.norm.vmin = 0
+lib/matplotlib/colors.py:1240: in vmin
+    self._changed()
+lib/matplotlib/colors.py:1268: in _changed
+    self.callbacks.process('changed')
+lib/matplotlib/cbook.py:295: in process
+    self.exception_handler(exc)
+lib/matplotlib/cbook.py:82: in _exception_printer
+    raise exc
+lib/matplotlib/cbook.py:290: in process
+    func(*args, **kwargs)
+lib/matplotlib/cm.py:664: in changed
+    self.callbacks.process('changed', self)
+lib/matplotlib/cbook.py:295: in process
+    self.exception_handler(exc)
+lib/matplotlib/cbook.py:82: in _exception_printer
+    raise exc
+lib/matplotlib/cbook.py:290: in process
+    func(*args, **kwargs)
+lib/matplotlib/colorbar.py:514: in update_normal
+    self._draw_all()
+lib/matplotlib/colorbar.py:549: in _draw_all
+    self._process_values()
+lib/matplotlib/colorbar.py:1106: in _process_values
+    self.norm.vmax = 1
+lib/matplotlib/colors.py:1251: in vmax
+    self._changed()
+lib/matplotlib/colors.py:1268: in _changed
+    self.callbacks.process('changed')
+lib/matplotlib/cbook.py:295: in process
+    self.exception_handler(exc)
+lib/matplotlib/cbook.py:82: in _exception_printer
+    raise exc
+lib/matplotlib/cbook.py:290: in process
+    func(*args, **kwargs)
+lib/matplotlib/cm.py:664: in changed
+    self.callbacks.process('changed', self)
+lib/matplotlib/cbook.py:295: in process
+    self.exception_handler(exc)
+lib/matplotlib/cbook.py:82: in _exception_printer
+    raise exc
+lib/matplotlib/cbook.py:290: in process
+    func(*args, **kwargs)
+lib/matplotlib/colorbar.py:514: in update_normal
+    self._draw_all()
+lib/matplotlib/colorbar.py:549: in _draw_all
+    self._process_values()
+lib/matplotlib/colorbar.py:1111: in _process_values
+    b = self.norm.inverse(b)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = <matplotlib.colors.LogNorm object at 0x7fffe9a86a10>
+value = array([0.        , 0.00390625, 0.0078125 , 0.01171875, 0.015625  ,
+       0.01953125, 0.0234375 , 0.02734375, 0.03125 ...6875   , 0.97265625,
+       0.9765625 , 0.98046875, 0.984375  , 0.98828125, 0.9921875 ,
+       0.99609375, 1.        ])
+
+    def inverse(self, value):
+        if not self.scaled():
+            raise ValueError("Not invertible until scaled")
+        if self.vmin > self.vmax:
+            raise ValueError("vmin must be less or equal to vmax")
+        t_vmin, t_vmax = self._trf.transform([self.vmin, self.vmax])
+        if not np.isfinite([t_vmin, t_vmax]).all():
+>           raise ValueError("Invalid vmin or vmax")
+E           ValueError: Invalid vmin or vmax
+
+lib/matplotlib/colors.py:1718: ValueError

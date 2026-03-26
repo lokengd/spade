@@ -1,0 +1,36 @@
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_8292 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5859, in test_issue_8292
+    e = sympify('((x+x**4)/(x-1))-(2*(x-1)**4/(x-1)**4)', evaluate=False)
+  File "/testbed/sympy/core/sympify.py", line 384, in sympify
+    expr = parse_expr(a, local_dict=locals, transformations=transformations, evaluate=evaluate)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 964, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_8344 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5901, in test_issue_8344
+    e = sympify('2*x*y**2/1**2 + 1', evaluate=False)
+  File "/testbed/sympy/core/sympify.py", line 384, in sympify
+    expr = parse_expr(a, local_dict=locals, transformations=transformations, evaluate=evaluate)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 964, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+
+________________________________________________________________________________
+________ sympy/printing/pretty/tests/test_pretty.py:test_pretty_product ________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 2102, in test_pretty_product
+    assert pretty(expr) == ascii_str
+AssertionError
+________________________________________________________________________________
+__________ sympy/printing/pretty/tests/test_pretty.py:test_issue_6359 __________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/pretty/tests/test_pretty.py", line 5509, in test_issue_6359
+    assert pretty(Product(x**2, (x, 1, 2))**2) == \
+AssertionError
+
+===== tests finished: 121 passed, 2 failed, 2 exceptions, in 3.89 seconds ======
+DO *NOT* COMMIT!

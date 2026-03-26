@@ -1,0 +1,84 @@
+=================================== FAILURES ===================================
+______________________________ test_complete[png] ______________________________
+
+ext = 'png', request = <FixtureRequest for <Function test_complete[png]>>
+args = (), kwargs = {}, file_name = 'test_complete[png]'
+fig_test = <Figure size 640x480 with 0 Axes>
+fig_ref = <Figure size 1000x600 with 10 Axes>, figs = []
+
+    @pytest.mark.parametrize("ext", extensions)
+    def wrapper(*args, ext, request, **kwargs):
+        if 'ext' in old_sig.parameters:
+            kwargs['ext'] = ext
+        if 'request' in old_sig.parameters:
+            kwargs['request'] = request
+    
+        file_name = "".join(c for c in request.node.name
+                            if c in ALLOWED_CHARS)
+        try:
+            fig_test = plt.figure("test")
+            fig_ref = plt.figure("reference")
+            with _collect_new_figures() as figs:
+>               func(*args, fig_test=fig_test, fig_ref=fig_ref, **kwargs)
+
+lib/matplotlib/testing/decorators.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fig_test = <Figure size 640x480 with 0 Axes>
+fig_ref = <Figure size 1000x600 with 10 Axes>
+
+    @mpl.style.context("default")
+    @check_figures_equal(extensions=["png"])
+    def test_complete(fig_test, fig_ref):
+        _generate_complete_test_figure(fig_ref)
+        # plotting is done, now test its pickle-ability
+        pkl = BytesIO()
+>       pickle.dump(fig_ref, pkl, pickle.HIGHEST_PROTOCOL)
+E       TypeError: cannot pickle 'weakref.ReferenceType' object
+
+lib/matplotlib/tests/test_pickle.py:103: TypeError
+____________________ test_pickle_load_from_subprocess[png] _____________________
+
+ext = 'png'
+request = <FixtureRequest for <Function test_pickle_load_from_subprocess[png]>>
+args = ()
+kwargs = {'tmp_path': PosixPath('/tmp/pytest-of-root/pytest-0/test_pickle_load_from_subproce0')}
+file_name = 'test_pickle_load_from_subprocess[png]'
+fig_test = <Figure size 640x480 with 0 Axes>
+fig_ref = <Figure size 1000x600 with 10 Axes>, figs = []
+
+    @pytest.mark.parametrize("ext", extensions)
+    def wrapper(*args, ext, request, **kwargs):
+        if 'ext' in old_sig.parameters:
+            kwargs['ext'] = ext
+        if 'request' in old_sig.parameters:
+            kwargs['request'] = request
+    
+        file_name = "".join(c for c in request.node.name
+                            if c in ALLOWED_CHARS)
+        try:
+            fig_test = plt.figure("test")
+            fig_ref = plt.figure("reference")
+            with _collect_new_figures() as figs:
+>               func(*args, fig_test=fig_test, fig_ref=fig_ref, **kwargs)
+
+lib/matplotlib/testing/decorators.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fig_test = <Figure size 640x480 with 0 Axes>
+fig_ref = <Figure size 1000x600 with 10 Axes>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_pickle_load_from_subproce0')
+
+    @mpl.style.context("default")
+    @check_figures_equal(extensions=['png'])
+    def test_pickle_load_from_subprocess(fig_test, fig_ref, tmp_path):
+        _generate_complete_test_figure(fig_ref)
+    
+        fp = tmp_path / 'sinus.pickle'
+        assert not fp.exists()
+    
+        with fp.open('wb') as file:
+>           pickle.dump(fig_ref, file, pickle.HIGHEST_PROTOCOL)
+E           TypeError: cannot pickle 'weakref.ReferenceType' object
+
+lib/matplotlib/tests/test_pickle.py:134: TypeError

@@ -1,0 +1,40 @@
+======================================================================
+FAIL: test_unsupported_operations_on_combined_qs (queries.test_qs_combinators.QuerySetSetOperationTests) (combinator='union', operation='distinct')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/queries/test_qs_combinators.py", line 289, in test_unsupported_operations_on_combined_qs
+    getattr(getattr(qs, combinator)(qs), operation)()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 691, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: NotSupportedError not raised
+
+======================================================================
+FAIL: test_unsupported_operations_on_combined_qs (queries.test_qs_combinators.QuerySetSetOperationTests) (combinator='difference', operation='distinct')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/queries/test_qs_combinators.py", line 289, in test_unsupported_operations_on_combined_qs
+    getattr(getattr(qs, combinator)(qs), operation)()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 691, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: NotSupportedError not raised
+
+======================================================================
+FAIL: test_unsupported_operations_on_combined_qs (queries.test_qs_combinators.QuerySetSetOperationTests) (combinator='intersection', operation='distinct')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/queries/test_qs_combinators.py", line 289, in test_unsupported_operations_on_combined_qs
+    getattr(getattr(qs, combinator)(qs), operation)()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/contextlib.py", line 88, in __exit__
+    next(self.gen)
+  File "/testbed/django/test/testcases.py", line 691, in _assert_raises_or_warns_cm
+    yield cm
+AssertionError: NotSupportedError not raised
+
+----------------------------------------------------------------------
+Ran 29 tests in 0.034s
+
+FAILED (failures=3, skipped=2)

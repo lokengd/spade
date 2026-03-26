@@ -1,0 +1,43 @@
+=================================== FAILURES ===================================
+___________________________ test_invisible_axes[png] ___________________________
+
+ext = 'png', request = <FixtureRequest for <Function test_invisible_axes[png]>>
+args = (), kwargs = {}, file_name = 'test_invisible_axes[png]'
+fig_test = <Figure size 640x480 with 1 Axes>
+fig_ref = <Figure size 640x480 with 0 Axes>, figs = []
+test_image_path = PosixPath('/testbed/result_images/test_mplot3d/test_invisible_axes[png].png')
+ref_image_path = PosixPath('/testbed/result_images/test_mplot3d/test_invisible_axes[png]-expected.png')
+
+    @pytest.mark.parametrize("ext", extensions)
+    def wrapper(*args, ext, request, **kwargs):
+        if 'ext' in old_sig.parameters:
+            kwargs['ext'] = ext
+        if 'request' in old_sig.parameters:
+            kwargs['request'] = request
+    
+        file_name = "".join(c for c in request.node.name
+                            if c in ALLOWED_CHARS)
+        try:
+            fig_test = plt.figure("test")
+            fig_ref = plt.figure("reference")
+            with _collect_new_figures() as figs:
+                func(*args, fig_test=fig_test, fig_ref=fig_ref, **kwargs)
+            if figs:
+                raise RuntimeError('Number of open figures changed during '
+                                   'test. Make sure you are plotting to '
+                                   'fig_test or fig_ref, or if this is '
+                                   'deliberate explicitly close the '
+                                   'new figure(s) inside the test.')
+            test_image_path = result_dir / (file_name + "." + ext)
+            ref_image_path = result_dir / (file_name + "-expected." + ext)
+            fig_test.savefig(test_image_path)
+            fig_ref.savefig(ref_image_path)
+>           _raise_on_image_difference(
+                ref_image_path, test_image_path, tol=tol
+            )
+E           matplotlib.testing.exceptions.ImageComparisonFailure: images not close (RMS 17.513):
+E           	result_images/test_mplot3d/test_invisible_axes[png].png
+E           	result_images/test_mplot3d/test_invisible_axes[png]-expected.png
+E           	result_images/test_mplot3d/test_invisible_axes[png]-failed-diff.png
+
+lib/matplotlib/testing/decorators.py:478: ImageComparisonFailure

@@ -1,0 +1,10 @@
+________________________________________________________________________________
+___________ sympy/solvers/tests/test_diophantine.py:test_diophantine ___________
+Traceback (most recent call last):
+  File "/testbed/sympy/solvers/tests/test_diophantine.py", line 554, in test_diophantine
+    assert diophantine(y**4 + x**4 - 2**4 - 3**4, syms=(y, x), permute=True) == \
+AssertionError
+
+ tests finished: 42 passed, 1 failed, 1 skipped, 2 expected to fail, 
+in 18.91 seconds 
+DO *NOT* COMMIT!

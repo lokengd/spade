@@ -1,0 +1,20 @@
+======================================================================
+FAIL: test_link_to_password_reset_in_helptext_via_to_field (auth_tests.test_forms.UserChangeFormTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 460, in inner
+    return func(*args, **kwargs)
+  File "/testbed/tests/auth_tests/test_forms.py", line 915, in test_link_to_password_reset_in_helptext_via_to_field
+    self.assertEqual(joined_url, pw_change_url)
+AssertionError: '/admin/auth/user/testclient/password/' != '/admin/auth/user/1/password/'
+- /admin/auth/user/testclient/password/
+?                  ^^^^^^^^^^
++ /admin/auth/user/1/password/
+?                  ^
+
+
+----------------------------------------------------------------------
+Ran 87 tests in 0.133s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

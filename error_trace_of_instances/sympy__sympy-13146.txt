@@ -1,0 +1,10 @@
+- **Observation** `sympy__sympy-21627.json:1` shows `test_Abs` in `sympy/functions/elementary/tests/test_complexes.py` blowing the recursion limit because `Abs.eval` rewrites the magnitude to `sqrt(expand_mul(arg*conj))`, which calls `Pow` and, via `_eval_power`, `abs(b)` that re-enters `Abs`. The stack keeps ping‑ponging between `Abs` → `sqrt`/`Pow` → `abs` → `Abs` until the Python recursion limit is reached, so the test never completes.
+
+- **Cause** The combination of `Abs.eval` (line 621 of `sympy/functions/elementary/complexes.py`) and `Pow._eval_power` (around line 418 in `sympy/core/power.py`) creates a cycle: rewriting to `sqrt(...)` forces `Pow` to evaluate and call `abs` to ensure positive roots, but `abs` is just SymPy’s `Abs`, so the same code path is visited again with the same unknown argument and the assumptions system keeps re-asking facts until recursion breaks.
+
+- **Fix ideas**
+  1. Prevent the cycle by returning an unevaluated square root from `Abs.eval`: call `Pow(expand_mul(arg*conj), S.Half, evaluate=False)` (or pass `evaluate=False` through `sqrt`) so `_eval_power` is not invoked and `abs` is never called inside this rewrite. That keeps the principal-branch semantics while avoiding the infinite `Abs` ↔ `Pow` loop.
+  2. Alternatively, tighten `_eval_power` so it only calls `abs` when the base is already known to be real/positive (e.g., `if self.base.is_extended_real` or `self.base.is_nonnegative is True`). For complicated bases whose sign is undetermined, just keep the `Pow` symbolic instead of forcing `abs` and triggering the recursion.
+  3. As a middle ground, `Abs.eval` could supply a flag so the `Pow` created there knows it came from an `Abs` rewrite and skips its own `abs` step (e.g., `Pow(..., evaluate=False)` plus a `_should_simplify_abs` guard).
+
+- **Next steps** Apply the chosen patch and rerun `python -m pytest sympy/functions/elementary/tests/test_complexes.py::test_Abs` to confirm the recursion stops; if that passes, run the whole module to ensure no other regressions before committing.

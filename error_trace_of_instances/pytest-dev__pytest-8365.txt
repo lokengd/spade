@@ -1,0 +1,154 @@
+=================================== FAILURES ===================================
+_____________ test_tmp_path_factory_handles_invalid_dir_characters _____________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7ffffeacc910>, _basetemp=None)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ffffeab7f70>
+
+    def test_tmp_path_factory_handles_invalid_dir_characters(
+        tmp_path_factory: TempPathFactory, monkeypatch: MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("getpass.getuser", lambda: "os/<:*?;>agnostic")
+        # _basetemp / _given_basetemp are cached / set in parallel runs, patch them
+        monkeypatch.setattr(tmp_path_factory, "_basetemp", None)
+        monkeypatch.setattr(tmp_path_factory, "_given_basetemp", None)
+>       p = tmp_path_factory.getbasetemp()
+
+testing/test_tmpdir.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/_pytest/tmpdir.py:118: in getbasetemp
+    rootdir.mkdir(exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-os/<:*?;>agnostic'), mode = 511
+parents = False, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           self._accessor.mkdir(self, mode)
+E           FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-os/<:*?;>agnostic'
+
+/opt/miniconda3/envs/testbed/lib/python3.9/pathlib.py:1323: FileNotFoundError
+=================================== FAILURES ===================================
+________________________________ test_abs_path _________________________________
+
+tmpdir_factory = TempdirFactory(_tmppath_factory=TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp2/m...acing.TagTracerSub object at 0x7ffffe4e2130>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp2/mytemp')))
+
+    def test_abs_path(tmpdir_factory):
+>       tmpdir_factory.mktemp('/mypath1', numbered=False)
+
+test_mktemp.py:2: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/testbed/src/_pytest/tmpdir.py:144: in mktemp
+    return py.path.local(self._tmppath_factory.mktemp(basename, numbered).resolve())
+/testbed/src/_pytest/tmpdir.py:93: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp2/mytemp'), _trace=<pluggy._tracing.TagTracerSub object at 0x7ffffe4e2130>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp2/mytemp'))
+basename = '/mypath1'
+
+    def _ensure_relative_to_basetemp(self, basename: str) -> str:
+        basename = os.path.normpath(basename)
+        if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+>           raise ValueError(f"{basename} is not a normalized and relative path")
+E           ValueError: /mypath1 is not a normalized and relative path
+
+/testbed/src/_pytest/tmpdir.py:75: ValueError
+=========================== short test summary info ============================
+FAILED test_mktemp.py::test_abs_path - ValueError: /mypath1 is not a normaliz...
+============================== 1 failed in 0.01s ===============================
+=================================== FAILURES ===================================
+________________________________ test_abs_path _________________________________
+
+tmpdir_factory = TempdirFactory(_tmppath_factory=TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp4/m...acing.TagTracerSub object at 0x7ffffe3e4460>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp4/mytemp')))
+
+    def test_abs_path(tmpdir_factory):
+>       tmpdir_factory.mktemp('../mypath3', numbered=False)
+
+test_mktemp.py:2: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp4/mytemp'), _trace=<pluggy._tracing.TagTracerSub object at 0x7ffffe3e4460>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp4/mytemp'))
+basename = '../mypath3'
+
+    def _ensure_relative_to_basetemp(self, basename: str) -> str:
+        basename = os.path.normpath(basename)
+        if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+>           raise ValueError(f"{basename} is not a normalized and relative path")
+E           ValueError: ../mypath3 is not a normalized and relative path
+
+/testbed/src/_pytest/tmpdir.py:75: ValueError
+=========================== short test summary info ============================
+FAILED test_mktemp.py::test_abs_path - ValueError: ../mypath3 is not a normal...
+============================== 1 failed in 0.01s ===============================
+=================================== FAILURES ===================================
+________________________________ test_abs_path _________________________________
+
+tmpdir_factory = TempdirFactory(_tmppath_factory=TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp5/m...acing.TagTracerSub object at 0x7ffffe306670>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp5/mytemp')))
+
+    def test_abs_path(tmpdir_factory):
+>       tmpdir_factory.mktemp('../../mypath4', numbered=False)
+
+test_mktemp.py:2: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp5/mytemp'), _trace=<pluggy._tracing.TagTracerSub object at 0x7ffffe306670>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp5/mytemp'))
+basename = '../../mypath4'
+
+    def _ensure_relative_to_basetemp(self, basename: str) -> str:
+        basename = os.path.normpath(basename)
+        if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+>           raise ValueError(f"{basename} is not a normalized and relative path")
+E           ValueError: ../../mypath4 is not a normalized and relative path
+
+/testbed/src/_pytest/tmpdir.py:75: ValueError
+=========================== short test summary info ============================
+FAILED test_mktemp.py::test_abs_path - ValueError: ../../mypath4 is not a nor...
+============================== 1 failed in 0.01s ===============================
+=================================== FAILURES ===================================
+________________________________ test_abs_path _________________________________
+
+tmpdir_factory = TempdirFactory(_tmppath_factory=TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp6/m...acing.TagTracerSub object at 0x7ffffe2dfb20>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp6/mytemp')))
+
+    def test_abs_path(tmpdir_factory):
+>       tmpdir_factory.mktemp('mypath5/..', numbered=False)
+
+test_mktemp.py:2: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp6/mytemp'), _trace=<pluggy._tracing.TagTracerSub object at 0x7ffffe2dfb20>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp6/mytemp'))
+basename = '.'
+
+    def _ensure_relative_to_basetemp(self, basename: str) -> str:
+        basename = os.path.normpath(basename)
+        if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+>           raise ValueError(f"{basename} is not a normalized and relative path")
+E           ValueError: . is not a normalized and relative path
+
+/testbed/src/_pytest/tmpdir.py:75: ValueError
+=========================== short test summary info ============================
+FAILED test_mktemp.py::test_abs_path - ValueError: . is not a normalized and ...
+============================== 1 failed in 0.01s ===============================
+=================================== FAILURES ===================================
+________________________________ test_abs_path _________________________________
+
+tmpdir_factory = TempdirFactory(_tmppath_factory=TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp8/m...acing.TagTracerSub object at 0x7ffffe264c40>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp8/mytemp')))
+
+    def test_abs_path(tmpdir_factory):
+>       tmpdir_factory.mktemp('mypath7/../mypath7/..', numbered=False)
+
+test_mktemp.py:2: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = TempPathFactory(_given_basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp8/mytemp'), _trace=<pluggy._tracing.TagTracerSub object at 0x7ffffe264c40>, _basetemp=PosixPath('/tmp/pytest-of-root/pytest-0/test_mktemp8/mytemp'))
+basename = '.'
+
+    def _ensure_relative_to_basetemp(self, basename: str) -> str:
+        basename = os.path.normpath(basename)
+        if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+>           raise ValueError(f"{basename} is not a normalized and relative path")
+E           ValueError: . is not a normalized and relative path
+
+/testbed/src/_pytest/tmpdir.py:75: ValueError
+=========================== short test summary info ============================
+FAILED test_mktemp.py::test_abs_path - ValueError: . is not a normalized and ...
+============================== 1 failed in 0.01s ===============================

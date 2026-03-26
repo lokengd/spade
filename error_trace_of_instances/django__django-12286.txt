@@ -1,0 +1,64 @@
+======================================================================
+FAIL: test_valid_variant_consistent_language_settings (check_framework.test_translation.TranslationCheckTests) [fr-CA]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/check_framework/test_translation.py", line 110, in test_valid_variant_consistent_language_settings
+    self.assertEqual(check_language_settings_consistent(None), [])
+AssertionError: Lists differ: [<Error: level=40, msg='You have provided [117 chars]04'>] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>
+
+- [<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>]
++ []
+
+======================================================================
+FAIL: test_valid_variant_consistent_language_settings (check_framework.test_translation.TranslationCheckTests) [es-419]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/check_framework/test_translation.py", line 110, in test_valid_variant_consistent_language_settings
+    self.assertEqual(check_language_settings_consistent(None), [])
+AssertionError: Lists differ: [<Error: level=40, msg='You have provided [117 chars]04'>] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>
+
+- [<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>]
++ []
+
+======================================================================
+FAIL: test_valid_variant_consistent_language_settings (check_framework.test_translation.TranslationCheckTests) [de-at]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/check_framework/test_translation.py", line 110, in test_valid_variant_consistent_language_settings
+    self.assertEqual(check_language_settings_consistent(None), [])
+AssertionError: Lists differ: [<Error: level=40, msg='You have provided [117 chars]04'>] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>
+
+- [<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>]
++ []
+
+======================================================================
+FAIL: test_valid_variant_consistent_language_settings (check_framework.test_translation.TranslationCheckTests) [ca-ES-valencia]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/check_framework/test_translation.py", line 110, in test_valid_variant_consistent_language_settings
+    self.assertEqual(check_language_settings_consistent(None), [])
+AssertionError: Lists differ: [<Error: level=40, msg='You have provided [117 chars]04'>] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>
+
+- [<Error: level=40, msg='You have provided a value for the LANGUAGE_CODE setting that is not in the LANGUAGES setting.', hint=None, obj=None, id='translation.E004'>]
++ []
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.006s
+
+FAILED (failures=4)

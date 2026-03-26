@@ -1,0 +1,8 @@
+________________________________________________________________________________
+_________________ sympy/geometry/tests/test_util.py:test_idiff _________________
+Traceback (most recent call last):
+  File "/testbed/sympy/geometry/tests/test_util.py", line 24, in test_idiff
+    assert idiff(f(x) * exp(f(x)) - x * exp(x), f(x), x) == (x + 1) * exp(x - f(x))/(f(x) + 1)
+  File "/testbed/sympy/geometry/util.py", line 574, in idiff
+    raise ValueError("expecting x-dependent symbol(s) but got: %s" % y)
+ValueError: expecting x-dependent symbol(s) but got: f(x)

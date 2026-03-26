@@ -1,0 +1,84 @@
+=================================== FAILURES ===================================
+____________ TestXFail.test_dynamic_xfail_set_during_runtest_failed ____________
+
+self = <test_skipping.TestXFail object at 0x7ffffda7e100>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_dynamic_xfail_set_during_runtest_failed0')>
+
+    def test_dynamic_xfail_set_during_runtest_failed(self, testdir: Testdir) -> None:
+        # Issue #7486.
+        p = testdir.makepyfile(
+            """
+            import pytest
+            def test_this(request):
+                request.node.add_marker(pytest.mark.xfail(reason="xfail"))
+                assert 0
+        """
+        )
+        result = testdir.runpytest(p)
+>       result.assert_outcomes(xfailed=1)
+E       AssertionError: assert {'errors': 0,...pped': 0, ...} == {'errors': 0,...pped': 0, ...}
+E         Omitting 4 identical items, use -vv to show
+E         Differing items:
+E         {'failed': 1} != {'failed': 0}
+E         {'xfailed': 0} != {'xfailed': 1}
+E         Use -v to get the full diff
+
+/testbed/testing/test_skipping.py:440: AssertionError
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-6.0.0rc2.dev34+gcd4beeff4, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_dynamic_xfail_set_during_runtest_failed0
+collected 1 item
+
+test_dynamic_xfail_set_during_runtest_failed.py F                        [100%]
+
+=================================== FAILURES ===================================
+__________________________________ test_this ___________________________________
+
+request = <FixtureRequest for <Function test_this>>
+
+    def test_this(request):
+        request.node.add_marker(pytest.mark.xfail(reason="xfail"))
+>       assert 0
+E       assert 0
+
+test_dynamic_xfail_set_during_runtest_failed.py:4: AssertionError
+=========================== short test summary info ============================
+FAILED test_dynamic_xfail_set_during_runtest_failed.py::test_this - assert 0
+============================== 1 failed in 0.00s ==============================
+________ TestXFail.test_dynamic_xfail_set_during_runtest_passed_strict _________
+
+self = <test_skipping.TestXFail object at 0x7ffffd9f3a00>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_dynamic_xfail_set_during_runtest_passed_strict0')>
+
+    def test_dynamic_xfail_set_during_runtest_passed_strict(
+        self, testdir: Testdir
+    ) -> None:
+        # Issue #7486.
+        p = testdir.makepyfile(
+            """
+            import pytest
+            def test_this(request):
+                request.node.add_marker(pytest.mark.xfail(reason="xfail", strict=True))
+        """
+        )
+        result = testdir.runpytest(p)
+>       result.assert_outcomes(failed=1)
+E       AssertionError: assert {'errors': 0,...pped': 0, ...} == {'errors': 0,...pped': 0, ...}
+E         Omitting 4 identical items, use -vv to show
+E         Differing items:
+E         {'failed': 0} != {'failed': 1}
+E         {'passed': 1} != {'passed': 0}
+E         Use -v to get the full diff
+
+/testbed/testing/test_skipping.py:454: AssertionError
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-6.0.0rc2.dev34+gcd4beeff4, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_dynamic_xfail_set_during_runtest_passed_strict0
+collected 1 item
+
+test_dynamic_xfail_set_during_runtest_passed_strict.py .                 [100%]
+
+============================== 1 passed in 0.00s ==============================
+==================================== PASSES ====================================

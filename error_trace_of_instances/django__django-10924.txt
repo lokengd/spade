@@ -1,0 +1,13 @@
+======================================================================
+ERROR: test_callable_path (model_fields.test_filepathfield.FilePathFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_fields/test_filepathfield.py", line 22, in test_callable_path
+    self.assertEqual(field.formfield().path, path)
+  File "/testbed/django/db/models/fields/__init__.py", line 1718, in formfield
+    **kwargs,
+  File "/testbed/django/db/models/fields/__init__.py", line 890, in formfield
+    return form_class(**defaults)
+  File "/testbed/django/forms/fields.py", line 1109, in __init__
+    for f in os.scandir(self.path):
+TypeError: scandir: path should be string, bytes, os.PathLike or None, not function

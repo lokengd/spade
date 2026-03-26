@@ -1,0 +1,14 @@
+________________________________________________________________________________
+________________ sympy/codegen/tests/test_cnodes.py:test_sizeof ________________
+Traceback (most recent call last):
+  File "/testbed/sympy/codegen/tests/test_cnodes.py", line 69, in test_sizeof
+    assert sz.atoms() == {String('unsigned int'), String('sizeof')}
+AssertionError
+________________________________________________________________________________
+__________________ sympy/core/tests/test_basic.py:test_atoms ___________________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_basic.py", line 140, in test_atoms
+    assert b21.atoms() == set([Basic()])
+AssertionError
+
+============= tests finished: 30 passed, 2 failed, in 0.15 seconds =============

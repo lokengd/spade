@@ -1,0 +1,12 @@
+======================================================================
+FAIL: test_submit_row_save_as_new_add_permission_required (admin_views.test_templatetags.AdminTemplateTagsTest.test_submit_row_save_as_new_add_permission_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/admin_views/test_templatetags.py", line 52, in test_submit_row_save_as_new_add_permission_required
+    self.assertIs(template_context["show_save_as_new"], False)
+AssertionError: True is not False
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.298s
+
+FAILED (failures=1)

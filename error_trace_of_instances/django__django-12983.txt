@@ -1,0 +1,13 @@
+======================================================================
+FAIL: test_slugify (utils_tests.test_text.TestUtilsText)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/utils_tests/test_text.py", line 209, in test_slugify
+    self.assertEqual(text.slugify(value, allow_unicode=is_unicode), output)
+AssertionError: '__strip__underscore-value___' != 'strip__underscore-value'
+- __strip__underscore-value___
+? --                       ---
++ strip__underscore-value
+
+
+----------------------------------------------------------------------

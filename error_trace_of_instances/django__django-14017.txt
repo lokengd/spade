@@ -1,0 +1,29 @@
+======================================================================
+ERROR: test_boolean_expression_combined (expressions.tests.BasicExpressionsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/expressions/tests.py", line 819, in test_boolean_expression_combined
+    Employee.objects.filter(Q(salary__gte=30) & Exists(is_ceo)),
+  File "/testbed/django/db/models/query_utils.py", line 65, in __and__
+    return self._combine(other, self.AND)
+  File "/testbed/django/db/models/query_utils.py", line 44, in _combine
+    raise TypeError(other)
+TypeError: <django.db.models.expressions.Exists object at 0x7ffffcce94f0>
+
+======================================================================
+ERROR: test_boolean_expression_combined_with_empty_Q (expressions.tests.BasicExpressionsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/expressions/tests.py", line 833, in test_boolean_expression_combined_with_empty_Q
+    Q() & Exists(is_poc),
+  File "/testbed/django/db/models/query_utils.py", line 65, in __and__
+    return self._combine(other, self.AND)
+  File "/testbed/django/db/models/query_utils.py", line 44, in _combine
+    raise TypeError(other)
+TypeError: <django.db.models.expressions.Exists object at 0x7ffffcd00550>
+
+----------------------------------------------------------------------
+Ran 152 tests in 0.141s
+
+FAILED (errors=2, skipped=2)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

@@ -1,0 +1,6 @@
+________________________________________________________________________________
+__________________ sympy/printing/tests/test_str.py:test_Mul ___________________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_str.py", line 256, in test_Mul
+    assert str(Mul(x, Pow(1/y, -1, evaluate=False), evaluate=False)) == 'x/(1/y)'
+AssertionError

@@ -1,0 +1,57 @@
+=================================== FAILURES ===================================
+_____________________ test_format_cursor_data_BoundaryNorm _____________________
+
+    def test_format_cursor_data_BoundaryNorm():
+        """Test if cursor data is correct when using BoundaryNorm."""
+        X = np.empty((3, 3))
+        X[0, 0] = 0.9
+        X[0, 1] = 0.99
+        X[0, 2] = 0.999
+        X[1, 0] = -1
+        X[1, 1] = 0
+        X[1, 2] = 1
+        X[2, 0] = 0.09
+        X[2, 1] = 0.009
+        X[2, 2] = 0.0009
+    
+        # map range -1..1 to 0..256 in 0.1 steps
+        fig, ax = plt.subplots()
+        fig.suptitle("-1..1 to 0..256 in 0.1")
+        norm = mcolors.BoundaryNorm(np.linspace(-1, 1, 20), 256)
+        img = ax.imshow(X, cmap='RdBu_r', norm=norm)
+    
+        labels_list = [
+            "[0.9]",
+            "[1.]",
+            "[1.]",
+            "[-1.0]",
+            "[0.0]",
+            "[1.0]",
+            "[0.09]",
+            "[0.009]",
+            "[0.0009]",
+        ]
+        for v, label in zip(X.flat, labels_list):
+            # label = "[{:-#.{}g}]".format(v, cbook._g_sig_digits(v, 0.1))
+>           assert img.format_cursor_data(v) == label
+
+lib/matplotlib/tests/test_artist.py:411: 
+_ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/artist.py:1307: in format_cursor_data
+    neighbors = self.norm.inverse(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = <matplotlib.colors.BoundaryNorm object at 0x7fffe9420a50>
+value = array([255.        , 255.00390625])
+
+    def inverse(self, value):
+        """
+        Raises
+        ------
+        ValueError
+            BoundaryNorm is not invertible, so calling this method will always
+            raise an error
+        """
+>       raise ValueError("BoundaryNorm is not invertible")
+E       ValueError: BoundaryNorm is not invertible
+
+lib/matplotlib/colors.py:1912: ValueError

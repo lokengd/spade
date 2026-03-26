@@ -1,0 +1,8 @@
+astropy/wcs/tests/test_wcs.py::test_zero_size_input FAILED
+
+=============================== warnings summary ===============================
+None
+  Module already imported so cannot be rewritten: astropy.tests.plugins.display
+
+-- Docs: http://doc.pytest.org/en/latest/warnings.html
+=============== 1 failed, 56 passed, 1 warnings in 0.67 seconds ================

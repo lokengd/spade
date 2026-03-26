@@ -1,0 +1,114 @@
+======================================================================
+ERROR: test_aggregate_over_full_expression_annotation (annotations.tests.NonAggregateAnnotationTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 420, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: near "AS": syntax error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/tests/annotations/tests.py", line 228, in test_aggregate_over_full_expression_annotation
+    qs = Book.objects.annotate(
+  File "/testbed/django/db/models/query.py", line 405, in aggregate
+    return query.get_aggregation(self.db, kwargs)
+  File "/testbed/django/db/models/sql/query.py", line 504, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "/testbed/django/db/models/sql/compiler.py", line 1211, in execute_sql
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 420, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: near "AS": syntax error
+
+======================================================================
+ERROR: test_full_expression_annotation (annotations.tests.NonAggregateAnnotationTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 420, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: near "AS": syntax error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/tests/annotations/tests.py", line 217, in test_full_expression_annotation
+    self.assertEqual(len(books), Book.objects.count())
+  File "/testbed/django/db/models/query.py", line 262, in __len__
+    self._fetch_all()
+  File "/testbed/django/db/models/query.py", line 1360, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/testbed/django/db/models/query.py", line 51, in __iter__
+    results = compiler.execute_sql(chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size)
+  File "/testbed/django/db/models/sql/compiler.py", line 1211, in execute_sql
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 420, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: near "AS": syntax error
+
+======================================================================
+ERROR: test_full_expression_annotation_with_aggregation (annotations.tests.NonAggregateAnnotationTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 420, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: near "AS": syntax error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/tests/annotations/tests.py", line 225, in test_full_expression_annotation_with_aggregation
+    self.assertEqual([book.rating_count for book in qs], [1])
+  File "/testbed/django/db/models/query.py", line 280, in __iter__
+    self._fetch_all()
+  File "/testbed/django/db/models/query.py", line 1360, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/testbed/django/db/models/query.py", line 51, in __iter__
+    results = compiler.execute_sql(chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size)
+  File "/testbed/django/db/models/sql/compiler.py", line 1211, in execute_sql
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 420, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: near "AS": syntax error
+
+----------------------------------------------------------------------
+Ran 77 tests in 0.072s
+
+FAILED (errors=3, skipped=3)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

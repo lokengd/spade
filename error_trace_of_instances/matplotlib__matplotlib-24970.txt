@@ -1,0 +1,87 @@
+=================================== FAILURES ===================================
+___________________________ test_index_dtype[uint8] ____________________________
+
+dtype = <class 'numpy.uint8'>
+
+    @pytest.mark.parametrize("dtype", [np.uint8, int, np.float16, float])
+    def test_index_dtype(dtype):
+        # We use subtraction in the indexing, so need to verify that uint8 works
+        cm = mpl.colormaps["viridis"]
+>       assert_array_equal(cm(dtype(0)), cm(0))
+
+lib/matplotlib/tests/test_colors.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <matplotlib.colors.ListedColormap object at 0x7ffff01d6f90>, X = 0
+alpha = None, bytes = False
+
+    def __call__(self, X, alpha=None, bytes=False):
+        """
+        Parameters
+        ----------
+        X : float or int, `~numpy.ndarray` or scalar
+            The data value(s) to convert to RGBA.
+            For floats, *X* should be in the interval ``[0.0, 1.0]`` to
+            return the RGBA values ``X*100`` percent along the Colormap line.
+            For integers, *X* should be in the interval ``[0, Colormap.N)`` to
+            return RGBA values *indexed* from the Colormap with index ``X``.
+        alpha : float or array-like or None
+            Alpha must be a scalar between 0 and 1, a sequence of such
+            floats with shape matching X, or None.
+        bytes : bool
+            If False (default), the returned RGBA values will be floats in the
+            interval ``[0, 1]`` otherwise they will be uint8s in the interval
+            ``[0, 255]``.
+    
+        Returns
+        -------
+        Tuple of RGBA values if X is scalar, otherwise an array of
+        RGBA values with a shape of ``X.shape + (4, )``.
+        """
+        if not self._isinit:
+            self._init()
+    
+        # Take the bad mask from a masked array, or in all other cases defer
+        # np.isnan() to after we have converted to an array.
+        mask_bad = X.mask if np.ma.is_masked(X) else None
+        xa = np.array(X, copy=True)
+        if mask_bad is None:
+            mask_bad = np.isnan(xa)
+        if not xa.dtype.isnative:
+            xa = xa.byteswap().newbyteorder()  # Native byteorder is faster.
+        if xa.dtype.kind == "f":
+            with np.errstate(invalid="ignore"):
+                xa *= self.N
+                # Negative values are out of range, but astype(int) would
+                # truncate them towards zero.
+                xa[xa < 0] = -1
+                # xa == 1 (== N after multiplication) is not out of range.
+                xa[xa == self.N] = self.N - 1
+                # Avoid converting large positive values to negative integers.
+                np.clip(xa, -1, self.N, out=xa)
+                xa = xa.astype(int)
+        # Set the over-range indices before the under-range;
+        # otherwise the under-range values get converted to over-range.
+>       xa[xa > self.N - 1] = self._i_over
+E       DeprecationWarning: NumPy will stop allowing conversion of out-of-bound Python integers to integer arrays.  The conversion of 257 to uint8 will fail in the future.
+E       For the old behavior, usually:
+E           np.array(value).astype(dtype)
+E       will give the desired result (the cast overflows).
+
+lib/matplotlib/colors.py:730: DeprecationWarning
+______________________ test_double_register_builtin_cmap _______________________
+
+    def test_double_register_builtin_cmap():
+        name = "viridis"
+        match = f"Re-registering the builtin cmap {name!r}."
+        with pytest.raises(ValueError, match=match):
+            matplotlib.colormaps.register(
+                mpl.colormaps[name], name=name, force=True
+            )
+        with pytest.raises(ValueError, match='A colormap named "viridis"'):
+            with pytest.warns(mpl.MatplotlibDeprecationWarning):
+                cm.register_cmap(name, mpl.colormaps[name])
+>       with pytest.warns(UserWarning):
+E       matplotlib._api.deprecation.MatplotlibDeprecationWarning: The register_cmap function was deprecated in Matplotlib 3.7 and will be removed two minor releases later. Use ``matplotlib.colormaps.register(name)`` instead.
+
+lib/matplotlib/tests/test_colors.py:149: MatplotlibDeprecationWarning

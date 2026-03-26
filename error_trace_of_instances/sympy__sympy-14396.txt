@@ -1,0 +1,13 @@
+test_Method_postprocess ok                                                [FAIL]
+
+
+________________________________________________________________________________
+_________ sympy/polys/tests/test_polyoptions.py:test_Domain_preprocess _________
+  File "/testbed/sympy/polys/tests/test_polyoptions.py", line 179, in test_Domain_preprocess
+    assert Domain.preprocess('R[x]') == RR[x]
+  File "/testbed/sympy/polys/polyoptions.py", line 483, in preprocess
+    raise OptionError('expected a valid domain specification, got %s' % domain)
+sympy.polys.polyerrors.OptionError: expected a valid domain specification, got R[x]
+
+=========== tests finished: 45 passed, 1 exceptions, in 0.03 seconds ===========
+DO *NOT* COMMIT!

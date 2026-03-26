@@ -1,0 +1,24 @@
+======================================================================
+FAIL: test_autoescape_off (template_tests.filter_tests.test_join.FunctionTests.test_autoescape_off)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/template_tests/filter_tests/test_join.py", line 86, in test_autoescape_off
+    self.assertEqual(
+AssertionError: '<a>&lt;br&gt;<img>&lt;br&gt;</a>' != '<a><br><img><br></a>'
+
+======================================================================
+FAIL: test_join_autoescape_off (template_tests.filter_tests.test_join.JoinTests.test_join_autoescape_off)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 443, in inner
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/testbed/tests/template_tests/utils.py", line 58, in inner
+    func(self)
+  File "/testbed/tests/template_tests/filter_tests/test_join.py", line 72, in test_join_autoescape_off
+    self.assertEqual(output, expected_result)
+AssertionError: '<p>Hello World!</p>&lt;br/&gt;beta & me&lt;br/&gt;<script>Hi!</script>' != '<p>Hello World!</p><br/>beta & me<br/><script>Hi!</script>'
+----------------------------------------------------------------------
+Ran 14 tests in 0.007s
+
+FAILED (failures=2)

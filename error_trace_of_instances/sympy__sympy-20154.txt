@@ -1,0 +1,12 @@
+________________________________________________________________________________
+___________ sympy/utilities/tests/test_iterables.py:test_partitions ____________
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_iterables.py", line 484, in test_partitions
+    assert [p for p in partitions(6, k=2)] == [
+AssertionError
+________________________________________________________________________________
+______________ sympy/utilities/tests/test_iterables.py:test_uniq _______________
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_iterables.py", line 700, in test_uniq
+    assert list(uniq(p for p in partitions(4))) == \
+AssertionError

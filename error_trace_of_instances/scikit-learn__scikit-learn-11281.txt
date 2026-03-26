@@ -1,0 +1,42 @@
+=================================== FAILURES ===================================
+______________________ test_bayesian_mixture_fit_predict _______________________
+
+    def test_bayesian_mixture_fit_predict():
+        rng = np.random.RandomState(0)
+        rand_data = RandomData(rng, scale=7)
+        n_components = 2 * rand_data.n_components
+    
+        for covar_type in COVARIANCE_TYPE:
+            bgmm1 = BayesianGaussianMixture(n_components=n_components,
+                                            max_iter=100, random_state=rng,
+                                            tol=1e-3, reg_covar=0)
+            bgmm1.covariance_type = covar_type
+            bgmm2 = copy.deepcopy(bgmm1)
+            X = rand_data.X[covar_type]
+    
+            Y_pred1 = bgmm1.fit(X).predict(X)
+>           Y_pred2 = bgmm2.fit_predict(X)
+E           AttributeError: 'BayesianGaussianMixture' object has no attribute 'fit_predict'
+
+sklearn/mixture/tests/test_bayesian_mixture.py:442: AttributeError
+______________________ test_gaussian_mixture_fit_predict _______________________
+
+    def test_gaussian_mixture_fit_predict():
+        rng = np.random.RandomState(0)
+        rand_data = RandomData(rng)
+        for covar_type in COVARIANCE_TYPE:
+            X = rand_data.X[covar_type]
+            Y = rand_data.Y
+            g = GaussianMixture(n_components=rand_data.n_components,
+                                random_state=rng, weights_init=rand_data.weights,
+                                means_init=rand_data.means,
+                                precisions_init=rand_data.precisions[covar_type],
+                                covariance_type=covar_type)
+    
+            # check if fit_predict(X) is equivalent to fit(X).predict(X)
+            f = copy.deepcopy(g)
+            Y_pred1 = f.fit(X).predict(X)
+>           Y_pred2 = g.fit_predict(X)
+E           AttributeError: 'GaussianMixture' object has no attribute 'fit_predict'
+
+sklearn/mixture/tests/test_gaussian_mixture.py:588: AttributeError

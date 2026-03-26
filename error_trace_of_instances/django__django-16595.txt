@@ -1,0 +1,35 @@
+======================================================================
+FAIL: test_alter_alter_field (migrations.test_optimizer.OptimizerTests.test_alter_alter_field)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_optimizer.py", line 264, in test_alter_alter_field
+    self._test_alter_alter(
+  File "/testbed/tests/migrations/test_optimizer.py", line 229, in _test_alter_alter
+    self.assertOptimizesTo(
+  File "/testbed/tests/migrations/test_optimizer.py", line 31, in assertOptimizesTo
+    self.assertEqual(expected, result)
+AssertionError: Lists differ: ["mig[87 chars]ield(help_text='help'),\n)"] != ["mig[87 chars]ield(),\n)", "migrations.AlterField(\n    mode[81 chars]\n)"]
+
+First differing element 0:
+"migr[50 chars]e='name',\n    field=models.IntegerField(help_text='help'),\n)"
+"migr[50 chars]e='name',\n    field=models.IntegerField(),\n)"
+
+Second list contains 1 additional elements.
+First extra element 1:
+"migrations.AlterField(\n    model_name='Foo',\n    name='name',\n    field=models.IntegerField(help_text='help'),\n)"
+
+  ['migrations.AlterField(\n'
++  "    model_name='Foo',\n"
++  "    name='name',\n"
++  '    field=models.IntegerField(),\n'
++  ')',
++  'migrations.AlterField(\n'
+   "    model_name='Foo',\n"
+   "    name='name',\n"
+   "    field=models.IntegerField(help_text='help'),\n"
+   ')']
+
+----------------------------------------------------------------------
+Ran 38 tests in 0.017s
+
+FAILED (failures=1)

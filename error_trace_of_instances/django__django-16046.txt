@@ -1,0 +1,14 @@
+======================================================================
+ERROR: test_empty (utils_tests.test_numberformat.TestNumberFormat)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/utils_tests/test_numberformat.py", line 177, in test_empty
+    self.assertEqual(nformat("", "."), "")
+  File "/testbed/django/utils/numberformat.py", line 71, in format
+    if str_number[0] == "-":
+IndexError: string index out of range
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.009s
+
+FAILED (errors=1)

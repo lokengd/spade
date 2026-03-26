@@ -1,0 +1,23 @@
+======================================================================
+FAIL: test_isnull_key (model_fields.test_jsonfield.TestQuerying)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_fields/test_jsonfield.py", line 591, in test_isnull_key
+    self.objs[:4] + self.objs[5:],
+AssertionError: Sequences differ: <QuerySet [<NullableJSONModel: NullableJS[632 chars]3)>]> != [<NullableJSONModel: NullableJSONModel ob[570 chars]13)>]
+
+First differing element 4:
+<NullableJSONModel: NullableJSONModel object (5)>
+<NullableJSONModel: NullableJSONModel object (6)>
+
+First sequence contains 1 additional elements.
+First extra element 12:
+<NullableJSONModel: NullableJSONModel object (13)>
+
+Diff is 1333 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 85 tests in 0.084s
+
+FAILED (failures=1, skipped=8)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

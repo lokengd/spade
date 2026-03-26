@@ -1,0 +1,107 @@
+=================================== FAILURES ===================================
+________________ TestImportPath.test_remembers_previous_imports ________________
+
+self = <test_pathlib.TestImportPath object at 0x7ffffe4c8d60>
+simple_module = PosixPath('/tmp/pytest-of-root/pytest-0/test_remembers_previous_import0/_src/tests/mymod_test_remembers_previous_imports.py')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_remembers_previous_import0')
+
+    def test_remembers_previous_imports(
+        self, simple_module: Path, tmp_path: Path
+    ) -> None:
+        """`importlib` mode called remembers previous module (#10341, #10811)."""
+        module1 = import_path(simple_module, mode="importlib", root=tmp_path)
+        module2 = import_path(simple_module, mode="importlib", root=tmp_path)
+>       assert module1 is module2
+E       AssertionError: assert <module '_src.tests.mymod_test_remembers_previous_imports' from '/tmp/pytest-of-root/pytest-0/test_remembers_previous_import0/_src/tests/mymod_test_remembers_previous_imports.py'> is <module '_src.tests.mymod_test_remembers_previous_imports' from '/tmp/pytest-of-root/pytest-0/test_remembers_previous_import0/_src/tests/mymod_test_remembers_previous_imports.py'>
+
+testing/test_pathlib.py:315: AssertionError
+________________ test_doctest_and_normal_imports_with_importlib ________________
+
+pytester = <Pytester PosixPath('/tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0')>
+
+    def test_doctest_and_normal_imports_with_importlib(pytester: Pytester) -> None:
+        """
+        Regression test for #10811: previously import_path with ImportMode.importlib would
+        not return a module if already in sys.modules, resulting in modules being imported
+        multiple times, which causes problems with modules that have import side effects.
+        """
+        # Uses the exact reproducer form #10811, given it is very minimal
+        # and illustrates the problem well.
+        pytester.makepyfile(
+            **{
+                "pmxbot/commands.py": "from . import logging",
+                "pmxbot/logging.py": "",
+                "tests/__init__.py": "",
+                "tests/test_commands.py": """
+                    import importlib
+                    from pmxbot import logging
+    
+                    class TestCommands:
+                        def test_boo(self):
+                            assert importlib.import_module('pmxbot.logging') is logging
+                    """,
+            }
+        )
+        pytester.makeini(
+            """
+            [pytest]
+            addopts=
+                --doctest-modules
+                --import-mode importlib
+            """
+        )
+        result = pytester.runpytest_subprocess()
+>       result.stdout.fnmatch_lines("*1 passed*")
+E       Failed: nomatch: '*1 passed*'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-8.0.0.dev46+g2f7415cfb, pluggy-1.3.0'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0'
+E           and: 'configfile: tox.ini'
+E           and: 'collected 1 item'
+E           and: ''
+E           and: 'tests/test_commands.py F                                                 [100%]'
+E           and: ''
+E           and: '=================================== FAILURES ==================================='
+E           and: '____________________________ TestCommands.test_boo _____________________________'
+E           and: ''
+E           and: 'self = <tests.test_commands.TestCommands object at 0x7ffffe7335e0>'
+E           and: ''
+E           and: '    def test_boo(self):'
+E           and: ">       assert importlib.import_module('pmxbot.logging') is logging"
+E           and: "E       AssertionError: assert <module 'pmxbot.logging' from '/tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0/pmxbot/logging.py'> is logging"
+E           and: "E        +  where <module 'pmxbot.logging' from '/tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0/pmxbot/logging.py'> = <function import_module at 0x7fffff2cc3a0>('pmxbot.logging')"
+E           and: 'E        +    where <function import_module at 0x7fffff2cc3a0> = importlib.import_module'
+E           and: ''
+E           and: 'tests/test_commands.py:6: AssertionError'
+E           and: '=========================== short test summary info ============================'
+E           and: 'FAILED tests/test_commands.py::TestCommands::test_boo - AssertionError: asser...'
+E           and: '============================== 1 failed in 0.02s ==============================='
+E       remains unmatched: '*1 passed*'
+
+/testbed/testing/acceptance_test.py:1352: Failed
+----------------------------- Captured stdout call -----------------------------
+running: /opt/miniconda3/envs/testbed/bin/python -mpytest --basetemp=/tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0/runpytest-0
+     in: /tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-8.0.0.dev46+g2f7415cfb, pluggy-1.3.0
+rootdir: /tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0
+configfile: tox.ini
+collected 1 item
+
+tests/test_commands.py F                                                 [100%]
+
+=================================== FAILURES ===================================
+____________________________ TestCommands.test_boo _____________________________
+
+self = <tests.test_commands.TestCommands object at 0x7ffffe7335e0>
+
+    def test_boo(self):
+>       assert importlib.import_module('pmxbot.logging') is logging
+E       AssertionError: assert <module 'pmxbot.logging' from '/tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0/pmxbot/logging.py'> is logging
+E        +  where <module 'pmxbot.logging' from '/tmp/pytest-of-root/pytest-0/test_doctest_and_normal_imports_with_importlib0/pmxbot/logging.py'> = <function import_module at 0x7fffff2cc3a0>('pmxbot.logging')
+E        +    where <function import_module at 0x7fffff2cc3a0> = importlib.import_module
+
+tests/test_commands.py:6: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_commands.py::TestCommands::test_boo - AssertionError: asser...
+============================== 1 failed in 0.02s ===============================

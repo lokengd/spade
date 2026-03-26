@@ -1,0 +1,255 @@
+=================================== FAILURES ===================================
+_____________________ TestShowFixtures.test_show_fixtures ______________________
+
+self = <fixtures.TestShowFixtures object at 0x7ffffcf519a0>
+testdir = <Testdir local('/tmp/pytest-of-root/pytest-0/test_show_fixtures0')>
+
+    def test_show_fixtures(self, testdir):
+        result = testdir.runpytest("--fixtures")
+>       result.stdout.fnmatch_lines(
+            [
+                "tmpdir_factory [[]session scope[]]",
+                "*for the test session*",
+                "tmpdir",
+                "*temporary directory*",
+            ]
+        )
+E       Failed: nomatch: 'tmpdir_factory [[]session scope[]]'
+E           and: '============================= test session starts =============================='
+E           and: 'platform linux -- Python 3.9.20, pytest-4.4.2.dev174+g4a2fdce62, py-1.11.0, pluggy-0.13.1'
+E           and: 'rootdir: /tmp/pytest-of-root/pytest-0/test_show_fixtures0'
+E           and: 'collected 0 items'
+E           and: 'cache'
+E           and: '    Return a cache object that can persist state between testing sessions.'
+E           and: '    '
+E           and: '    cache.get(key, default)'
+E           and: '    cache.set(key, value)'
+E           and: '    '
+E           and: '    Keys must be a ``/`` separated value, where the first part is usually the'
+E           and: '    name of your plugin or application to avoid clashes with other cache users.'
+E           and: '    '
+E           and: '    Values can be any object handled by the json stdlib module.'
+E           and: 'capsys'
+E           and: '    Enable text capturing of writes to ``sys.stdout`` and ``sys.stderr``.'
+E           and: '    '
+E           and: '    The captured output is made available via ``capsys.readouterr()`` method'
+E           and: '    calls, which return a ``(out, err)`` namedtuple.'
+E           and: '    ``out`` and ``err`` will be ``text`` objects.'
+E           and: 'capsysbinary'
+E           and: '    Enable bytes capturing of writes to ``sys.stdout`` and ``sys.stderr``.'
+E           and: '    '
+E           and: '    The captured output is made available via ``capsysbinary.readouterr()``'
+E           and: '    method calls, which return a ``(out, err)`` namedtuple.'
+E           and: '    ``out`` and ``err`` will be ``bytes`` objects.'
+E           and: 'capfd'
+E           and: '    Enable text capturing of writes to file descriptors ``1`` and ``2``.'
+E           and: '    '
+E           and: '    The captured output is made available via ``capfd.readouterr()`` method'
+E           and: '    calls, which return a ``(out, err)`` namedtuple.'
+E           and: '    ``out`` and ``err`` will be ``text`` objects.'
+E           and: 'capfdbinary'
+E           and: '    Enable bytes capturing of writes to file descriptors ``1`` and ``2``.'
+E           and: '    '
+E           and: '    The captured output is made available via ``capfd.readouterr()`` method'
+E           and: '    calls, which return a ``(out, err)`` namedtuple.'
+E           and: '    ``out`` and ``err`` will be ``byte`` objects.'
+E           and: 'doctest_namespace'
+E           and: '    Fixture that returns a :py:class:`dict` that will be injected into the namespace of doctests.'
+E           and: 'pytestconfig'
+E           and: '    Session-scoped fixture that returns the :class:`_pytest.config.Config` object.'
+E           and: '    '
+E           and: '    Example::'
+E           and: '    '
+E           and: '        def test_foo(pytestconfig):'
+E           and: '            if pytestconfig.getoption("verbose") > 0:'
+E           and: '                ...'
+E           and: 'record_property'
+E           and: '    Add an extra properties the calling test.'
+E           and: '    User properties become part of the test report and are available to the'
+E           and: '    configured reporters, like JUnit XML.'
+E           and: '    The fixture is callable with ``(name, value)``, with value being automatically'
+E           and: '    xml-encoded.'
+E           and: '    '
+E           and: '    Example::'
+E           and: '    '
+E           and: '        def test_function(record_property):'
+E           and: '            record_property("example_key", 1)'
+E           and: 'record_xml_attribute'
+E           and: '    Add extra xml attributes to the tag for the calling test.'
+E           and: '    The fixture is callable with ``(name, value)``, with value being'
+E           and: '    automatically xml-encoded'
+E           and: 'caplog'
+E           and: '    Access and control log capturing.'
+E           and: '    '
+E           and: '    Captured logs are available through the following properties/methods::'
+E           and: '    '
+E           and: '    * caplog.text            -> string containing formatted log output'
+E           and: '    * caplog.records         -> list of logging.LogRecord instances'
+E           and: '    * caplog.record_tuples   -> list of (logger_name, level, message) tuples'
+E           and: '    * caplog.clear()         -> clear captured records and formatted log output string'
+E           and: 'monkeypatch'
+E           and: '    The returned ``monkeypatch`` fixture provides these'
+E           and: '    helper methods to modify objects, dictionaries or os.environ::'
+E           and: '    '
+E           and: '        monkeypatch.setattr(obj, name, value, raising=True)'
+E           and: '        monkeypatch.delattr(obj, name, raising=True)'
+E           and: '        monkeypatch.setitem(mapping, name, value)'
+E           and: '        monkeypatch.delitem(obj, name, raising=True)'
+E           and: '        monkeypatch.setenv(name, value, prepend=False)'
+E           and: '        monkeypatch.delenv(name, raising=True)'
+E           and: '        monkeypatch.syspath_prepend(path)'
+E           and: '        monkeypatch.chdir(path)'
+E           and: '    '
+E           and: '    All modifications will be undone after the requesting'
+E           and: '    test function or fixture has finished. The ``raising``'
+E           and: '    parameter determines if a KeyError or AttributeError'
+E           and: '    will be raised if the set/deletion operation has no target.'
+E           and: 'recwarn'
+E           and: '    Return a :class:`WarningsRecorder` instance that records all warnings emitted by test functions.'
+E           and: '    '
+E           and: '    See http://docs.python.org/library/warnings.html for information'
+E           and: '    on warning categories.'
+E           and: 'tmpdir_factory'
+E           and: '    Return a :class:`_pytest.tmpdir.TempdirFactory` instance for the test session.'
+E           and: 'tmp_path_factory'
+E           and: '    Return a :class:`_pytest.tmpdir.TempPathFactory` instance for the test session.'
+E           and: 'tmpdir'
+E           and: '    Return a temporary directory path object'
+E           and: '    which is unique to each test function invocation,'
+E           and: '    created as a sub directory of the base temporary'
+E           and: '    directory.  The returned object is a `py.path.local`_'
+E           and: '    path object.'
+E           and: '    '
+E           and: '    .. _`py.path.local`: https://py.readthedocs.io/en/latest/path.html'
+E           and: 'tmp_path'
+E           and: '    Return a temporary directory path object'
+E           and: '    which is unique to each test function invocation,'
+E           and: '    created as a sub directory of the base temporary'
+E           and: '    directory.  The returned object is a :class:`pathlib.Path`'
+E           and: '    object.'
+E           and: '    '
+E           and: '    .. note::'
+E           and: '    '
+E           and: '        in python < 3.6 this is a pathlib2.Path'
+E           and: ''
+E           and: '========================= no tests ran in 0.00 seconds ========================='
+E           and: ''
+E       remains unmatched: 'tmpdir_factory [[]session scope[]]'
+
+/testbed/testing/python/fixtures.py:3040: Failed
+----------------------------- Captured stdout call -----------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-4.4.2.dev174+g4a2fdce62, py-1.11.0, pluggy-0.13.1
+rootdir: /tmp/pytest-of-root/pytest-0/test_show_fixtures0
+collected 0 items
+cache
+    Return a cache object that can persist state between testing sessions.
+    
+    cache.get(key, default)
+    cache.set(key, value)
+    
+    Keys must be a ``/`` separated value, where the first part is usually the
+    name of your plugin or application to avoid clashes with other cache users.
+    
+    Values can be any object handled by the json stdlib module.
+capsys
+    Enable text capturing of writes to ``sys.stdout`` and ``sys.stderr``.
+    
+    The captured output is made available via ``capsys.readouterr()`` method
+    calls, which return a ``(out, err)`` namedtuple.
+    ``out`` and ``err`` will be ``text`` objects.
+capsysbinary
+    Enable bytes capturing of writes to ``sys.stdout`` and ``sys.stderr``.
+    
+    The captured output is made available via ``capsysbinary.readouterr()`` method calls, which return a ``(out, err)`` namedtuple.
+    ``out`` and ``err`` will be ``bytes`` objects.
+capfd
+    Enable text capturing of writes to file descriptors ``1`` and ``2``.
+    
+    The captured output is made available via ``capfd.readouterr()`` method calls, which return a ``(out, err)`` namedtuple.
+    ``out`` and ``err`` will be ``text`` objects.
+capfdbinary
+    Enable bytes capturing of writes to file descriptors ``1`` and ``2``.
+    
+    The captured output is made available via ``capfd.readouterr()`` method calls, which return a ``(out, err)`` namedtuple.
+    ``out`` and ``err`` will be ``byte`` objects.
+doctest_namespace
+    Fixture that returns a :py:class:`dict` that will be injected into the namespace of doctests.
+pytestconfig
+    Session-scoped fixture that returns the :class:`_pytest.config.Config` object.
+    
+    Example::
+    
+        def test_foo(pytestconfig):
+            if pytestconfig.getoption("verbose") > 0:
+                ...
+record_property
+    Add an extra properties the calling test.
+    User properties become part of the test report and are available to the
+    configured reporters, like JUnit XML.
+    The fixture is callable with ``(name, value)``, with value being automatically
+    xml-encoded.
+    
+    Example::
+    
+        def test_function(record_property):
+            record_property("example_key", 1)
+record_xml_attribute
+    Add extra xml attributes to the tag for the calling test.
+    The fixture is callable with ``(name, value)``, with value being
+    automatically xml-encoded
+caplog
+    Access and control log capturing.
+    
+    Captured logs are available through the following properties/methods::
+    
+    * caplog.text            -> string containing formatted log output
+    * caplog.records         -> list of logging.LogRecord instances
+    * caplog.record_tuples   -> list of (logger_name, level, message) tuples
+    * caplog.clear()         -> clear captured records and formatted log output string
+monkeypatch
+    The returned ``monkeypatch`` fixture provides these
+    helper methods to modify objects, dictionaries or os.environ::
+    
+        monkeypatch.setattr(obj, name, value, raising=True)
+        monkeypatch.delattr(obj, name, raising=True)
+        monkeypatch.setitem(mapping, name, value)
+        monkeypatch.delitem(obj, name, raising=True)
+        monkeypatch.setenv(name, value, prepend=False)
+        monkeypatch.delenv(name, raising=True)
+        monkeypatch.syspath_prepend(path)
+        monkeypatch.chdir(path)
+    
+    All modifications will be undone after the requesting
+    test function or fixture has finished. The ``raising``
+    parameter determines if a KeyError or AttributeError
+    will be raised if the set/deletion operation has no target.
+recwarn
+    Return a :class:`WarningsRecorder` instance that records all warnings emitted by test functions.
+    
+    See http://docs.python.org/library/warnings.html for information
+    on warning categories.
+tmpdir_factory
+    Return a :class:`_pytest.tmpdir.TempdirFactory` instance for the test session.
+tmp_path_factory
+    Return a :class:`_pytest.tmpdir.TempPathFactory` instance for the test session.
+tmpdir
+    Return a temporary directory path object
+    which is unique to each test function invocation,
+    created as a sub directory of the base temporary
+    directory.  The returned object is a `py.path.local`_
+    path object.
+    
+    .. _`py.path.local`: https://py.readthedocs.io/en/latest/path.html
+tmp_path
+    Return a temporary directory path object
+    which is unique to each test function invocation,
+    created as a sub directory of the base temporary
+    directory.  The returned object is a :class:`pathlib.Path`
+    object.
+    
+    .. note::
+    
+        in python < 3.6 this is a pathlib2.Path
+
+========================= no tests ran in 0.00 seconds =========================

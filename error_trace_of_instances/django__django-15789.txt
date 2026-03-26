@@ -1,0 +1,17 @@
+======================================================================
+ERROR: test_json_script_custom_encoder (utils_tests.test_html.TestUtilsHtml)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/utils_tests/test_html.py", line 221, in test_json_script_custom_encoder
+    json_script({}, encoder=CustomDjangoJSONEncoder),
+TypeError: json_script() got an unexpected keyword argument 'encoder'
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.139s
+
+FAILED (errors=1)
+Testing against Django installed in '/testbed/django'
+Importing application utils_tests
+Found 18 test(s).
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

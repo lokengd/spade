@@ -1,0 +1,100 @@
+======================================================================
+ERROR: test_alter_field_with_func_index (migrations.test_operations.OperationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 417, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: the "." operator prohibited in index expressions
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 1305, in skip_wrapper
+    return test_func(*args, **kwargs)
+  File "/testbed/tests/migrations/test_operations.py", line 2122, in test_alter_field_with_func_index
+    operation.database_forwards(app_label, editor, project_state, new_state)
+  File "/testbed/django/db/migrations/operations/fields.py", line 225, in database_forwards
+    schema_editor.alter_field(from_model, from_field, to_field)
+  File "/testbed/django/db/backends/sqlite3/schema.py", line 140, in alter_field
+    super().alter_field(model, old_field, new_field, strict=strict)
+  File "/testbed/django/db/backends/base/schema.py", line 618, in alter_field
+    self._alter_field(model, old_field, new_field, old_type, new_type,
+  File "/testbed/django/db/backends/sqlite3/schema.py", line 362, in _alter_field
+    self._remake_table(model, alter_field=(old_field, new_field))
+  File "/testbed/django/db/backends/sqlite3/schema.py", line 303, in _remake_table
+    self.execute(sql)
+  File "/testbed/django/db/backends/base/schema.py", line 151, in execute
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 417, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: the "." operator prohibited in index expressions
+
+======================================================================
+ERROR: test_alter_field_with_func_unique_constraint (migrations.test_operations.OperationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 417, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: the "." operator prohibited in index expressions
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_operations.py", line 2698, in test_alter_field_with_func_unique_constraint
+    operation.database_forwards(app_label, editor, project_state, new_state)
+  File "/testbed/django/db/migrations/operations/fields.py", line 225, in database_forwards
+    schema_editor.alter_field(from_model, from_field, to_field)
+  File "/testbed/django/db/backends/sqlite3/schema.py", line 140, in alter_field
+    super().alter_field(model, old_field, new_field, strict=strict)
+  File "/testbed/django/db/backends/base/schema.py", line 618, in alter_field
+    self._alter_field(model, old_field, new_field, old_type, new_type,
+  File "/testbed/django/db/backends/sqlite3/schema.py", line 362, in _alter_field
+    self._remake_table(model, alter_field=(old_field, new_field))
+  File "/testbed/django/db/backends/sqlite3/schema.py", line 303, in _remake_table
+    self.execute(sql)
+  File "/testbed/django/db/backends/base/schema.py", line 151, in execute
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 417, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: the "." operator prohibited in index expressions
+
+======================================================================
+FAIL: test_rename_table_references_without_alias (backends.test_ddl_references.ExpressionsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/backends/test_ddl_references.py", line 252, in test_rename_table_references_without_alias
+    self.assertEqual(str(expressions), expected_str)
+AssertionError: '(UPPER("other"."last_name")), "other"."first_name"' != '(UPPER("last_name")), "first_name"'
+- (UPPER("other"."last_name")), "other"."first_name"
+?        --------               --------
++ (UPPER("last_name")), "first_name"
+
+
+----------------------------------------------------------------------
+Ran 153 tests in 0.737s
+
+FAILED (failures=1, errors=2, skipped=1)

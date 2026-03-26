@@ -1,0 +1,19 @@
+======================================================================
+FAIL: test_many_to_many_with_useless_related_name (invalid_models_tests.test_relative_fields.RelativeFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/invalid_models_tests/test_relative_fields.py", line 136, in test_many_to_many_with_useless_related_name
+    self.assertEqual(ModelM2M.check(), [
+AssertionError: Lists differ: [] != [<Warning: level=30, msg='related_name has[165 chars]45'>]
+
+Second list contains 1 additional elements.
+First extra element 0:
+<Warning: level=30, msg='related_name has no effect on ManyToManyField with a symmetrical relationship, e.g. to "self".', hint=None, obj=<django.db.models.fields.related.ManyToManyField: m2m>, id='fields.W345'>
+
+- []
++ [<Warning: level=30, msg='related_name has no effect on ManyToManyField with a symmetrical relationship, e.g. to "self".', hint=None, obj=<django.db.models.fields.related.ManyToManyField: m2m>, id='fields.W345'>]
+
+----------------------------------------------------------------------
+Ran 121 tests in 0.091s
+
+FAILED (failures=1)

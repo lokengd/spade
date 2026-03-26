@@ -1,0 +1,4 @@
+- Current progress: I've confirmed the failure log for `sympy__sympy-12236.json`; no edits have been made yet, and I'm ready to extract the fail sections verbatim per instructions.
+- Important context: AGENTS.md noted skills list and extraction rules; user explicitly wants the failure section(s) copied exactly from the log with no additional commentary or reformatting.
+- Next steps: Copy the entire failure block(s) (one for `test_apart`, one for `test_apart_extension`, one for `test_cancel`, and one for `test_div`) exactly as they appear, preserving headers and stack traces, in order.
+- Critical data: The run command was `bin/test -C --verbose sympy/polys/tests/test_partfrac.py sympy/polys/tests/test_polytools.py`; failures occurred in `sympy/polys/tests/test_partfrac.py:test_apart`, `test_apart_extension`, and in `sympy/polys/tests/test_polytools.py:test_cancel` and `test_div`.

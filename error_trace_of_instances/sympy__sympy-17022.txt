@@ -1,0 +1,21 @@
+sympy/printing/tests/test_pycode.py[9] 
+test_PythonCodePrinter ok
+test_MpmathPrinter ok
+test_NumPyPrinter F
+test_SciPyPrinter ok
+test_pycode_reserved_words ok
+test_printmethod ok
+test_codegen_ast_nodes ok
+test_issue_14283 ok
+test_NumPyPrinter_print_seq ok                                            [FAIL]
+
+
+__________________________________________________________________________________
+____________ sympy/printing/tests/test_pycode.py:test_NumPyPrinter _____________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_pycode.py", line 52, in test_NumPyPrinter
+    assert p.doprint(Identity(3)) == "numpy.eye(3)"
+AssertionError
+
+======= tests finished: 9 passed, 1 failed, 17 skipped, in 0.04 seconds ========
+DO *NOT* COMMIT!

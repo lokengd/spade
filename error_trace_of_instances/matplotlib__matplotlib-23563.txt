@@ -1,0 +1,39 @@
+=================================== FAILURES ===================================
+_______________________ test_draw_single_lines_from_Nx1 ________________________
+
+    def test_draw_single_lines_from_Nx1():
+        # Smoke test for GH#23459
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+>       ax.plot([[0], [1]], [[0], [1]], [[0], [1]])
+
+lib/mpl_toolkits/tests/test_mplot3d.py:1793: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/mpl_toolkits/mplot3d/axes3d.py:1284: in plot
+    art3d.line_2d_to_3d(line, zs=zs, zdir=zdir)
+lib/mpl_toolkits/mplot3d/art3d.py:225: in line_2d_to_3d
+    line.set_3d_properties(zs, zdir)
+lib/mpl_toolkits/mplot3d/art3d.py:174: in set_3d_properties
+    zs = np.broadcast_to(zs, len(xs))
+/opt/miniconda3/envs/testbed/lib/python3.11/site-packages/numpy/lib/stride_tricks.py:413: in broadcast_to
+    return _broadcast_to(array, shape, subok=subok, readonly=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+array = array([[0],
+       [1]]), shape = (2,), subok = False, readonly = True
+
+    def _broadcast_to(array, shape, subok, readonly):
+        shape = tuple(shape) if np.iterable(shape) else (shape,)
+        array = np.array(array, copy=False, subok=subok)
+        if not shape and array.shape:
+            raise ValueError('cannot broadcast a non-scalar to a scalar array')
+        if any(size < 0 for size in shape):
+            raise ValueError('all elements of broadcast shape must be non-'
+                             'negative')
+        extras = []
+>       it = np.nditer(
+            (array,), flags=['multi_index', 'refs_ok', 'zerosize_ok'] + extras,
+            op_flags=['readonly'], itershape=shape, order='C')
+E       ValueError: input operand has more dimensions than allowed by the axis remapping
+
+/opt/miniconda3/envs/testbed/lib/python3.11/site-packages/numpy/lib/stride_tricks.py:349: ValueError

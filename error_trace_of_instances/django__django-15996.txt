@@ -1,0 +1,25 @@
+```
+======================================================================
+FAIL: test_serialize_enum_flags (migrations.test_writer.WriterTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_writer.py", line 416, in test_serialize_enum_flags
+    self.assertSerializedResultEqual(
+  File "/testbed/tests/migrations/test_writer.py", line 245, in assertSerializedResultEqual
+    self.assertEqual(MigrationWriter.serialize(value), target)
+AssertionError: Tuples differ: ('migrations.test_writer.IntFlagEnum[None][32 chars]er'}) != ("migrations.test_writer.IntFlagEnum['A'] [73 chars]er'})
+
+First differing element 0:
+'migrations.test_writer.IntFlagEnum[None]'
+"migrations.test_writer.IntFlagEnum['A'] [37 chars]'B']"
+
+- ('migrations.test_writer.IntFlagEnum[None]', {'import migrations.test_writer'})
++ ("migrations.test_writer.IntFlagEnum['A'] | "
++  "migrations.test_writer.IntFlagEnum['B']",
++  {'import migrations.test_writer'})
+
+----------------------------------------------------------------------
+Ran 52 tests in 0.026s
+
+FAILED (failures=1)
+```

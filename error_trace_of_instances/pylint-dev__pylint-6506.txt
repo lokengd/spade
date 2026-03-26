@@ -1,0 +1,41 @@
+=================================== FAILURES ===================================
+___________________________ test_unknown_option_name ___________________________
+
+capsys = <_pytest.capture.CaptureFixture object at 0x7ffffc3b3d90>
+
+    def test_unknown_option_name(capsys: CaptureFixture) -> None:
+        """Check that we correctly raise a message on an unknown option."""
+        with pytest.raises(SystemExit):
+>           Run([str(EMPTY_MODULE), "--unknown-option=yes"], exit=False)
+
+tests/config/test_config.py:68: 
+_ _ _ _ _ _ _ _ _ 
+pylint/testutils/_run.py:45: in __init__
+    super().__init__(args, reporter, exit, do_exit)
+pylint/lint/run.py:135: in __init__
+    args = _config_initialization(
+_ _ _ _ _ _ _ _ _ _ _ _ _ 
+pylint/config/config_initialization.py:85: _UnrecognizedOptionError
+----------------------------- Captured stdout call -----------------------------
+************* Module Command line
+Command line:1:0: E0015: Unrecognized option found: unknown-option=yes (unrecognized-option)
+________________________ test_unknown_short_option_name ________________________
+
+capsys = <_pytest.capture.CaptureFixture object at 0x7ffffc2df5e0>
+
+    def test_unknown_short_option_name(capsys: CaptureFixture) -> None:
+        """Check that we correctly raise a message on an unknown short option."""
+        with pytest.raises(SystemExit):
+>           Run([str(EMPTY_MODULE), "-Q"], exit=False)
+
+tests/config/test_config.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ 
+pylint/testutils/_run.py:45: in __init__
+    super().__init__(args, reporter, exit, do_exit)
+pylint/lint/run.py:135: in __init__
+    args = _config_initialization(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+pylint/config/config_initialization.py:85: _UnrecognizedOptionError
+----------------------------- Captured stdout call -----------------------------
+************* Module Command line
+Command line:1:0: E0015: Unrecognized option found: Q (unrecognized-option)

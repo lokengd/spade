@@ -1,0 +1,23 @@
+======================================================================
+FAIL: test_re_path_with_missing_optional_parameter (urlpatterns.tests.SimplifiedURLTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/urlpatterns/tests.py", line 75, in test_re_path_with_missing_optional_parameter
+    self.assertEqual(match.args, ())
+AssertionError: Tuples differ: (None,) != ()
+
+First tuple contains 1 additional elements.
+First extra element 0:
+None
+
+- (None,)
++ ()
+
+----------------------------------------------------------------------
+Ran 26 tests in 0.011s
+
+FAILED (failures=1)
+Testing against Django installed in '/testbed/django'
+Importing application urlpatterns
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

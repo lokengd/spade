@@ -1,0 +1,6 @@
+________________________________________________________________________________
+______ sympy/utilities/tests/test_codegen.py:test_ccode_unused_array_arg _______
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_codegen.py", line 602, in test_ccode_unused_array_arg
+    assert source == expected
+AssertionError

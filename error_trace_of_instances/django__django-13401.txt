@@ -1,0 +1,13 @@
+======================================================================
+FAIL: test_abstract_inherited_fields (model_fields.tests.BasicFieldTests)
+Field instances from abstract models are not equal.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_fields/tests.py", line 123, in test_abstract_inherited_fields
+    self.assertNotEqual(abstract_model_field, inherit1_model_field)
+AssertionError: <django.db.models.fields.IntegerField: field> == <django.db.models.fields.IntegerField: field>
+
+----------------------------------------------------------------------
+Ran 33 tests in 0.015s
+
+FAILED (failures=1)

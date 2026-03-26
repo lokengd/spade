@@ -1,0 +1,22 @@
+________________________________________________________________________________
+____ sympy/matrices/expressions/tests/test_blockmatrix.py:test_issue_18618 _____
+Traceback (most recent call last):
+  File "/testbed/sympy/matrices/expressions/tests/test_blockmatrix.py", line 115, in test_issue_18618
+    assert A == Matrix(BlockDiagMatrix(A))
+  File "/testbed/sympy/matrices/dense.py", line 296, in __new__
+    return cls._new(*args, **kwargs)
+  File "/testbed/sympy/matrices/dense.py", line 308, in _new
+    rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
+  File "/testbed/sympy/matrices/matrices.py", line 964, in _handle_creation_inputs
+    return args[0].rows, args[0].cols, args[0].as_explicit()._mat
+  File "/testbed/sympy/matrices/expressions/matexpr.py", line 345, in as_explicit
+    return ImmutableDenseMatrix([[    self[i, j]
+  File "/testbed/sympy/matrices/expressions/matexpr.py", line 345, in <listcomp>
+    return ImmutableDenseMatrix([[    self[i, j]
+  File "/testbed/sympy/matrices/expressions/matexpr.py", line 345, in <listcomp>
+    return ImmutableDenseMatrix([[    self[i, j]
+  File "/testbed/sympy/matrices/expressions/matexpr.py", line 296, in __getitem__
+    return self._entry(i, j)
+  File "/testbed/sympy/matrices/expressions/blockmatrix.py", line 247, in _entry
+    return self.blocks[row_block, col_block][i, j]
+TypeError: 'One' object is not subscriptable

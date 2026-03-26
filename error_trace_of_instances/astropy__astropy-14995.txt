@@ -1,0 +1,85 @@
+=================================== FAILURES ===================================
+[31m[1m________________________ test_nddata_bitmask_arithmetic ________________________
+
+    def test_nddata_bitmask_arithmetic():
+        # NDData.mask is usually assumed to be boolean, but could be
+        # a bitmask. Ensure bitmask works:
+        array = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
+        mask = np.array([[0, 1, 64], [8, 0, 1], [2, 1, 0]])
+
+        nref_nomask = NDDataRef(array)
+        nref_masked = NDDataRef(array, mask=mask)
+
+        # multiply no mask by constant (no mask * no mask)
+        assert nref_nomask.multiply(1.0, handle_mask=np.bitwise_or).mask is None
+
+        # multiply no mask by itself (no mask * no mask)
+        assert nref_nomask.multiply(nref_nomask, handle_mask=np.bitwise_or).mask is None
+
+        # multiply masked by constant (mask * no mask)
+        np.testing.assert_equal(
+>           nref_masked.multiply(1.0, handle_mask=np.bitwise_or).mask, mask
+        )
+
+[1m[31mastropy/nddata/mixins/tests/test_ndarithmetic.py[0m:1332: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+[1m[31mastropy/nddata/mixins/ndarithmetic.py[0m:618: in multiply
+    return self._prepare_then_do_arithmetic(
+[1m[31mastropy/nddata/mixins/ndarithmetic.py[0m:731: in _prepare_then_do_arithmetic
+    result, init_kwds = operand._arithmetic(operation, operand2, **kwargs)
+[1m[31mastropy/nddata/mixins/ndarithmetic.py[0m:335: in _arithmetic
+    kwargs["mask"] = self._arithmetic_mask(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = NDDataRef([[0, 1, 0],
+           [1, 0, 1],
+           [0, 1, 0]])
+operation = <ufunc 'multiply'>, operand = NDDataRef(1.)
+handle_mask = <ufunc 'bitwise_or'>, axis = None, kwds = {}
+
+    def _arithmetic_mask(self, operation, operand, handle_mask, axis=None, **kwds):
+        """
+        Calculate the resulting mask.
+
+        This is implemented as the piecewise ``or`` operation if both have a
+        mask.
+
+        Parameters
+        ----------
+        operation : callable
+            see :meth:`NDArithmeticMixin._arithmetic` parameter description.
+            By default, the ``operation`` will be ignored.
+
+        operand : `NDData`-like instance
+            The second operand wrapped in an instance of the same class as
+            self.
+
+        handle_mask : callable
+            see :meth:`NDArithmeticMixin.add`
+
+        kwds :
+            Additional parameters given to ``handle_mask``.
+
+        Returns
+        -------
+        result_mask : any type
+            If only one mask was present this mask is returned.
+            If neither had a mask ``None`` is returned. Otherwise
+            ``handle_mask`` must create (and copy) the returned mask.
+        """
+        # If only one mask is present we need not bother about any type checks
+        if (
+            self.mask is None and operand is not None and operand.mask is None
+        ) or handle_mask is None:
+            return None
+        elif self.mask is None and operand is not None:
+            # Make a copy so there is no reference in the result.
+            return deepcopy(operand.mask)
+        elif operand is None:
+            return deepcopy(self.mask)
+        else:
+            # Now lets calculate the resulting mask (operation enforces copy)
+>           return handle_mask(self.mask, operand.mask, **kwds)
+[1m[31mE           TypeError: unsupported operand type(s) for |: 'int' and 'NoneType'
+
+[1m[31mastropy/nddata/mixins/ndarithmetic.py[0m:527: TypeError

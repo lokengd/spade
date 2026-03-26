@@ -1,0 +1,13 @@
+test_printing_non_cyclic ok                                               [FAIL]
+
+
+________________________________________________________________________________
+___________ sympy/combinatorics/tests/test_permutations.py:test_args ___________
+  File "/testbed/sympy/combinatorics/tests/test_permutations.py", line 342, in test_args
+    assert Permutation([[0, 1], [0, 2]]) == Permutation(0, 1, 2)
+  File "/testbed/sympy/combinatorics/permutations.py", line 900, in __new__
+    raise ValueError('there were repeated elements; to resolve '
+ValueError: there were repeated elements; to resolve cycles use Cycle(0, 1)(0, 2).
+
+=========== tests finished: 8 passed, 1 exceptions, in 0.09 seconds ============
+DO *NOT* COMMIT!

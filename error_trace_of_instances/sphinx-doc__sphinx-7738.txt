@@ -1,0 +1,34 @@
+=================================== FAILURES ===================================
+_______________ NumpyDocstringTest.test_underscore_in_attribute ________________
+
+self = <test_ext_napoleon_docstring.NumpyDocstringTest testMethod=test_underscore_in_attribute>
+
+        def test_underscore_in_attribute(self):
+            docstring = """
+    Attributes
+    ----------
+    
+    arg_ : type
+        some description
+    """
+    
+            expected = """
+    :ivar arg_: some description
+    :vartype arg_: type
+    """
+    
+            config = Config(napoleon_use_ivar=True)
+            app = mock.Mock()
+            actual = str(NumpyDocstring(docstring, config, app, "class"))
+    
+>           self.assertEqual(expected, actual)
+E           AssertionError: '\n:ivar arg_: some description\n:vartype arg_: type\n' != '\n:ivar arg\\_: some description\n:vartype arg\\_: type\n'
+E             
+E           - :ivar arg_: some description
+E           + :ivar arg\_: some description
+E           ?          +
+E           - :vartype arg_: type
+E           + :vartype arg\_: type
+E           ?             +
+
+tests/test_ext_napoleon_docstring.py:1410: AssertionError

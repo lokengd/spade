@@ -1,0 +1,6 @@
+________________________________________________________________________________
+______________ sympy/core/tests/test_arit.py:test_Mul_is_integer _______________
+Traceback (most recent call last):
+  File "/testbed/sympy/core/tests/test_arit.py", line 400, in test_Mul_is_integer
+    assert Mul(2., S.Half, evaluate=False).is_integer is None
+AssertionError

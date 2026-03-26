@@ -1,0 +1,13 @@
+________________________________________________________________________________
+_______ sympy/utilities/tests/test_lambdify.py:test_curly_matrix_symbol ________
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_lambdify.py", line 734, in test_curly_matrix_symbol
+    lam = lambdify(curlyv, curlyv)
+  File "/testbed/sympy/utilities/lambdify.py", line 464, in lambdify
+    c = compile(funcstr, filename, 'exec')
+  File "<lambdifygenerated-77>", line 1
+    def _lambdifygenerated({v}):
+                           ^
+SyntaxError: invalid syntax
+
+===== tests finished: 54 passed, 29 skipped, 1 exceptions, in 1.24 seconds =====

@@ -1,0 +1,66 @@
+======================================================================
+ERROR: test_migrate_skips_schema_creation (migrations.test_executor.ExecutorTests)
+The django_migrations table is not created if there are no migrations
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/backends/utils.py", line 83, in _execute
+    return self.cursor.execute(sql)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 332, in execute
+    return Database.Cursor.execute(self, query)
+sqlite3.OperationalError: table "django_migrations" already exists
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/testbed/django/db/migrations/recorder.py", line 68, in ensure_schema
+    editor.create_model(self.Migration)
+  File "/testbed/django/db/backends/base/schema.py", line 355, in create_model
+    self.execute(sql, params or None)
+  File "/testbed/django/db/backends/base/schema.py", line 151, in execute
+    cursor.execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "/testbed/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/testbed/django/db/backends/utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/testbed/django/db/backends/utils.py", line 85, in _execute
+    return self.cursor.execute(sql, params)
+  File "/testbed/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/testbed/django/db/backends/utils.py", line 83, in _execute
+    return self.cursor.execute(sql)
+  File "/testbed/django/db/backends/sqlite3/base.py", line 332, in execute
+    return Database.Cursor.execute(self, query)
+django.db.utils.OperationalError: table "django_migrations" already exists
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1336, in patched
+    return func(*newargs, **newkeywargs)
+  File "/testbed/tests/migrations/test_executor.py", line 771, in test_migrate_skips_schema_creation
+    executor.migrate([], plan=[])
+  File "/testbed/django/db/migrations/executor.py", line 100, in migrate
+    self.recorder.ensure_schema()
+  File "/testbed/django/db/migrations/recorder.py", line 70, in ensure_schema
+    raise MigrationSchemaMissing("Unable to create the django_migrations table (%s)" % exc)
+django.db.migrations.exceptions.MigrationSchemaMissing: Unable to create the django_migrations table (table "django_migrations" already exists)
+
+======================================================================
+FAIL: test_migrate_test_setting_false_ensure_schema (backends.base.test_creation.TestDbCreationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 1336, in patched
+    return func(*newargs, **newkeywargs)
+  File "/testbed/tests/backends/base/test_creation.py", line 104, in test_migrate_test_setting_false_ensure_schema
+    mocked_ensure_schema.assert_not_called()
+  File "/opt/miniconda3/envs/testbed/lib/python3.9/unittest/mock.py", line 868, in assert_not_called
+    raise AssertionError(msg)
+AssertionError: Expected 'ensure_schema' to not have been called. Called 1 times.
+Calls: [call()].
+
+----------------------------------------------------------------------
+Ran 36 tests in 0.582s
+
+FAILED (failures=1, errors=1)

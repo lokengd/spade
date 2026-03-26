@@ -1,0 +1,12 @@
+======================================================================
+FAIL: test_fast_delete_instance_set_pk_none (delete.tests.FastDeleteTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/delete/tests.py", line 481, in test_fast_delete_instance_set_pk_none
+    self.assertIsNone(u.pk)
+AssertionError: 1 is not None
+
+----------------------------------------------------------------------
+Ran 42 tests in 0.441s
+
+FAILED (failures=1, skipped=1)

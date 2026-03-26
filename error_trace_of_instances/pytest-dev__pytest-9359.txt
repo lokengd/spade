@@ -1,0 +1,18 @@
+=================================== FAILURES ===================================
+________________________________ test_decorator ________________________________
+
+    def test_decorator() -> None:
+        s = """\
+    def foo(f):
+        pass
+    
+    @foo
+    def bar():
+        pass
+        """
+        source = getstatement(3, s)
+>       assert "@foo" in str(source)
+E       AssertionError: assert '@foo' in '    pass'
+E        +  where '    pass' = str(<_pytest._code.source.Source object at 0x7ffffe3e0d90>)
+
+testing/code/test_source.py:631: AssertionError

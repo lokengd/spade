@@ -1,0 +1,21 @@
+sympy/printing/tests/test_mathematica.py[10] 
+test_Integer ok
+test_Rational ok
+test_Function ok
+test_Pow ok
+test_Mul ok
+test_constants ok
+test_containers ok
+test_Integral ok
+test_Derivative F
+test_Sum ok                                                               [FAIL]
+
+
+________________________________________________________________________________
+___________ sympy/printing/tests/test_mathematica.py:test_Derivative ___________
+  File "/testbed/sympy/printing/tests/test_mathematica.py", line 78, in test_Derivative
+    assert mcode(Derivative(sin(x), x)) == "Hold[D[Sin[x], x]]"
+AssertionError
+
+============= tests finished: 9 passed, 1 failed, in 0.03 seconds ==============
+DO *NOT* COMMIT!

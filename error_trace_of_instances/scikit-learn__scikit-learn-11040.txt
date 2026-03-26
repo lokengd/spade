@@ -1,0 +1,31 @@
+=================================== FAILURES ===================================
+__________________________ test_n_neighbors_datatype ___________________________
+
+    def test_n_neighbors_datatype():
+        # Test to check whether n_neighbors is integer
+        X = [[1, 1], [1, 1], [1, 1]]
+        expected_msg = "n_neighbors does not take .*float.* " \
+                       "value, enter integer value"
+        msg = "Expected n_neighbors > 0. Got -3"
+    
+        neighbors_ = neighbors.NearestNeighbors(n_neighbors=3.)
+>       assert_raises_regex(TypeError, expected_msg, neighbors_.fit, X)
+
+sklearn/neighbors/tests/test_neighbors.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/utils/_unittest_backport.py:224: in assertRaisesRegex
+    return context.handle('assertRaisesRegex', args, kwargs)
+sklearn/utils/_unittest_backport.py:113: in handle
+    callable_obj(*args, **kwargs)
+sklearn/utils/_unittest_backport.py:136: in __exit__
+    self.obj_name))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = <sklearn.utils._unittest_backport._AssertRaisesContext object at 0x7fffdf5cc240>
+standardMsg = 'TypeError not raised by fit'
+
+    def _raiseFailure(self, standardMsg):
+        msg = self.test_case._formatMessage(self.msg, standardMsg)
+>       raise self.test_case.failureException(msg)
+E       AssertionError: TypeError not raised by fit
+
+sklearn/utils/_unittest_backport.py:69: AssertionError

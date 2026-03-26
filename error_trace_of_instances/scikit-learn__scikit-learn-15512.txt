@@ -1,0 +1,19 @@
+=================================== FAILURES ===================================
+___________ test_affinity_propagation_non_convergence_regressiontest ___________
+
+    def test_affinity_propagation_non_convergence_regressiontest():
+        X = np.array([[1, 0, 0, 0, 0, 0],
+                      [0, 1, 1, 1, 0, 0],
+                      [0, 0, 1, 0, 0, 1]])
+        af = AffinityPropagation(affinity='euclidean', max_iter=2).fit(X)
+>       assert_array_equal(np.array([-1, -1, -1]), af.labels_)
+E       AssertionError: 
+E       Arrays are not equal
+E       
+E       Mismatched elements: 3 / 3 (100%)
+E       Max absolute difference: 1
+E       Max relative difference: inf
+E        x: array([-1, -1, -1])
+E        y: array([0, 0, 0])
+
+sklearn/cluster/tests/test_affinity_propagation.py:160: AssertionError

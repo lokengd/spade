@@ -1,0 +1,88 @@
+======================================================================
+ERROR: test_static_file_response (asgi.tests.ASGITest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/testing.py", line 74, in receive_output
+    return await self.output_queue.get()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/asyncio/queues.py", line 167, in get
+    yield from getter
+concurrent.futures._base.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/testing.py", line 74, in receive_output
+    return await self.output_queue.get()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/timeout.py", line 66, in __aexit__
+    self._do_exit(exc_type)
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/timeout.py", line 103, in _do_exit
+    raise asyncio.TimeoutError
+concurrent.futures._base.TimeoutError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/sync.py", line 223, in __call__
+    return call_result.result()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/concurrent/futures/_base.py", line 425, in result
+    return self.__get_result()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/sync.py", line 292, in main_wrap
+    result = await self.awaitable(*args, **kwargs)
+  File "/testbed/django/test/utils.py", line 374, in inner
+    return await func(*args, **kwargs)
+  File "/testbed/django/test/utils.py", line 374, in inner
+    return await func(*args, **kwargs)
+  File "/testbed/tests/asgi/tests.py", line 110, in test_static_file_response
+    response_start = await communicator.receive_output()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/testing.py", line 78, in receive_output
+    self.future.result()
+  File "/testbed/django/contrib/staticfiles/handlers.py", line 86, in __call__
+    return await super().__call__(scope, receive, send)
+  File "/testbed/django/core/handlers/asgi.py", line 161, in __call__
+    response = await self.get_response_async(request)
+  File "/testbed/django/core/handlers/base.py", line 148, in get_response_async
+    response = await self._middleware_chain(request)
+TypeError: 'NoneType' object is not callable
+
+======================================================================
+ERROR: test_get_async_response (staticfiles_tests.test_handlers.TestASGIStaticFilesHandler)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/sync.py", line 223, in __call__
+    return call_result.result()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/concurrent/futures/_base.py", line 425, in result
+    return self.__get_result()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/sync.py", line 292, in main_wrap
+    result = await self.awaitable(*args, **kwargs)
+  File "/testbed/tests/staticfiles_tests/test_handlers.py", line 14, in test_get_async_response
+    response = await handler.get_response_async(request)
+  File "/testbed/django/core/handlers/base.py", line 148, in get_response_async
+    response = await self._middleware_chain(request)
+TypeError: 'NoneType' object is not callable
+
+======================================================================
+ERROR: test_get_async_response_not_found (staticfiles_tests.test_handlers.TestASGIStaticFilesHandler)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/sync.py", line 223, in __call__
+    return call_result.result()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/concurrent/futures/_base.py", line 425, in result
+    return self.__get_result()
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/asgiref/sync.py", line 292, in main_wrap
+    result = await self.awaitable(*args, **kwargs)
+  File "/testbed/tests/staticfiles_tests/test_handlers.py", line 21, in test_get_async_response_not_found
+    response = await handler.get_response_async(request)
+  File "/testbed/django/core/handlers/base.py", line 148, in get_response_async
+    response = await self._middleware_chain(request)
+TypeError: 'NoneType' object is not callable
+
+----------------------------------------------------------------------
+Ran 11 tests in 3.107s
+
+FAILED (errors=3)

@@ -1,0 +1,27 @@
+________________________________________________________________________________
+______________ sympy/printing/tests/test_latex.py:test_issue_8470 ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1670, in test_issue_8470
+    e = parse_expr("-B*A", evaluate=False)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 964, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+________________________________________________________________________________
+_____________ sympy/printing/tests/test_latex.py:test_issue_13559 ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1711, in test_issue_13559
+    expr = parse_expr('5/1', evaluate=False)
+  File "/testbed/sympy/parsing/sympy_parser.py", line 964, in parse_expr
+    code = compile(evaluateFalse(code), '<string>', 'eval')
+ValueError: Name node can't be used with 'False' constant
+
+________________________________________________________________________________
+________ sympy/printing/tests/test_latex.py:test_MatrixElement_printing ________
+Traceback (most recent call last):
+  File "/testbed/sympy/printing/tests/test_latex.py", line 1744, in test_MatrixElement_printing
+    assert latex((M*N)[i, j]) == r'\sum_{i_{1}=0}^{k - 1} M_{i, i_{1}} N_{i_{1}, j}'
+AssertionError
+
+ tests finished: 122 passed, 1 failed, 2 expected to fail, 2 exceptions, 
+in 2.24 seconds 
+DO *NOT* COMMIT!

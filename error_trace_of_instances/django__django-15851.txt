@@ -1,0 +1,24 @@
+======================================================================
+FAIL: test_parameters (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/dbshell/test_postgresql.py", line 155, in test_parameters
+    self.assertEqual(
+AssertionError: Tuples differ: (['psql', 'dbname', '--help'], None) != (['psql', '--help', 'dbname'], None)
+
+First differing element 0:
+['psql', 'dbname', '--help']
+['psql', '--help', 'dbname']
+
+- (['psql', 'dbname', '--help'], None)
++ (['psql', '--help', 'dbname'], None)
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.071s
+
+FAILED (failures=1, skipped=1)
+Testing against Django installed in '/testbed/django'
+Importing application dbshell
+Found 10 test(s).
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

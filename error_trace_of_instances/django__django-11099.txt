@@ -1,0 +1,20 @@
+======================================================================
+FAIL: test_ascii_validator (auth_tests.test_validators.UsernameValidatorsTests) (invalid='trailingnewline\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_validators.py", line 261, in test_ascii_validator
+    v(invalid)
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_unicode_validator (auth_tests.test_validators.UsernameValidatorsTests) (invalid='trailingnewline\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/auth_tests/test_validators.py", line 249, in test_unicode_validator
+    v(invalid)
+AssertionError: ValidationError not raised
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.041s
+
+FAILED (failures=2)

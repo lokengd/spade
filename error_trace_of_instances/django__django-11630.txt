@@ -1,0 +1,42 @@
+======================================================================
+FAIL: test_collision_across_apps_database_routers_installed (check_framework.test_model_checks.DuplicateDBTableTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 370, in inner
+    return func(*args, **kwargs)
+  File "/testbed/django/test/utils.py", line 370, in inner
+    return func(*args, **kwargs)
+  File "/testbed/django/test/utils.py", line 370, in inner
+    return func(*args, **kwargs)
+  File "/testbed/tests/check_framework/test_model_checks.py", line 105, in test_collision_across_apps_database_routers_installed
+    id='models.W035',
+AssertionError: Lists differ: [<Error: level=40, msg="db_table 'test_tabl[113 chars]28'>] != [<Warning: level=30, msg="db_table 'test_ta[252 chars]35'>]
+
+First differing element 0:
+<Error: level=40, msg="db_table 'test_tabl[112 chars]028'>
+<Warning: level=30, msg="db_table 'test_ta[251 chars]035'>
+
+- [<Error: level=40, msg="db_table 'test_table' is used by multiple models: basic.Model1, check_framework.Model2.", hint=None, obj='test_table', id='models.E028'>]
++ [<Warning: level=30, msg="db_table 'test_table' is used by multiple models: basic.Model1, check_framework.Model2.", hint='You have configured settings.DATABASE_ROUTERS. Verify that basic.Model1, check_framework.Model2 are correctly routed to separate databases.', obj='test_table', id='models.W035'>]
+
+======================================================================
+FAIL: test_collision_in_same_app_database_routers_installed (check_framework.test_model_checks.DuplicateDBTableTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/utils.py", line 370, in inner
+    return func(*args, **kwargs)
+  File "/testbed/tests/check_framework/test_model_checks.py", line 55, in test_collision_in_same_app_database_routers_installed
+    id='models.W035',
+AssertionError: Lists differ: [<Error: level=40, msg="db_table 'test_tabl[123 chars]28'>] != [<Warning: level=30, msg="db_table 'test_ta[272 chars]35'>]
+
+First differing element 0:
+<Error: level=40, msg="db_table 'test_tabl[122 chars]028'>
+<Warning: level=30, msg="db_table 'test_ta[271 chars]035'>
+
+- [<Error: level=40, msg="db_table 'test_table' is used by multiple models: check_framework.Model1, check_framework.Model2.", hint=None, obj='test_table', id='models.E028'>]
++ [<Warning: level=30, msg="db_table 'test_table' is used by multiple models: check_framework.Model1, check_framework.Model2.", hint='You have configured settings.DATABASE_ROUTERS. Verify that check_framework.Model1, check_framework.Model2 are correctly routed to separate databases.', obj='test_table', id='models.W035'>]
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.034s
+
+FAILED (failures=2)

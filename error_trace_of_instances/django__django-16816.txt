@@ -1,0 +1,33 @@
+======================================================================
+FAIL: test_invalid_m2m_related_name (modeladmin.test_checks.ListDisplayTests.test_invalid_m2m_related_name)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/modeladmin/test_checks.py", line 573, in test_invalid_m2m_related_name
+    self.assertIsInvalid(
+  File "/testbed/tests/modeladmin/test_checks.py", line 30, in assertIsInvalid
+    self.assertEqual(
+AssertionError: Lists differ: [] != [<Error: level=40, msg="The value of 'list[206 chars]09'>]
+
+Second list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg="The value of 'list_display[0]' must not be a many-to-many field or a reverse foreign key.", hint=None, obj=<class 'modeladmin.test_checks.ListDisplayTests.test_invalid_m2m_related_name.<locals>.TestModelAdmin'>, id='admin.E109'>
+
+- []
++ [<Error: level=40, msg="The value of 'list_display[0]' must not be a many-to-many field or a reverse foreign key.", hint=None, obj=<class 'modeladmin.test_checks.ListDisplayTests.test_invalid_m2m_related_name.<locals>.TestModelAdmin'>, id='admin.E109'>]
+
+======================================================================
+FAIL: test_invalid_related_field (modeladmin.test_checks.ListDisplayTests.test_invalid_related_field)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/modeladmin/test_checks.py", line 561, in test_invalid_related_field
+    self.assertIsInvalid(
+  File "/testbed/tests/modeladmin/test_checks.py", line 30, in assertIsInvalid
+    self.assertEqual(
+AssertionError: Lists differ: [] != [<Error: level=40, msg="The value of 'list[203 chars]09'>]
+
+Second list contains 1 additional elements.
+First extra element 0:
+<Error: level=40, msg="The value of 'list_display[0]' must not be a many-to-many field or a reverse foreign key.", hint=None, obj=<class 'modeladmin.test_checks.ListDisplayTests.test_invalid_related_field.<locals>.TestModelAdmin'>, id='admin.E109'>
+
+- []
++ [<Error: level=40, msg="The value of 'list_display[0]' must not be a many-to-many field or a reverse foreign key.", hint=None, obj=<class 'modeladmin.test_checks.ListDisplayTests.test_invalid_related_field.<locals>.TestModelAdmin'>, id='admin.E109'>]

@@ -1,0 +1,25 @@
+=================================== FAILURES ===================================
+___________________________ test_create_single_index ___________________________
+
+app = <SphinxTestApp buildername='dummy'>
+
+    @pytest.mark.sphinx('dummy', freshenv=True)
+    def test_create_single_index(app):
+        text = (".. index:: docutils\n"
+                ".. index:: Python\n"
+                ".. index:: pip; install\n"
+                ".. index:: pip; upgrade\n"
+                ".. index:: Sphinx\n"
+                ".. index:: Ель\n"
+                ".. index:: ёлка\n"
+                ".. index:: ‏תירבע‎\n"
+                ".. index:: 9-symbol\n"
+                ".. index:: &-symbol\n"
+                ".. index:: £100\n")
+        restructuredtext.parse(app, text)
+        index = IndexEntries(app.env).create_index(app.builder)
+>       assert len(index) == 6
+E       AssertionError: assert 7 == 6
+E        +  where 7 = len([('Symbols', [('&-symbol', [[(...)], [], None]), ('9-symbol', [[(...)], [], None])]), ('D', [('docutils', [[(...)], []...'ёлка', [[(...)], [], None]), ('Ель', [[(...)], [], None])]), ('ת', [('\u200fתירבע\u200e', [[(...)], [], None])]), ...])
+
+tests/test_environment_indexentries.py:32: AssertionError

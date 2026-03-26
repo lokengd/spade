@@ -1,0 +1,23 @@
+=================================== FAILURES ===================================
+________________ test_grid_with_axes_class_not_overriding_axis _________________
+
+    def test_grid_with_axes_class_not_overriding_axis():
+>      Grid(plt.figure(), 111, (2, 2), axes_class=mpl.axes.Axes)
+
+lib/mpl_toolkits/axes_grid1/tests/test_axes_grid1.py:773: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/mpl_toolkits/axes_grid1/axes_grid.py:163: in __init__
+    self.set_label_mode(label_mode)
+lib/mpl_toolkits/axes_grid1/axes_grid.py:268: in set_label_mode
+    _tick_only(ax, bottom_on=True, left_on=False)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ax = <Axes: >, bottom_on = True, left_on = False
+
+    def _tick_only(ax, bottom_on, left_on):
+        bottom_off = not bottom_on
+        left_off = not left_on
+>      ax.axis["bottom"].toggle(ticklabels=bottom_off, label=bottom_off)
+E      TypeError: 'method' object is not subscriptable
+
+lib/mpl_toolkits/axes_grid1/axes_grid.py:16: TypeError

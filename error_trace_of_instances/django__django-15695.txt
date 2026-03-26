@@ -1,0 +1,16 @@
+======================================================================
+ERROR: test_rename_index_unnamed_index (migrations.test_operations.OperationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_operations.py", line 2994, in test_rename_index_unnamed_index
+    operation.database_forwards(app_label, editor, new_state, project_state)
+  File "/testbed/django/db/migrations/operations/models.py", line 965, in database_forwards
+    new_index = to_model_state.get_index_by_name(self.new_name)
+  File "/testbed/django/db/migrations/state.py", line 959, in get_index_by_name
+    raise ValueError("No index named %s on model %s" % (name, self.name))
+ValueError: No index named new_pony_test_idx on model Pony
+
+----------------------------------------------------------------------
+Ran 130 tests in 0.767s
+
+FAILED (errors=1, skipped=1)

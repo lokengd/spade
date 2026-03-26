@@ -1,0 +1,12 @@
+======================================================================
+FAIL: test_parsing_rfc850 (utils_tests.test_http.HttpDateProcessingTests) (rfc850str='Wednesday, 31-Dec-70 08:49:37 GMT')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/utils_tests/test_http.py", line 340, in test_parsing_rfc850
+    self.assertEqual(datetime.utcfromtimestamp(parsed), expected_date)
+AssertionError: datetime.datetime(1970, 12, 31, 8, 49, 37) != datetime.datetime(2070, 12, 31, 8, 49, 37)
+
+----------------------------------------------------------------------
+Ran 45 tests in 0.006s
+
+FAILED (failures=1)

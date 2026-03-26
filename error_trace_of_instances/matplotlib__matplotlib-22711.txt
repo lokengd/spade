@@ -1,0 +1,118 @@
+=================================== FAILURES ===================================
+___________________________ test_rectangle_selector ____________________________
+
+    def test_rectangle_selector():
+        check_rectangle()
+    
+>       with pytest.warns(
+            MatplotlibDeprecationWarning,
+                match="Support for drawtype='line' is deprecated"):
+E               matplotlib._api.deprecation.MatplotlibDeprecationWarning: 
+E               The 'drawtype' parameter of __init__() was deprecated in Matplotlib 3.5 and will be removed two minor releases later. If any parameter follows 'drawtype', they should be passed as keyword, not positionally.
+
+lib/matplotlib/tests/test_widgets.py:51: MatplotlibDeprecationWarning
+________________________ test_range_slider[horizontal] _________________________
+
+orientation = 'horizontal'
+
+    @pytest.mark.parametrize("orientation", ["horizontal", "vertical"])
+    def test_range_slider(orientation):
+        if orientation == "vertical":
+            idx = [1, 0, 3, 2]
+        else:
+            idx = [0, 1, 2, 3]
+    
+        fig, ax = plt.subplots()
+    
+        slider = widgets.RangeSlider(
+            ax=ax, label="", valmin=0.0, valmax=1.0, orientation=orientation,
+            valinit=[0.1, 0.34]
+        )
+        box = slider.poly.get_extents().transformed(ax.transAxes.inverted())
+        assert_allclose(box.get_points().flatten()[idx], [0.1, 0.25, 0.34, 0.75])
+    
+        # Check initial value is set correctly
+        assert_allclose(slider.val, (0.1, 0.34))
+    
+        def handle_positions(slider):
+            if orientation == "vertical":
+                return [h.get_ydata()[0] for h in slider._handles]
+            else:
+                return [h.get_xdata()[0] for h in slider._handles]
+    
+        slider.set_val((0.2, 0.6))
+        assert_allclose(slider.val, (0.2, 0.6))
+>       assert_allclose(handle_positions(slider), (0.2, 0.6))
+
+lib/matplotlib/tests/test_widgets.py:1116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<function assert_allclose.<locals>.compare at 0x7fffebf55300>, array([0.1 , 0.34]), array([0.2, 0.6]))
+kwds = {'equal_nan': True, 'err_msg': '', 'header': 'Not equal to tolerance rtol=1e-07, atol=0', 'verbose': True}
+
+    @wraps(func)
+    def inner(*args, **kwds):
+        with self._recreate_cm():
+>           return func(*args, **kwds)
+E           AssertionError: 
+E           Not equal to tolerance rtol=1e-07, atol=0
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Max absolute difference: 0.26
+E           Max relative difference: 0.5
+E            x: array([0.1 , 0.34])
+E            y: array([0.2, 0.6])
+
+/opt/miniconda3/envs/testbed/lib/python3.11/contextlib.py:81: AssertionError
+_________________________ test_range_slider[vertical] __________________________
+
+orientation = 'vertical'
+
+    @pytest.mark.parametrize("orientation", ["horizontal", "vertical"])
+    def test_range_slider(orientation):
+        if orientation == "vertical":
+            idx = [1, 0, 3, 2]
+        else:
+            idx = [0, 1, 2, 3]
+    
+        fig, ax = plt.subplots()
+    
+        slider = widgets.RangeSlider(
+            ax=ax, label="", valmin=0.0, valmax=1.0, orientation=orientation,
+            valinit=[0.1, 0.34]
+        )
+        box = slider.poly.get_extents().transformed(ax.transAxes.inverted())
+        assert_allclose(box.get_points().flatten()[idx], [0.1, 0.25, 0.34, 0.75])
+    
+        # Check initial value is set correctly
+        assert_allclose(slider.val, (0.1, 0.34))
+    
+        def handle_positions(slider):
+            if orientation == "vertical":
+                return [h.get_ydata()[0] for h in slider._handles]
+            else:
+                return [h.get_xdata()[0] for h in slider._handles]
+    
+        slider.set_val((0.2, 0.6))
+        assert_allclose(slider.val, (0.2, 0.6))
+>       assert_allclose(handle_positions(slider), (0.2, 0.6))
+
+lib/matplotlib/tests/test_widgets.py:1116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+args = (<function assert_allclose.<locals>.compare at 0x7fffe9a6c040>, array([0.1 , 0.34]), array([0.2, 0.6]))
+kwds = {'equal_nan': True, 'err_msg': '', 'header': 'Not equal to tolerance rtol=1e-07, atol=0', 'verbose': True}
+
+    @wraps(func)
+    def inner(*args, **kwds):
+        with self._recreate_cm():
+>           return func(*args, **kwds)
+E           AssertionError: 
+E           Not equal to tolerance rtol=1e-07, atol=0
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Max absolute difference: 0.26
+E           Max relative difference: 0.5
+E            x: array([0.1 , 0.34])
+E            y: array([0.2, 0.6])
+
+/opt/miniconda3/envs/testbed/lib/python3.11/contextlib.py:81: AssertionError

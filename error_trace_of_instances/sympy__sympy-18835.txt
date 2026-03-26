@@ -1,0 +1,20 @@
+test_uniq E
+test_kbins ok
+test_has_dups ok
+test__partition ok
+test_ordered_partitions ok
+test_rotations ok
+test_ibin ok                                                              [FAIL]
+
+
+________________________________________________________________________________
+______________ sympy/utilities/tests/test_iterables.py:test_uniq _______________
+Traceback (most recent call last):
+  File "/testbed/sympy/utilities/tests/test_iterables.py", line 707, in test_uniq
+    raises(RuntimeError, lambda: [f.remove(i) for i in uniq(f)])
+  File "/testbed/sympy/testing/pytest.py", line 97, in raises
+    raise Failed("DID NOT RAISE")
+sympy.testing.pytest.Failed: DID NOT RAISE
+
+=========== tests finished: 42 passed, 1 exceptions, in 0.31 seconds ===========
+DO *NOT* COMMIT!

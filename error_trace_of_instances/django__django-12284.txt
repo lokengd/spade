@@ -1,0 +1,17 @@
+test_overriding_inherited_FIELD_display (model_fields.tests.GetFieldDisplayTests) ... FAIL
+
+======================================================================
+FAIL: test_overriding_inherited_FIELD_display (model_fields.tests.GetFieldDisplayTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_fields/tests.py", line 191, in test_overriding_inherited_FIELD_display
+    self.assertEqual(Child(foo='A').get_foo_display(), 'Child A')
+AssertionError: 'Base A' != 'Child A'
+- Base A
++ Child A
+
+
+----------------------------------------------------------------------
+Ran 32 tests in 0.013s
+
+FAILED (failures=1)

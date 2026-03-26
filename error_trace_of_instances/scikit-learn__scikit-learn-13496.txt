@@ -1,0 +1,17 @@
+=================================== FAILURES ===================================
+___________________________ test_iforest_warm_start ____________________________
+
+    @pytest.mark.filterwarnings('ignore:default contamination')
+    @pytest.mark.filterwarnings('ignore:behaviour="old"')
+    def test_iforest_warm_start():
+        """Test iterative addition of iTrees to an iForest """
+    
+        rng = check_random_state(0)
+        X = rng.randn(20, 2)
+    
+        # fit first 10 trees
+        clf = IsolationForest(n_estimators=10, max_samples=20,
+>                             random_state=rng, warm_start=True)
+E       TypeError: __init__() got an unexpected keyword argument 'warm_start'
+
+sklearn/ensemble/tests/test_iforest.py:308: TypeError

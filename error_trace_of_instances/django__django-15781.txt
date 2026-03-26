@@ -1,0 +1,15 @@
+======================================================================
+ERROR: test_create_parser_kwargs (user_commands.tests.CommandTests)
+BaseCommand.create_parser() passes kwargs to CommandParser.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/user_commands/tests.py", line 412, in test_create_parser_kwargs
+    parser = BaseCommand().create_parser(
+  File "/testbed/django/core/management/base.py", line 289, in create_parser
+    parser = CommandParser(
+TypeError: django.core.management.base.CommandParser() got multiple values for keyword argument 'formatter_class'
+
+----------------------------------------------------------------------
+Ran 44 tests in 0.695s
+
+FAILED (errors=1)

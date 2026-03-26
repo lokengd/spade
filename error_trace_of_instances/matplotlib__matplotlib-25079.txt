@@ -1,0 +1,46 @@
+=================================== FAILURES ===================================
+______________________ test_double_register_builtin_cmap _______________________
+
+    def test_double_register_builtin_cmap():
+        name = "viridis"
+        match = f"Re-registering the builtin cmap {name!r}."
+        with pytest.raises(ValueError, match=match):
+            matplotlib.colormaps.register(
+                mpl.colormaps[name], name=name, force=True
+            )
+        with pytest.raises(ValueError, match='A colormap named "viridis"'):
+            with pytest.warns(mpl.MatplotlibDeprecationWarning):
+                cm.register_cmap(name, mpl.colormaps[name])
+>       with pytest.warns(UserWarning):
+E       matplotlib._api.deprecation.MatplotlibDeprecationWarning: The register_cmap function was deprecated in Matplotlib 3.7 and will be removed two minor releases later. Use ``matplotlib.colormaps.register(name)`` instead.
+
+lib/matplotlib/tests/test_colors.py:149: MatplotlibDeprecationWarning
+______________________________ test_norm_callback ______________________________
+
+    def test_norm_callback():
+        increment = unittest.mock.Mock(return_value=None)
+    
+        norm = mcolors.Normalize()
+        norm.callbacks.connect('changed', increment)
+        # Haven't updated anything, so call count should be 0
+        assert increment.call_count == 0
+    
+        # Now change vmin and vmax to test callbacks
+        norm.vmin = 1
+        assert increment.call_count == 1
+        norm.vmax = 5
+        assert increment.call_count == 2
+        # callback shouldn't be called if setting to the same value
+        norm.vmin = 1
+        assert increment.call_count == 2
+        norm.vmax = 5
+        assert increment.call_count == 2
+    
+        # We only want autoscale() calls to send out one update signal
+        increment.call_count = 0
+        norm.autoscale([0, 1, 2])
+>       assert increment.call_count == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = <Mock id='140736988551440'>.call_count
+
+lib/matplotlib/tests/test_colors.py:1499: AssertionError

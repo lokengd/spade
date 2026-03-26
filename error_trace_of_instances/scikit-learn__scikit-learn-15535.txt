@@ -1,0 +1,760 @@
+=================================== FAILURES ===================================
+______________ test_format_invariance[adjusted_mutual_info_score] ______________
+
+metric_name = 'adjusted_mutual_info_score'
+
+    @pytest.mark.filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+    
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+    
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/metrics/cluster/_supervised.py:739: in adjusted_mutual_info_score
+    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+sklearn/metrics/cluster/_supervised.py:46: in check_clusterings
+    labels_true, ensure_2d=False, ensure_min_samples=0
+sklearn/utils/validation.py:514: in check_array
+    array = np.asarray(array, order=order, dtype=dtype)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+a = array(['0-a', '0-a', '0-a', '0-a', '1-a', '1-a', '1-a', '1-a'],
+      dtype=object)
+dtype = <class 'numpy.float64'>, order = None
+
+    @set_module('numpy')
+    def asarray(a, dtype=None, order=None):
+        """Convert the input to an array.
+
+        Parameters
+        ----------
+        a : array_like
+            Input data, in any form that can be converted to an array.  This
+            includes lists, lists of tuples, tuples, tuples of tuples, tuples
+            of lists and ndarrays.
+        dtype : data-type, optional
+            By default, the data-type is inferred from the input data.
+        order : {'C', 'F'}, optional
+            Whether to use row-major (C-style) or
+            column-major (Fortran-style) memory representation.
+            Defaults to 'C'.
+
+        Returns
+        -------
+        out : ndarray
+            Array interpretation of `a`.  No copy is performed if the input
+            is already an ndarray with matching dtype and order.  If `a` is a
+            subclass of ndarray, a base class ndarray is returned.
+
+        See Also
+        --------
+        asanyarray : Similar function which passes through subclasses.
+        ascontiguousarray : Convert input to a contiguous array.
+        asfarray : Convert input to a floating point ndarray.
+        asfortranarray : Convert input to an ndarray with column-major
+                         memory order.
+        asarray_chkfinite : Similar function which checks input for NaNs and Infs.
+        fromiter : Create an array from an iterator.
+        fromfunction : Construct an array by executing a function on grid
+                       positions.
+
+        Examples
+        --------
+        Convert a list into an array:
+
+        >>> a = [1, 2]
+        >>> np.asarray(a)
+        array([1, 2])
+
+        Existing arrays are not copied:
+
+        >>> a = np.array([1, 2])
+        >>> np.asarray(a) is a
+        True
+
+        If `dtype` is set, array is copied only if dtype does not match:
+
+        >>> a = np.array([1, 2], dtype=np.float32)
+        >>> np.asarray(a, dtype=np.float32) is a
+        True
+        >>> np.asarray(a, dtype=np.float64) is a
+        False
+
+        Contrary to `asanyarray`, ndarray subclasses are not passed through:
+
+        >>> issubclass(np.recarray, np.ndarray)
+        True
+        >>> a = np.array([(1.0, 2), (3.0, 4)], dtype='f4,i4').view(np.recarray)
+        >>> np.asarray(a) is a
+        False
+        >>> np.asanyarray(a) is a
+        True
+
+        """
+>       return array(a, dtype, copy=False, order=order)
+E       ValueError: could not convert string to float: '0-a'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/_asarray.py:83: ValueError
+_________________ test_format_invariance[adjusted_rand_score] __________________
+
+metric_name = 'adjusted_rand_score'
+
+    @pytest.mark.filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/metrics/cluster/_supervised.py:219: in adjusted_rand_score
+    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+sklearn/metrics/cluster/_supervised.py:46: in check_clusterings
+    labels_true, ensure_2d=False, ensure_min_samples=0
+sklearn/utils/validation.py:514: in check_array
+    array = np.asarray(array, order=order, dtype=dtype)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = array(['0-a', '0-a', '0-a', '0-a', '1-a', '1-a', '1-a', '1-a'],
+      dtype=object)
+dtype = <class 'numpy.float64'>, order = None
+
+    @set_module('numpy')
+    def asarray(a, dtype=None, order=None):
+        """Convert the input to an array.
+
+        Parameters
+        ----------
+        a : array_like
+            Input data, in any form that can be converted to an array.  This
+            includes lists, lists of tuples, tuples, tuples of tuples, tuples
+            of lists and ndarrays.
+        dtype : data-type, optional
+            By default, the data-type is inferred from the input data.
+        order : {'C', 'F'}, optional
+            Whether to use row-major (C-style) or
+            column-major (Fortran-style) memory representation.
+            Defaults to 'C'.
+
+        Returns
+        -------
+        out : ndarray
+            Array interpretation of `a`.  No copy is performed if the input
+            is already an ndarray with matching dtype and order.  If `a` is a
+            subclass of ndarray, a base class ndarray is returned.
+
+        See Also
+        --------
+        asanyarray : Similar function which passes through subclasses.
+        ascontiguousarray : Convert input to a contiguous array.
+        asfarray : Convert input to a floating point ndarray.
+        asfortranarray : Convert input to an ndarray with column-major
+                         memory order.
+        asarray_chkfinite : Similar function which checks input for NaNs and Infs.
+        fromiter : Create an array from an iterator.
+        fromfunction : Construct an array by executing a function on grid
+                       positions.
+
+        Examples
+        --------
+        Convert a list into an array:
+
+        >>> a = [1, 2]
+        >>> np.asarray(a)
+        array([1, 2])
+
+        Existing arrays are not copied:
+
+        >>> a = np.array([1, 2])
+        >>> np.asarray(a) is a
+        True
+
+        If `dtype` is set, array is copied only if dtype does not match:
+
+        >>> a = np.array([1, 2], dtype=np.float32)
+        >>> np.asarray(a, dtype=np.float32) is a
+        True
+        >>> np.asarray(a, dtype=np.float64) is a
+        False
+
+        Contrary to `asanyarray`, ndarray subclasses are not passed through:
+
+        >>> issubclass(np.recarray, np.ndarray)
+        True
+        >>> a = np.array([(1.0, 2), (3.0, 4)], dtype='f4,i4').view(np.recarray)
+        >>> np.asarray(a) is a
+        False
+        >>> np.asanyarray(a) is a
+        True
+
+        """
+>       return array(a, dtype, copy=False, order=order)
+E       ValueError: could not convert string to float: '0-a'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/_asarray.py:83: ValueError
+__________________ test_format_invariance[completeness_score] __________________
+
+metric_name = 'completeness_score'
+
+    @pytest.mark/filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sklearn/metrics/cluster/_supervised.py:462: in completeness_score
+    return homogeneity_completeness_v_measure(labels_true, labels_pred)[1]
+sklearn/metrics/cluster/_supervised.py:302: in homogeneity_completeness_v_measure
+    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+sklearn/metrics/cluster/_supervised.py:46: in check_clusterings
+    labels_true, ensure_2d=False, ensure_min_samples=0
+sklearn/utils/validation.py:514: in check_array
+    array = np.asarray(array, order=order, dtype=dtype)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = array(['0-a', '0-a', '0-a', '0-a', '1-a', '1-a', '1-a', '1-a'],
+      dtype=object)
+dtype = <class 'numpy.float64'>, order = None
+
+    @set_module('numpy')
+    def asarray(a, dtype=None, order=None):
+        """Convert the input to an array.
+
+        Parameters
+        ----------
+        a : array_like
+            Input data, in any form that can be converted to an array.  This
+            includes lists, lists of tuples, tuples, tuples of tuples, tuples
+            of lists and ndarrays.
+        dtype : data-type, optional
+            By default, the data-type is inferred from the input data.
+        order : {'C', 'F'}, optional
+            Whether to use row-major (C-style) or
+            column-major (Fortran-style) memory representation.
+            Defaults to 'C'.
+
+        Returns
+        -------
+        out : ndarray
+            Array interpretation of `a`.  No copy is performed if the input
+            is already an ndarray with matching dtype and order.  If `a` is a
+            subclass of ndarray, a base class ndarray is returned.
+
+        See Also
+        --------
+        asanyarray : Similar function which passes through subclasses.
+        ascontiguousarray : Convert input to a contiguous array.
+        asfarray : Convert input to a floating point ndarray.
+        asfortranarray : Convert input to an ndarray with column-major
+                         memory order.
+        asarray_chkfinite : Similar function which checks input for NaNs and Infs.
+        fromiter : Create an array from an iterator.
+        fromfunction : Construct an array by executing a function on grid
+                       positions.
+
+        Examples
+        --------
+        Convert a list into an array:
+
+        >>> a = [1, 2]
+        >>> np.asarray(a)
+        array([1, 2])
+
+        Existing arrays are not copied:
+
+        >>> a = np.array([1, 2])
+        >>> np.asarray(a) is a
+        True
+
+        If `dtype` is set, array is copied only if dtype does not match:
+
+        >>> a = np.array([1, 2], dtype=np.float32)
+        >>> np.asarray(a, dtype=np.float32) is a
+        True
+        >>> np.asarray(a, dtype=np.float64) is a
+        False
+
+        Contrary to `asanyarray`, ndarray subclasses are not passed through:
+
+        >>> issubclass(np.recarray, np.ndarray)
+        True
+        >>> a = np.array([(1.0, 2), (3.0, 4)], dtype='f4,i4').view(np.recarray)
+        >>> np.asarray(a) is a
+        False
+        >>> np.asanyarray(a) is a
+        True
+
+        """
+>       return array(a, dtype, copy=False, order=order)
+E       ValueError: could not convert string to float: '0-a'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/_asarray.py:83: ValueError
+__________________ test_format_invariance[homogeneity_score] ___________________
+
+metric_name = 'homogeneity_score'
+
+    @pytest.mark/filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/metrics/cluster/_supervised.py:392: in homogeneity_score
+    return homogeneity_completeness_v_measure(labels_true, labels_pred)[0]
+sklearn/metrics/cluster/_supervised.py:302: in homogeneity_completeness_v_measure
+    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+sklearn/metrics/cluster/_supervised.py:46: in check_clusterings
+    labels_true, ensure_2d=False, ensure_min_samples=0
+sklearn/utils/validation.py:514: in check_array
+    array = np.asarray(array, order=order, dtype=dtype)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = array(['0-a', '0-a', '0-a', '0-a', '1-a', '1-a', '1-a', '1-a'],
+      dtype=object)
+dtype = <class 'numpy.float64'>, order = None
+
+    @set_module('numpy')
+    def asarray(a, dtype=None, order=None):
+        """Convert the input to an array.
+
+        Parameters
+        ----------
+        a : array_like
+            Input data, in any form that can be converted to an array.  This
+            includes lists, lists of tuples, tuples, tuples of tuples, tuples
+            of lists and ndarrays.
+        dtype : data-type, optional
+            By default, the data-type is inferred from the input data.
+        order : {'C', 'F'}, optional
+            Whether to use row-major (C-style) or
+            column-major (Fortran-style) memory representation.
+            Defaults to 'C'.
+
+        Returns
+        -------
+        out : ndarray
+            Array interpretation of `a`.  No copy is performed if the input
+            is already an ndarray with matching dtype and order.  If `a` is a
+            subclass of ndarray, a base class ndarray is returned.
+
+        See Also
+        --------
+        asanyarray : Similar function which passes through subclasses.
+        ascontiguousarray : Convert input to a contiguous array.
+        asfarray : Convert input to a floating point ndarray.
+        asfortranarray : Convert input to an ndarray with column-major
+                         memory order.
+        asarray_chkfinite : Similar function which checks input for NaNs and Infs.
+        fromiter : Create an array from an iterator.
+        fromfunction : Construct an array by executing a function on grid
+                       positions.
+
+        Examples
+        --------
+        Convert a list into an array:
+
+        >>> a = [1, 2]
+        >>> np.asarray(a)
+        array([1, 2])
+
+        Existing arrays are not copied:
+
+        >>> a = np.array([1, 2])
+        >>> np.asarray(a) is a
+        True
+
+        If `dtype` is set, array is copied only if dtype does not match:
+
+        >>> a = np.array([1, 2], dtype=np.float32)
+        >>> np.asarray(a, dtype=np.float32) is a
+        True
+        >>> np.asarray(a, dtype=np.float64) is a
+        False
+
+        Contrary to `asanyarray`, ndarray subclasses are not passed through:
+
+        >>> issubclass(np.recarray, np.ndarray)
+        True
+        >>> a = np.array([(1.0, 2), (3.0, 4)], dtype='f4,i4').view(np.recarray)
+        >>> np.asarray(a) is a
+        False
+        >>> np.asanyarray(a) is a
+        True
+
+        """
+>       return array(a, dtype, copy=False, order=order)
+E       ValueError: could not convert string to float: '0-a'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/_asarray.py:83: ValueError
+__________________ test_format_invariance[mutual_info_score] ___________________
+
+metric_name = 'mutual_info_score'
+
+    @pytest.mark/filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sklearn/metrics/cluster/_supervised.py:619: in mutual_info_score
+    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+sklearn/metrics/cluster/_supervised.py:46: in check_clusterings
+    labels_true, ensure_2d=False, ensure_min_samples=0
+sklearn/utils/validation.py:514: in check_array
+    array = np.asarray(array, order=order, dtype=dtype)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = array(['0-a', '0-a', '0-a', '0-a', '1-a', '1-a', '1-a', '1-a'],
+      dtype=object)
+dtype = <class 'numpy.float64'>, order = None
+
+    @set_module('numpy')
+    def asarray(a, dtype=None, order=None):
+        """Convert the input to an array.
+
+        Parameters
+        ----------
+        a : array_like
+            Input data, in any form that can be converted to an array.  This
+            includes lists, lists of tuples, tuples, tuples of tuples, tuples
+            of lists and ndarrays.
+        dtype : data-type, optional
+            By default, the data-type is inferred from the input data.
+        order : {'C', 'F'}, optional
+            Whether to use row-major (C-style) or
+            column-major (Fortran-style) memory representation.
+            Defaults to 'C'.
+
+        Returns
+        -------
+        out : ndarray
+            Array interpretation of `a`.  No copy is performed if the input
+            is already an ndarray with matching dtype and order.  If `a` is a
+            subclass of ndarray, a base class ndarray is returned.
+
+        See Also
+        --------
+        asanyarray : Similar function which passes through subclasses.
+        ascontiguousarray : Convert input to a contiguous array.
+        asfarray : Convert input to a floating point ndarray.
+        asfortranarray : Convert input to an ndarray with column-major
+                         memory order.
+        asarray_chkfinite : Similar function which checks input for NaNs and Infs.
+        fromiter : Create an array from an iterator.
+        fromfunction : Construct an array by executing a function on grid
+                       positions.
+
+        Examples
+        --------
+        Convert a list into an array:
+
+        >>> a = [1, 2]
+        >>> np.asarray(a)
+        array([1, 2])
+
+        Existing arrays are not copied:
+
+        >>> a = np.array([1, 2])
+        >>> np.asarray(a) is a
+        True
+
+        If `dtype` is set, array is copied only if dtype does not match:
+
+        >>> a = np.array([1, 2], dtype=np.float32)
+        >>> np.asarray(a, dtype=np.float32) is a
+        True
+        >>> np.asarray(a, dtype=np.float64) is a
+        False
+
+        Contrary to `asanyarray`, ndarray subclasses are not passed through:
+
+        >>> issubclass(np.recarray, np.ndarray)
+        True
+        >>> a = np.array([(1.0, 2), (3.0, 4)], dtype='f4,i4').view(np.recarray)
+        >>> np.asarray(a) is a
+        False
+        >>> np.asanyarray(a) is a
+        True
+
+        """
+>       return array(a, dtype, copy=False, order=order)
+E       ValueError: could not convert string to float: '0-a'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/_asarray.py:83: ValueError
+_____________ test_format_invariance[normalized_mutual_info_score] _____________
+
+metric_name = 'normalized_mutual_info_score'
+
+    @pytest.mark/filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+sklearn/metrics/cluster/_supervised.py:848: in normalized_mutual_info_score
+    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+sklearn/metrics/cluster/_supervised.py:46: in check_clusterings
+    labels_true, ensure_2d=False, ensure_min_samples=0
+sklearn/utils/validation.py:514: in check_array
+    array = np.asarray(array, order=order, dtype=dtype)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+a = array(['0-a', '0-a', '0-a', '0-a', '1-a', '1-a', '1-a', '1-a'],
+      dtype=object)
+dtype = <class 'numpy.float64'>, order = None
+
+    @set_module('numpy')
+    def asarray(a, dtype=None, order=None):
+        """Convert the input to an array.
+
+        Parameters
+        ----------
+        a : array_like
+            Input data, in any form that can be converted to an array.  This
+            includes lists, lists of tuples, tuples, tuples of tuples, tuples
+            of lists and ndarrays.
+        dtype : data-type, optional
+            By default, the data-type is inferred from the input data.
+        order : {'C', 'F'}, optional
+            Whether to use row-major (C-style) or
+            column-major (Fortran-style) memory representation.
+            Defaults to 'C'.
+
+        Returns
+        -------
+        out : ndarray
+            Array interpretation of `a`.  No copy is performed if the input
+            is already an ndarray with matching dtype and order.  If `a` is a
+            subclass of ndarray, a base class ndarray is returned.
+
+        See Also
+        --------
+        asanyarray : Similar function which passes through subclasses.
+        ascontiguousarray : Convert input to a contiguous array.
+        asfarray : Convert input to a floating point ndarray.
+        asfortranarray : Convert input to an ndarray with column-major
+                         memory order.
+        asarray_chkfinite : Similar function which checks input for NaNs and Infs.
+        fromiter : Create an array from an iterator.
+        fromfunction : Construct an array by executing a function on grid
+                       positions.
+
+        Examples
+        --------
+        Convert a list into an array:
+
+        >>> a = [1, 2]
+        >>> np.asarray(a)
+        array([1, 2])
+
+        Existing arrays are not copied:
+
+        >>> a = np.array([1, 2])
+        >>> np.asarray(a) is a
+        True
+
+        If `dtype` is set, array is copied only if dtype does not match:
+
+        >>> a = np.array([1, 2], dtype=np.float32)
+        >>> np.asarray(a, dtype=np.float32) is a
+        True
+        >>> np.asarray(a, dtype=np.float64) is a
+        False
+
+        Contrary to `asanyarray`, ndarray subclasses are not passed through:
+
+        >>> issubclass(np.recarray, np.ndarray)
+        True
+        >>> a = np.array([(1.0, 2), (3.0, 4)], dtype='f4,i4').view(np.recarray)
+        >>> np.asarray(a) is a
+        False
+        >>> np.asanyarray(a) is a
+        True
+
+        """
+>       return array(a, dtype, copy=False, order=order)
+E       ValueError: could not convert string to float: '0-a'
+
+/opt/miniconda3/envs/testbed/lib/python3.6/site-packages/numpy/core/_asarray.py:83: ValueError
+___________________ test_format_invariance[v_measure_score] ____________________
+
+metric_name = 'v_measure_score'
+
+    @pytest.mark/filterwarnings('ignore::FutureWarning')
+    @pytest.mark.parametrize(
+        "metric_name", dict(SUPERVISED_METRICS, **UNSUPERVISED_METRICS)
+    )
+    # For all clustering metrics Input parameters can be both
+    # in the form of arrays lists, positive, negative or string
+    def test_format_invariance(metric_name):
+        y_true = [0, 0, 0, 0, 1, 1, 1, 1]
+        y_pred = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        def generate_formats(y):
+            y = np.array(y)
+            yield y, 'array of ints'
+            yield y.tolist(), 'list of ints'
+            yield [str(x) + "-a" for x in y.tolist()], 'list of strs'
+            yield (np.array([str(x) + "-a" for x in y.tolist()], dtype=object),
+                   'array of strs')
+            yield y - 1, 'including negative ints'
+            yield y + 1, 'strictly positive ints'
+
+        if metric_name in SUPERVISED_METRICS:
+            metric = SUPERVISED_METRICS[metric_name]
+            score_1 = metric(y_true, y_pred)
+            y_true_gen = generate_formats(y_true)
+            y_pred_gen = generate_formats(y_pred)
+            for (y_true_fmt, fmt_name), (y_pred_fmt, _) in zip(y_true_gen,
+                                                               y_pred_gen):
+>               assert score_1 == metric(y_true_fmt, y_pred_fmt)
+
+sklearn/metrics/cluster/tests/test_common.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ for code excerpts truncated due to character limit

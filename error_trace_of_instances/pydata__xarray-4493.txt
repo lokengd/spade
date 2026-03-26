@@ -1,0 +1,25 @@
+=================================== FAILURES ===================================
+_______________________ test_persist_Dataset[<lambda>1] ________________________
+
+persist = <function <lambda> at 0x7fffc262cee0>
+
+    @pytest.mark.parametrize(
+        "persist", [lambda x: x.persist(), lambda x: dask.persist(x)[0]]
+    )
+    def test_persist_Dataset(persist):
+        ds = Dataset({"foo": ("x", range(5)), "bar": ("x", range(5))}).chunk()
+        ds = ds + 1
+        n = len(ds.foo.data.dask)
+    
+>       ds2 = persist(ds)
+
+/testbed/xarray/tests/test_dask.py:925: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/testbed/xarray/tests/test_dask.py:918: in <lambda>
+    "persist", [lambda x: x.persist(), lambda x: dask.persist(x)[0]]
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/dask/base.py:903: in persist
+    results2 = [r({k: d[k] for k in ks}, *s) for r, ks, s in postpersists]
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/dask/base.py:903: in <listcomp>
+    results2 = [r({k: d[k] for k in ks}, *s) for r, ks, s in postpersists]
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+...

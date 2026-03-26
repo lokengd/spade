@@ -1,0 +1,38 @@
+======================================================================
+ERROR: test_command_option_inline_function_call (shell.tests.ShellCommandTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/shell/tests.py", line 38, in test_command_option_inline_function_call
+    call_command('shell', command=self.script_with_inline_function)
+  File "/testbed/django/core/management/__init__.py", line 181, in call_command
+    return command.execute(*args, **defaults)
+  File "/testbed/django/core/management/base.py", line 398, in execute
+    output = self.handle(*args, **options)
+  File "/testbed/django/core/management/commands/shell.py", line 87, in handle
+    exec(options['command'])
+  File "<string>", line 4, in <module>
+  File "<string>", line 3, in f
+NameError: name 'django' is not defined
+
+======================================================================
+ERROR: test_stdin_read_inline_function_call (shell.tests.ShellCommandTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/testbed/lib/python3.6/unittest/mock.py", line 1183, in patched
+    return func(*args, **keywargs)
+  File "/testbed/tests/shell/tests.py", line 71, in test_stdin_read_inline_function_call
+    call_command('shell')
+  File "/testbed/django/core/management/__init__.py", line 181, in call_command
+    return command.execute(*args, **defaults)
+  File "/testbed/django/core/management/base.py", line 398, in execute
+    output = self.handle(*args, **options)
+  File "/testbed/django/core/management/commands/shell.py", line 93, in handle
+    exec(sys.stdin.read())
+  File "<string>", line 4, in <module>
+  File "<string>", line 3, in f
+NameError: name 'django' is not defined
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.007s
+
+FAILED (errors=2)

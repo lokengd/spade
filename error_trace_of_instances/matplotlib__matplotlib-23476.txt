@@ -1,0 +1,13 @@
+=================================== FAILURES ===================================
+____________________ test_unpickle_with_device_pixel_ratio _____________________
+
+    def test_unpickle_with_device_pixel_ratio():
+        fig = Figure(dpi=42)
+        fig.canvas._set_device_pixel_ratio(7)
+        assert fig.dpi == 42*7
+        fig2 = pickle.loads(pickle.dumps(fig))
+>       assert fig2.dpi == 42
+E       assert 294 == 42
+E        +  where 294 = <Figure size 2352x1764 with 0 Axes>.dpi
+
+lib/matplotlib/tests/test_figure.py:1391: AssertionError

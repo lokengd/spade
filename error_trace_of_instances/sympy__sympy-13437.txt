@@ -1,0 +1,5 @@
+________________________________________________________________________________
+______ sympy/functions/combinatorial/tests/test_comb_numbers.py:test_bell ______
+  File "/testbed/sympy/functions/combinatorial/tests/test_comb_numbers.py", line 87, in test_bell
+    assert bell(oo) == S.Infinity
+AssertionError

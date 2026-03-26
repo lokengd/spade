@@ -1,0 +1,107 @@
+=================================== FAILURES ===================================
+_______________________________ test_empty_line ________________________________
+
+    def test_empty_line():
+        # Smoke-test for gh#23954
+        figure = Figure()
+        figure.text(0.5, 0.5, "\nfoo\n\n")
+        buf = io.BytesIO()
+>       figure.savefig(buf, format='eps')
+
+lib/matplotlib/tests/test_backend_ps.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+lib/matplotlib/figure.py:3275: in savefig
+    self.canvas.print_figure(fname, **kwargs)
+lib/matplotlib/backend_bases.py:2339: in print_figure
+    result = print_method(
+lib/matplotlib/backend_bases.py:2205: in <lambda>
+    print_method = functools.wraps(meth)(lambda *args, **kwargs: meth(
+lib/matplotlib/_api/deprecation.py:410: in wrapper
+    return func(*inner_args, **inner_kwargs)
+lib/matplotlib/backends/backend_ps.py:869: in _print_ps
+    printer(fmt, outfile, dpi=dpi, dsc_comments=dsc_comments,
+lib/matplotlib/backends/backend_ps.py:927: in _print_figure
+    self.figure.draw(renderer)
+lib/matplotlib/artist.py:74: in draw_wrapper
+    result = draw(artist, renderer, *args, **kwargs)
+lib/matplotlib/artist.py:51: in draw_wrapper
+    return draw(artist, renderer)
+lib/matplotlib/figure.py:3072: in draw
+    mimage._draw_list_compositing_images(
+lib/matplotlib/image.py:131: in _draw_list_compositing_images
+    a.draw(renderer)
+lib/matplotlib/artist.py:51: in draw_wrapper
+    return draw(artist, renderer)
+lib/matplotlib/text.py:768: in draw
+    textrenderer.draw_text(gc, x, y, clean_line,
+lib/matplotlib/backends/backend_ps.py:248: in wrapper
+    return meth(self, *args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+self = <matplotlib.backends.backend_ps.RendererPS object at 0x7fffe92d9950>
+gc = <matplotlib.backend_bases.GraphicsContextBase object at 0x7fffe92d2ad0>
+x = 288.0, y = 256.35, s = ''
+prop = <matplotlib.font_manager.FontProperties object at 0x7fffe9101310>
+angle = 0.0, ismath = False, mtext = None
+
+    @_log_if_debug_on
+    def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
+        # docstring inherited
+    
+        if self._is_transparent(gc.get_rgb()):
+            return  # Special handling for fully transparent.
+    
+        if ismath == 'TeX':
+            return self.draw_tex(gc, x, y, s, prop, angle)
+    
+        if ismath:
+            return self.draw_mathtext(gc, x, y, s, prop, angle)
+    
+        if mpl.rcParams['ps.useafm']:
+            font = self._get_font_afm(prop)
+            scale = 0.001 * prop.get_size_in_points()
+            stream = []
+            thisx = 0
+            last_name = None  # kerns returns 0 for None.
+            xs_names = []
+            for c in s:
+                name = uni2type1.get(ord(c), f"uni{ord(c):04X}")
+                try:
+                    width = font.get_width_from_char_name(name)
+                except KeyError:
+                    name = 'question'
+                    width = font.get_width_char('?')
+                kern = font.get_kern_dist_from_name(last_name, name)
+                last_name = name
+                thisx += kern * scale
+                xs_names.append((thisx, name))
+                thisx += width * scale
+            ps_name = (font.postscript_name
+                       .encode("ascii", "replace").decode("ascii"))
+            stream.append((ps_name, xs_names))
+    
+        else:
+            font = self._get_font_ttf(prop)
+            self._character_tracker.track(font, s)
+            stream = []
+            prev_font = curr_stream = None
+            for item in _text_helpers.layout(s, font):
+                ps_name = (item.ft_object.postscript_name
+                           .encode("ascii", "replace").decode("ascii"))
+                if item.ft_object is not prev_font:
+                    if curr_stream:
+                        stream.append(curr_stream)
+                    prev_font = item.ft_object
+                    curr_stream = [ps_name, []]
+                curr_stream[1].append(
+                    (item.x, item.ft_object.get_glyph_name(item.glyph_idx))
+                )
+            # append the last entry
+            stream.append(curr_stream)
+    
+        self.set_color(*gc.get_rgb())
+    
+>       for ps_name, xs_names in stream:
+E       TypeError: cannot unpack non-iterable NoneType object
+
+lib/matplotlib/backends/backend_ps.py:673: TypeError

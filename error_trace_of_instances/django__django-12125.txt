@@ -1,0 +1,44 @@
+======================================================================
+FAIL: test_serialize_nested_class (migrations.test_writer.WriterTests) [NestedEnum]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_writer.py", line 403, in test_serialize_nested_class
+    {'import migrations.test_writer'},
+  File "/testbed/tests/migrations/test_writer.py", line 219, in assertSerializedResultEqual
+    self.assertEqual(MigrationWriter.serialize(value), target)
+AssertionError: Tuples differ: ('mig[15 chars]iter.NestedEnum', {'import migrations.test_writer'}) != ('mig[15 chars]iter.WriterTests.NestedEnum', {'import migrati[13 chars]er'})
+
+First differing element 0:
+'migrations.test_writer.NestedEnum'
+'migrations.test_writer.WriterTests.NestedEnum'
+
+- ('migrations.test_writer.NestedEnum', {'import migrations.test_writer'})
++ ('migrations.test_writer.WriterTests.NestedEnum',
++  {'import migrations.test_writer'})
+
+======================================================================
+FAIL: test_serialize_nested_class (migrations.test_writer.WriterTests) [NestedChoices]
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_writer.py", line 403, in test_serialize_nested_class
+    {'import migrations.test_writer'},
+  File "/testbed/tests/migrations/test_writer.py", line 219, in assertSerializedResultEqual
+    self.assertEqual(MigrationWriter.serialize(value), target)
+AssertionError: Tuples differ: ('mig[15 chars]iter.NestedChoices', {'import migrations.test_writer'}) != ('mig[15 chars]iter.WriterTests.NestedChoices', {'import migr[16 chars]er'})
+
+First differing element 0:
+'migrations.test_writer.NestedChoices'
+'migrations.test_writer.WriterTests.NestedChoices'
+
+- ('migrations.test_writer.NestedChoices', {'import migrations.test_writer'})
++ ('migrations.test_writer.WriterTests.NestedChoices',
++  {'import migrations.test_writer'})
+
+----------------------------------------------------------------------
+Ran 47 tests in 0.026s
+
+FAILED (failures=2)
+Testing against Django installed in '/testbed/django'
+Importing application migrations
+Skipping setup of unused database(s): default, other.
+System check identified no issues (0 silenced).

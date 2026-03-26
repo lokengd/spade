@@ -1,0 +1,29 @@
+======================================================================
+FAIL: test_ambiguous_relationship_model_from (invalid_models_tests.test_relative_fields.RelativeFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/invalid_models_tests/test_relative_fields.py", line 156, in test_ambiguous_relationship_model_from
+    id='fields.E334',
+AssertionError: Lists differ: [<Err[321 chars] use ForeignKey("self", symmetrical=False, thr[108 chars]34'>] != [<Err[321 chars] use ManyToManyField("self", through="Ambiguou[94 chars]34'>]
+
+First differing element 0:
+<Erro[320 chars] use ForeignKey("self", symmetrical=False, thr[107 chars]334'>
+<Erro[320 chars] use ManyToManyField("self", through="Ambiguou[93 chars]334'>
+
+Diff is 1861 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_ambiguous_relationship_model_to (invalid_models_tests.test_relative_fields.RelativeFieldTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/invalid_models_tests/test_relative_fields.py", line 187, in test_ambiguous_relationship_model_to
+    id='fields.E335',
+AssertionError: Lists differ: [<Err[320 chars] use ForeignKey("self", symmetrical=False, thr[108 chars]35'>] != [<Err[320 chars] use ManyToManyField("self", through="Ambiguou[94 chars]35'>]
+
+First differing element 0:
+<Erro[319 chars] use ForeignKey("self", symmetrical=False, thr[107 chars]335'>
+<Erro[319 chars] use ManyToManyField("self", through="Ambiguou[93 chars]335'>
+
+Diff is 1857 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------

@@ -1,0 +1,24 @@
+======================================================================
+ERROR: test_empty_permitted_ignored_empty_form (forms_tests.tests.test_formsets.FormsFormsetTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/tests/test_formsets.py", line 184, in test_empty_permitted_ignored_empty_form
+    self.assertIs(formset.empty_form.empty_permitted, True)
+  File "/testbed/django/forms/formsets.py", line 260, in empty_form
+    form = self.form(
+TypeError: forms_tests.tests.test_formsets.ArticleForm() got multiple values for keyword argument 'empty_permitted'
+
+======================================================================
+ERROR: test_empty_permitted_ignored_empty_form (forms_tests.tests.test_formsets.Jinja2FormsFormsetTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/forms_tests/tests/test_formsets.py", line 184, in test_empty_permitted_ignored_empty_form
+    self.assertIs(formset.empty_form.empty_permitted, True)
+  File "/testbed/django/forms/formsets.py", line 260, in empty_form
+    form = self.form(
+TypeError: forms_tests.tests.test_formsets.ArticleForm() got multiple values for keyword argument 'empty_permitted'
+
+----------------------------------------------------------------------
+Ran 159 tests in 0.427s
+
+FAILED (errors=2)

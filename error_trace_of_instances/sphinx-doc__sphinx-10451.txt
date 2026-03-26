@@ -1,0 +1,125 @@
+=================================== FAILURES ===================================
+[31m[1m_____________ test_napoleon_and_autodoc_typehints_description_all ______________[0m
+
+app = <SphinxTestApp buildername='text'>
+status = <_io.StringIO object at 0x7ffffbdb7910>
+warning = <_io.StringIO object at 0x7ffffbdb79b0>
+
+    [0m[37m@pytest[39;49;00m.mark.sphinx([33m'[39;49;00m[33mtext[39;49;00m[33m'[39;49;00m, testroot=[33m'[39;49;00m[33mext-napoleon[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+                        confoverrides={[33m'[39;49;00m[33mautodoc_typehints[39;49;00m[33m'[39;49;00m: [33m'[39;49;00m[33mdescription[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+                                       [33m'[39;49;00m[33mautodoc_typehints_description_target[39;49;00m[33m'[39;49;00m: [33m'[39;49;00m[33mall[39;49;00m[33m'[39;49;00m})[90m[39;49;00m
+    [94mdef[39;49;00m [92mtest_napoleon_and_autodoc_typehints_description_all[39;49;00m(app, status, warning):[90m[39;49;00m
+        app.build()[90m[39;49;00m
+        content = (app.outdir / [33m'[39;49;00m[33mtypehints.txt[39;49;00m[33m'[39;49;00m).read_text(encoding=[33m'[39;49;00m[33mutf-8[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+>       [94massert[39;49;00m content == ([90m[39;49;00m
+            [33m'[39;49;00m[33mtypehints[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m*********[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33mmypackage.typehints.hello(x, *args, **kwargs)[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m   Parameters:[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      * **x** (*int*) -- X[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      * ***args** (*int*) -- Additional arguments.[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      * ****kwargs** (*int*) -- Extra arguments.[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m   Return type:[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      None[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+        )[90m[39;49;00m
+[1m[31mE       AssertionError: assert 'typehints\n*...n      None\n' == 'typehints\n*...n      None\n'[0m
+[1m[31mE         [0m
+[1m[31mE         Skipping 119 identical leading characters in diff, use -v to show[0m
+[1m[31mE         - ***args** (*int*) -- Additional arguments.[0m
+[1m[31mE         ?           --------[0m
+[1m[31mE         + ***args** -- Additional arguments.[0m
+[1m[31mE           [0m
+[1m[31mE         -       * ****kwargs** (*int*) -- Extra arguments....[0m
+[1m[31mE         [0m
+[1m[31mE         ...Full output truncated (9 lines hidden), use '-vv' to show[0m
+
+[1m[31mtests/test_ext_napoleon_docstring.py[0m:2604: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: text
+# srcdir: /tmp/pytest-of-root/pytest-0/ext-napoleon
+# outdir: /tmp/pytest-of-root/pytest-0/ext-napoleon/_build/text
+# status: 
+[01mRunning Sphinx v5.1.0+/195e911f1[39;49;00m
+[01mbuilding [mo]: [39;49;00mtargets for 0 po files that are out of date
+[01mbuilding [text]: [39;49;00mtargets for 2 source files that are out of date
+[01mupdating environment: [39;49;00m[new config] 2 added, 0 changed, 0 removed
+[01mreading sources... [39;49;00m[ 50%] [35mindex[39;49;00m                                                
+[01mreading sources... [39;49;00m[100%] [35mtypehints[39;49;00m                                            
+[01mlooking for now-outdated files... [39;49;00mnone found
+[01mpickling environment... [39;49;00mdone
+[01mchecking consistency... [39;49;00mdone
+[01mpreparing documents... [39;49;00mdone
+[01mwriting output... [39;49;00m[ 50%] [32mindex[39;49;00m                                                 
+[01mwriting output... [39;49;00m[100%] [32mtypehints[39;49;00m                                             
+[01mbuild succeeded.[39;49;00m
+
+The text files are in ../tmp/pytest-of-root/pytest-0/ext-napoleon/_build/text.
+
+# warning: 
+
+[31m[1m______ test_napoleon_and_autodoc_typehints_description_documented_params _______[0m
+
+app = <SphinxTestApp buildername='text'>
+status = <_io.StringIO object at 0x7ffffbb1f2d0>
+warning = <_io.StringIO object at 0x7ffffbb1f910>
+
+    [0m[37m@pytest[39;49;00m.mark.sphinx([33m'[39;49;00m[33mtext[39;49;00m[33m'[39;49;00m, testroot=[33m'[39;49;00m[33mext-napoleon[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+                        confoverrides={[33m'[39;49;00m[33mautodoc_typehints[39;49;00m[33m'[39;49;00m: [33m'[39;49;00m[33mdescription[39;49;00m[33m'[39;49;00m,[90m[39;49;00m
+                                       [33m'[39;49;00m[33mautodoc_typehints_description_target[39;49;00m[33m'[39;49;00m: [33m'[39;49;00m[33mdocumented_params[39;49;00m[33m'[39;49;00m})[90m[39;49;00m
+    [94mdef[39;49;00m [92mtest_napoleon_and_autodoc_typehints_description_documented_params[39;49;00m(app, status, warning):[90m[39;49;00m
+        app.build()[90m[39;49;00m
+        content = (app.outdir / [33m'[39;49;00m[33mtypehints.txt[39;49;00m[33m'[39;49;00m).read_text(encoding=[33m'[39;49;00m[33mutf-8[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
+>       [94massert[39;49;00m content == ([90m[39;49;00m
+            [33m'[39;49;00m[33mtypehints[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m*********[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33mmypackage.typehints.hello(x, *args, **kwargs)[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m   Parameters:[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      * **x** (*int*) -- X[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      * ***args** (*int*) -- Additional arguments.[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+            [33m'[39;49;00m[33m      * ****kwargs** (*int*) -- Extra arguments.[39;49;00m[33m\n[39;49;00m[33m'[39;49;00m[90m[39;49;00m
+        )[90m[39;49;00m
+[1m[31mE       AssertionError: assert 'typehints\n*... arguments.\n' == 'typehints\n*... arguments.\n'[0m
+[1m[31mE         [0m
+[1m[31mE         Skipping 119 identical leading characters in diff, use -v to show[0m
+[1m[31mE         - ***args** (*int*) -- Additional arguments.[0m
+[1m[31mE         ?           --------[0m
+[1m[31mE         + ***args** -- Additional arguments.[0m
+[1m[31mE           [0m
+[1m[31mE         -       * ****kwargs** (*int*) -- Extra arguments.[0m
+[1m[31mE         ?                      --------[0m
+[1m[31mE         +       * ****kwargs** -- Extra arguments.[0m
+
+[1m[31mtests/test_ext_napoleon_docstring.py[0m:2628: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+# testroot: root
+# builder: text
+# srcdir: /tmp/pytest-of-root/pytest-0/ext-napoleon
+# outdir: /tmp/pytest-of-root/pytest-0/ext-napoleon/_build/text
+# status: 
+[01mRunning Sphinx v5.1.0+/195e911f1[39;49;00m
+[01mbuilding [mo]: [39;49;00mtargets for 0 po files that are out of date
+[01mbuilding [text]: [39;49;00mtargets for 0 source files that are out of date
+[01mupdating environment: [39;49;00m[config changed ('autodoc_typehints_description_target')] 2 added, 0 changed, 0 removed
+[01mreading sources... [39;49;00m[ 50%] [35mindex[39;49;00m                                                
+[01mreading sources... [39;49;00m[100%] [35mtypehints[39;49;00m                                            
+[01mlooking for now-outdated files... [39;49;00mnone found
+[01mpickling environment... [39;49;00mdone
+[01mchecking consistency... [39;49;00mdone
+[01mpreparing documents... [39;49;00mdone
+[01mwriting output... [39;49;00m[ 50%] [32mindex[39;49;00m                                                 
+[01mwriting output... [39;49;00m[100%] [32mtypehints[39;49;00m                                             
+[01mbuild succeeded.[39;49;00m
+
+The text files are in ../tmp/pytest-of-root/pytest-0/ext-napoleon/_build/text.
+
+# warning:

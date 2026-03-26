@@ -1,0 +1,24 @@
+======================================================================
+FAIL: test_inherited_ordering_pk_desc (model_inheritance.tests.ModelInheritanceTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/model_inheritance/tests.py", line 217, in test_inherited_ordering_pk_desc
+    self.assertSequenceEqual(qs, [p2, p1])
+AssertionError: Sequences differ: <QuerySet [<Parent: Parent object (1)>, <Parent: Parent object (2)>]> != [<Parent: Parent object (2)>, <Parent: Parent object (1)>]
+
+First differing element 0:
+<Parent: Parent object (1)>
+<Parent: Parent object (2)>
+
+- <QuerySet [<Parent: Parent object (1)>, <Parent: Parent object (2)>]>
+? ----------                         ^                            ^   -
+
++ [<Parent: Parent object (2)>, <Parent: Parent object (1)>]
+?                          ^                            ^
+
+
+----------------------------------------------------------------------
+Ran 34 tests in 0.044s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

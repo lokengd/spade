@@ -1,0 +1,12 @@
+======================================================================
+FAIL: test_send_robust_fail (dispatch.tests.DispatcherTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/dispatch/tests.py", line 170, in test_send_robust_fail
+    result = a_signal.send_robust(sender=self, val='test')
+AssertionError: no logs of level ERROR or higher triggered on django.dispatch
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.022s
+
+FAILED (failures=1)

@@ -1,0 +1,437 @@
+=================================== FAILURES ===================================
+_______________________ TestDataset.test_sel_categorical _______________________
+
+self = <xarray.tests.test_dataset.TestDataset object at 0x7fffc1937310>
+
+    def test_sel_categorical(self):
+        ind = pd.Series(["foo", "bar"], dtype="category")
+        df = pd.DataFrame({"ind": ind, "values": [1, 2]})
+>       ds = df.set_index("ind").to_xarray()
+
+xarray/tests/test_dataset.py:1427: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/core/generic.py:3222: in to_xarray
+    xarray = import_optional_dependency("xarray")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'xarray', extra = '', errors = 'raise', min_version = None
+
+    def import_optional_dependency(
+        name: str,
+        extra: str = "",
+        errors: str = "raise",
+        min_version: str | None = None,
+    ):
+        """
+        Import an optional dependency.
+    
+        By default, if a dependency is missing an ImportError with a nice
+        message will be raised. If a dependency is present, but too old,
+        we raise.
+    
+        Parameters
+        ----------
+        name : str
+            The module name.
+        extra : str
+            Additional text to include in the ImportError message.
+        errors : str {'raise', 'warn', 'ignore'}
+            What to do when a dependency is not found or its version is too old.
+    
+            * raise : Raise an ImportError
+            * warn : Only applicable when a module's version is to old.
+              Warns that the version is too old and returns None
+            * ignore: If the module is not installed, return None, otherwise,
+              return the module, even if the version is too old.
+              It's expected that users validate the version locally when
+              using ``errors="ignore"`` (see. ``io/html.py``)
+        min_version : str, default None
+            Specify a minimum version that is different from the global pandas
+            minimum version required.
+        Returns
+        -------
+        maybe_module : Optional[ModuleType]
+            The imported module, when found and the version is correct.
+            None is returned when the package is not found and `errors`
+            is False, or when the package's version is too old and `errors`
+            is ``'warn'``.
+        """
+    
+        assert errors in {"warn", "raise", "ignore"}
+    
+        package_name = INSTALL_MAPPING.get(name)
+        install_name = package_name if package_name is not None else name
+    
+        msg = (
+            f"Missing optional dependency '{install_name}'. {extra} "
+            f"Use pip or conda to install {install_name}."
+        )
+        try:
+            module = importlib.import_module(name)
+        except ImportError:
+            if errors == "raise":
+                raise ImportError(msg)
+            else:
+                return None
+    
+        # Handle submodules: if we have submodule, grab parent module from sys.modules
+        parent = name.split(".")[0]
+        if parent != name:
+            install_name = parent
+            module_to_get = sys.modules[install_name]
+        else:
+            module_to_get = module
+        minimum_version = min_version if min_version is not None else VERSIONS.get(parent)
+        if minimum_version:
+            version = get_version(module_to_get)
+            if version and Version(version) < Version(minimum_version):
+                msg = (
+                    f"Pandas requires version '{minimum_version}' or newer of '{parent}' "
+                    f"(version '{version}' currently installed)."
+                )
+                if errors == "warn":
+                    warnings.warn(
+                        msg,
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+                    return None
+                elif errors == "raise":
+>                   raise ImportError(msg)
+E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.15.2.dev111+g79b8d8f0c' currently installed).
+
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/compat/_optional.py:171: ImportError
+____________________ TestDataset.test_sel_categorical_error ____________________
+
+self = <xarray.tests.test_dataset.TestDataset object at 0x7fffc1937460>
+
+    def test_sel_categorical_error(self):
+        ind = pd.Series(["foo", "bar"], dtype="category")
+        df = pd.DataFrame({"ind": ind, "values": [1, 2]})
+>       ds = df.set_index("ind").to_xarray()
+
+xarray/tests/test_dataset.py:1435: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/core/generic.py:3222: in to_xarray
+    xarray = import_optional_dependency("xarray")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'xarray', extra = '', errors = 'raise', min_version = None
+
+    def import_optional_dependency(
+        name: str,
+        extra: str = "",
+        errors: str = "raise",
+        min_version: str | None = None,
+    ):
+        """
+        Import an optional dependency.
+    
+        By default, if a dependency is missing an ImportError with a nice
+        message will be raised. If a dependency is present, but too old,
+        we raise.
+    
+        Parameters
+        ----------
+        name : str
+            The module name.
+        extra : str
+            Additional text to include in the ImportError message.
+        errors : str {'raise', 'warn', 'ignore'}
+            What to do when a dependency is not found or its version is too old.
+    
+            * raise : Raise an ImportError
+            * warn : Only applicable when a module's version is to old.
+              Warns that the version is too old and returns None
+            * ignore: If the module is not installed, return None, otherwise,
+              return the module, even if the version is too low.
+              It's expected that users validate the version locally when
+              using ``errors="ignore"`` (see. ``io/html.py``)
+        min_version : str, default None
+            Specify a minimum version that is different from the global pandas
+            minimum version required.
+        Returns
+        -------
+        maybe_module : Optional[ModuleType]
+            The imported module, when found and the version is correct.
+            None is returned when the package is not found and `errors`
+            is False, or when the package's version is too old and `errors`
+            is ``'warn'``.
+        """
+    
+        assert errors in {"warn", "raise", "ignore"}
+    
+        package_name = INSTALL_MAPPING.get(name)
+        install_name = package_name if package_name is not None else name
+    
+        msg = (
+            f"Missing optional dependency '{install_name}'. {extra} "
+            f"Use pip or conda to install {install_name}."
+        )
+        try:
+            module = importlib.import_module(name)
+        except ImportError:
+            if errors == "raise":
+                raise ImportError(msg)
+            else:
+                return None
+    
+        # Handle submodules: if we have submodule, grab parent module from sys.modules
+        parent = name.split(".")[0]
+        if parent != name:
+            install_name = parent
+            module_to_get = sys.modules[install_name]
+        else:
+            module_to_get = module
+        minimum_version = min_version if min_version is not None else VERSIONS.get(parent)
+        if minimum_version:
+            version = get_version(module_to_get)
+            if version and Version(version) < Version(minimum_version):
+                msg = (
+                    f"Pandas requires version '{minimum_version}' or newer of '{parent}' "
+                    f"(version '{version}' currently installed)."
+                )
+                if errors == "warn":
+                    warnings.warn(
+                        msg,
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+                    return None
+                elif errors == "raise":
+>                   raise ImportError(msg)
+E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.15.2.dev111+g79b8d8f0c' currently installed).
+
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/compat/_optional.py:171: ImportError
+___________________ TestDataset.test_categorical_multiindex ____________________
+
+self = <xarray.tests.test_dataset.TestDataset object at 0x7fffc1937910>
+
+    def test_categorical_multiindex(self):
+        i1 = pd.Series([0, 0])
+        cat = pd.CategoricalDtype(categories=["foo", "baz", "bar"])
+        i2 = pd.Series(["baz", "bar"], dtype=cat)
+    
+        df = pd.DataFrame({"i1": i1, "i2": i2, "values": [1, 2]}).set_index(
+            ["i1", "i2"]
+        )
+>       actual = df.to_xarray()
+
+xarray/tests/test_dataset.py:1482: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/core/generic.py:3222: in to_xarray
+    xarray = import_optional_dependency("xarray")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'xarray', extra = '', errors = 'raise', min_version = None
+
+    def import_optional_dependency(
+        name: str,
+        extra: str = "",
+        errors: str = "raise",
+        min_version: str | None = None,
+    ):
+        """
+        Import an optional dependency.
+    
+        By default, if a dependency is missing an ImportError with a nice
+        message will be raised. If a dependency is present, but too old,
+        we raise.
+    
+        Parameters
+        ----------
+        name : str
+            The module name.
+        extra : str
+            Additional text to include in the ImportError message.
+        errors : str {'raise', 'warn', 'ignore'}
+            What to do when a dependency is not found or its version is too old.
+    
+            * raise : Raise an ImportError
+            * warn : Only applicable when a module's version is to old.
+              Warns that the version is too old and returns None
+            * ignore: If the module is not installed, return None, otherwise,
+              return the module, even if the version is too old.
+              It's expected that users validate the version locally when
+              using ``errors="ignore"`` (see. ``io/html.py``)
+        min_version : str, default None
+            Specify a minimum version that is different from the global pandas
+            minimum version required.
+        Returns
+        -------
+        maybe_module : Optional[ModuleType]
+            The imported module, when found and the version is correct.
+            None is returned when the package is not found and `errors`
+            is False, or when the package's version is too old and `errors`
+            is ``'warn'``.
+        """
+    
+        assert errors in {"warn", "raise", "ignore"}
+    
+        package_name = INSTALL_MAPPING.get(name)
+        install_name = package_name if package_name is not None else name
+    
+        msg = (
+            f"Missing optional dependency '{install_name}'. {extra} "
+            f"Use pip or conda to install {install_name}."
+        )
+        try:
+            module = importlib.import_module(name)
+        except ImportError:
+            if errors == "raise":
+                raise ImportError(msg)
+            else:
+                return None
+    
+        # Handle submodules: if we have submodule, grab parent module from sys.modules
+        parent = name.split(".")[0]
+        if parent != name:
+            install_name = parent
+            module_to_get = sys.modules[install_name]
+        else:
+            module_to_get = module
+        minimum_version = min_version if min_version is not None else VERSIONS.get(parent)
+        if minimum_version:
+            version = get_version(module_to_get)
+            if version and Version(version) < Version(minimum_version):
+                msg = (
+                    f"Pandas requires version '{minimum_version}' or newer of '{parent}' "
+                    f"(version '{version}' currently installed)."
+                )
+                if errors == "warn":
+                    warnings.warn(
+                        msg,
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+                    return None
+                elif errors == "raise":
+>                   raise ImportError(msg)
+E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.15.2.dev111+g79b8d8f0c' currently installed).
+
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/compat/_optional.py:171: ImportError
+____________ TestDataset.test_to_stacked_array_to_unstacked_dataset ____________
+
+self = <xarray.tests.test_dataset.TestDataset object at 0x7fffc193f0d0>
+
+    def test_to_stacked_array_to_unstacked_dataset(self):
+    
+        # single dimension: regression test for GH4049
+        arr = xr.DataArray(np.arange(3), coords=[("x", [0, 1, 2])])
+        data = xr.Dataset({"a": arr, "b": arr})
+        stacked = data.to_stacked_array("y", sample_dims=["x"])
+>       unstacked = stacked.to_unstacked_dataset("y")
+
+xarray/tests/test_dataset.py:3039: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ E                   xarray.core.merge.MergeError: conflicting values for variable 'y' on objects to be combined. You can skip this check by specifying compat='override'.
+
+xarray/core/merge.py:142: MergeError
+_________________ TestDataset.test_from_dataframe_categorical __________________
+
+self = <xarray.tests.test_dataset.TestDataset object at 0x7fffc191af80>
+
+    def test_from_dataframe_categorical(self):
+        cat = pd.CategoricalDtype(
+            categories=["foo", "bar", "baz", "qux", "quux", "corge"]
+        )
+        i1 = pd.Series(["foo", "bar", "foo"], dtype=cat)
+        i2 = pd.Series(["bar", "bar", "baz"], dtype=cat)
+    
+        df = pd.DataFrame({"i1": i1, "i2": i2, "values": [1, 2, 3]})
+>       ds = df.set_index("i1").to_xarray()
+
+xarray/tests/test_dataset.py:3986: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/core/generic.py:3222: in to_xarray
+    xarray = import_optional_dependency("xarray")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'xarray', extra = '', errors = 'raise', min_version = None
+
+    def import_optional_dependency(
+        name: str,
+        extra: str = "",
+        errors: str = "raise",
+        min_version: str | None = None,
+    ):
+        """
+        Import an optional dependency.
+    
+        By default, if a dependency is missing an ImportError with a nice
+        message will be raised. If a dependency is present, but too old,
+        we raise.
+    
+        Parameters
+        ----------
+        name : str
+            The module name.
+        extra : str
+            Additional text to include in the ImportError message.
+        errors : str {'raise', 'warn', 'ignore'}
+            What to do when a dependency is not found or its version is too old.
+    
+            * raise : Raise an ImportError
+            * warn : Only applicable when a module's version is to old.
+              Warns that the version is too old and returns None
+            * ignore: If the module is not installed, return None, otherwise,
+              return the module, even if the version is too old.
+              It's expected that users validate the version locally when
+              using ``errors="ignore"`` (see. ``io/html.py``)
+        min_version : str, default None
+            Specify a minimum version that is different from the global pandas
+            minimum version required.
+        Returns
+        -------
+        maybe_module : Optional[ModuleType]
+            The imported module, when found and the version is correct.
+            None is returned when the package is not found and `errors`
+            is False, or when the package's version is too old and `errors`
+            is ``'warn'``.
+        """
+    
+        assert errors in {"warn", "raise", "ignore"}
+    
+        package_name = INSTALL_MAPPING.get(name)
+        install_name = package_name if package_name is not None else name
+    
+        msg = (
+            f"Missing optional dependency '{install_name}'. {extra} "
+            f"Use pip or conda to install {install_name}."
+        )
+        try:
+            module = importlib.import_module(name)
+        except ImportError:
+            if errors == "raise":
+                raise ImportError(msg)
+            else:
+                return None
+    
+        # Handle submodules: if we have submodule, grab parent module from sys.modules
+        parent = name.split(".")[0]
+        if parent != name:
+            install_name = parent
+            module_to_get = sys.modules[install_name]
+        else:
+            module_to_get = module
+        minimum_version = min_version if min_version is not None else VERSIONS.get(parent)
+        if minimum_version:
+            version = get_version(module_to_get)
+            if version and Version(version) < Version(minimum_version):
+                msg = (
+                    f"Pandas requires version '{minimum_version}' or newer of '{parent}' "
+                    f"(version '{version}' currently installed)."
+                )
+                if errors == "warn":
+                    warnings.warn(
+                        msg,
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+                    return None
+                elif errors == "raise":
+>                   raise ImportError(msg)
+E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.15.2.dev111+g79b8d8f0c' currently installed).
+
+/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pandas/compat/_optional.py:171: ImportError

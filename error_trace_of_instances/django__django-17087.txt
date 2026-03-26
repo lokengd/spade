@@ -1,0 +1,19 @@
+======================================================================
+FAIL: test_serialize_nested_class_method (migrations.test_writer.WriterTests.test_serialize_nested_class_method)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/tests/migrations/test_writer.py", line 476, in test_serialize_nested_class_method
+    self.assertSerializedResultEqual(
+  File "/testbed/tests/migrations/test_writer.py", line 241, in assertSerializedResultEqual
+    self.assertEqual(MigrationWriter.serialize(value), target)
+AssertionError: Tuples differ: ('mig[15 chars]iter.NestedChoices.method', {'import migrations.test_writer'}) != ('mig[15 chars]iter.WriterTests.NestedChoices.method', {'impo[23 chars]er'})
+
+First differing element 0:
+'migrations.test_writer.NestedChoices.method'
+'migrations.test_writer.WriterTests.NestedChoices.method'
+
+- ('migrations.test_writer.NestedChoices.method',
++ ('migrations.test_writer.WriterTests.NestedChoices.method',
+?                          ++++++++++++
+
+   {'import migrations.test_writer'})

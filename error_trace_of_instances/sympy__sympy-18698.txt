@@ -1,0 +1,30 @@
+test_issue_5786 f
+test_noncommutative ok
+test_to_rational_coeffs ok
+test_factor_terms F
+test_as_list ok
+test_issue_11198 ok
+test_Poly_precision ok
+test_issue_12400 ok
+test_issue_14364 ok
+test_issue_15669 ok
+test_issue_17988 ok
+test_issue_18205 ok
+test_issue_8695 F                                                         [FAIL]
+
+
+________________________________________________________________________________
+____________ sympy/polys/tests/test_polytools.py:test_factor_terms _____________
+Traceback (most recent call last):
+  File "/testbed/sympy/polys/tests/test_polytools.py", line 3276, in test_factor_terms
+    assert sqf_list(x*(x + y)) == (1, [(x**2 + x*y, 1)])
+AssertionError
+________________________________________________________________________________
+_____________ sympy/polys/tests/test_polytools.py:test_issue_8695 ______________
+Traceback (most recent call last):
+  File "/testbed/sympy/polys/tests/test_polytools.py", line 3340, in test_issue_8695
+    assert sqf_list(p) == result
+AssertionError
+
+== tests finished: 147 passed, 2 failed, 1 expected to fail, in 7.94 seconds ===
+DO *NOT* COMMIT!

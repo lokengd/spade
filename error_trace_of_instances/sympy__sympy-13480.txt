@@ -1,0 +1,52 @@
+test_coth E
+test_coth_series ok
+test_csch ok
+test_csch_series ok
+test_sech ok
+test_sech_series ok
+test_asinh ok
+test_asinh_rewrite ok
+test_asinh_series ok
+test_acosh ok
+test_acosh_rewrite ok
+test_acosh_series ok
+test_asech ok
+test_asech_series ok
+test_asech_rewrite ok
+test_acsch ok
+test_acsch_infinities ok
+test_acsch_rewrite ok
+test_atanh ok
+test_atanh_rewrite ok
+test_atanh_series ok
+test_acoth ok
+test_acoth_rewrite ok
+test_acoth_series ok
+test_inverses ok
+test_leading_term ok
+test_complex ok
+test_complex_2899 ok
+test_simplifications ok
+test_issue_4136 ok
+test_sinh_rewrite ok
+test_cosh_rewrite ok
+test_tanh_rewrite ok
+test_coth_rewrite ok
+test_csch_rewrite ok
+test_sech_rewrite ok
+test_derivs ok
+test_sinh_expansion ok
+test_cosh_expansion ok                                                    [FAIL]
+
+
+________________________________________________________________________________
+________ sympy/functions/elementary/tests/test_hyperbolic.py:test_coth _________
+  File "/testbed/sympy/functions/elementary/tests/test_hyperbolic.py", line 275, in test_coth
+    assert coth(log(tan(2))) == coth(log(-tan(2)))
+  File "/testbed/sympy/core/function.py", line 439, in __new__
+    result = super(Function, cls).__new__(cls, *args, **options)
+  File "/testbed/sympy/core/function.py", line 250, in __new__
+    evaluated = cls.eval(*args)
+  File "/testbed/sympy/functions/elementary/hyperbolic.py", line 590, in eval
+    if cotm is S.ComplexInfinity:
+NameError: name 'cotm' is not defined

@@ -1,0 +1,36 @@
+======================================================================
+ERROR: test_save_fk_after_parent_with_non_numeric_pk_set_on_child (many_to_one.tests.ManyToOneTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/db/models/fields/related_descriptors.py", line 173, in __get__
+    rel_obj = self.field.get_cached_value(instance)
+  File "/testbed/django/db/models/fields/mixins.py", line 15, in get_cached_value
+    return instance._state.fields_cache[cache_name]
+KeyError: 'parent'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/testbed/tests/many_to_one/tests.py", line 559, in test_save_fk_after_parent_with_non_numeric_pk_set_on_child
+    self.assertEqual(child.parent, parent)
+  File "/testbed/django/db/models/fields/related_descriptors.py", line 187, in __get__
+    rel_obj = self.get_object(instance)
+  File "/testbed/django/db/models/fields/related_descriptors.py", line 154, in get_object
+    return qs.get(self.field.get_reverse_related_filter(instance))
+  File "/testbed/django/db/models/query.py", line 435, in get
+    raise self.model.DoesNotExist(
+many_to_one.models.ParentStringPrimaryKey.DoesNotExist: ParentStringPrimaryKey matching query does not exist.
+
+======================================================================
+ERROR: test_save_fk_after_parent_with_non_numeric_pk_set_on_child (many_to_one.tests.ManyToOneTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/testbed/django/test/testcases.py", line 284, in _setup_and_call
+    self._post_teardown()
+  File "/testbed/django/test/testcases.py", line 1006, in _post_teardown
+    self._fixture_teardown()
+  File "/testbed/django/test/testcases.py", line 1247, in _fixture_teardown
+    connections[db_name].check_constraints()
+  File "/testbed/django/db/backends/sqlite3/base.py", line 352, in check_constraints
+    raise IntegrityError(
+django.db.utils.IntegrityError: The row in table 'many_to_one_childstringprimarykeyparent' with primary key '1' has an invalid foreign key: many_to_one_childstringprimarykeyparent.parent_id contains a value '' that does not have a corresponding value in many_to_one_parentstringprimarykey.name.
