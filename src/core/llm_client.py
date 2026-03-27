@@ -9,8 +9,21 @@ from src.core import settings
 from src.utils.logger import log, get_current_log_dir
 from src.utils.state_printer import pretty_print_state
 import logging
+import requests
 
 T = TypeVar('T', bound=BaseModel)
+
+LLM_SETTINGS = {
+    "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "repetition_penalty": 2.0,
+}
+API_KEY = "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"
+
 
 class LLM_Client:
     def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key_env: str = None):
@@ -156,6 +169,7 @@ class LLM_Client:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
+                # think=False,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
@@ -192,6 +206,7 @@ class LLM_Client:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
+                # think=False,
                 response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -214,4 +229,211 @@ class LLM_Client:
             log(f"LLM Structured Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
             log(f"Raw LLM Response that possibly caused the error: \n{raw_json}", caller=self.agent_name, level=logging.ERROR)
             e.raw_json = raw_json
+            raise
+
+
+
+
+
+class OpenRouterClient:
+    """Minimal OpenRouter API client with optional streaming support."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = LLM_SETTINGS["model"],
+        base_url: str = "https://openrouter.ai/api/v1",
+        verbose: bool = False,
+        temperature: float = LLM_SETTINGS["temperature"],
+        top_p: float = LLM_SETTINGS["top_p"],
+        top_k: int = LLM_SETTINGS["top_k"],
+        min_p: float = LLM_SETTINGS["min_p"],
+        presence_penalty: float = LLM_SETTINGS["presence_penalty"],
+        repetition_penalty: float = LLM_SETTINGS["repetition_penalty"],
+        stream: bool = False,
+        site_url: str | None = None,
+        app_name: str | None = None,
+    ):
+        self.model = model
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self.api_url = f"{self.base_url}/chat/completions"
+        self.models_url = f"{self.base_url}/models"
+        self.verbose = verbose
+        self.stream = stream
+        self.default_params = {
+            "temperature": temperature,
+            "top_p": top_p,
+            "presence_penalty": presence_penalty,
+            "frequency_penalty": repetition_penalty,  # closest OpenRouter/OpenAI-compatible analog
+        }
+
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        # if site_url:
+        #     self.headers["HTTP-Referer"] = site_url
+        # if app_name:
+        #     self.headers["X-Title"] = app_name
+
+    def check_connection(self) -> bool:
+        """Check API key and model availability."""
+        try:
+            resp = requests.get(self.models_url, headers=self.headers, timeout=20)
+            resp.raise_for_status()
+            data = resp.json()
+            models = [m.get("id", "") for m in data.get("data", [])]
+            if self.model not in models:
+                print(f"⚠ Model '{self.model}' not found via OpenRouter.")
+                print(f"Available examples: {', '.join(models[:10])}")
+                return False
+            print(f"✅ OpenRouter connected. Model '{self.model}' ready.")
+            return True
+        except Exception as e:
+            print(f"❌ Cannot connect to OpenRouter: {e}")
+            return False
+
+    def generate_text(
+        self,
+        prompt: str,
+        max_tokens: int = 4096,
+        temperature: float = 0.2,
+        sample_id: int = 0,
+    ) -> dict:
+        """Generate completion from OpenRouter chat/completions."""
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "effort": "low",
+            # "stream": self.stream,
+            # **self.default_params,
+            # "temperature": temperature,  # override per-call
+        }
+
+        raw_output = ""
+        usage = {"prompt_tokens": len(prompt) // 4, "completion_tokens": 0}
+
+        response = requests.post(
+            self.api_url,
+            headers=self.headers,
+            json=payload,
+            timeout=180,
+        )
+        response.raise_for_status()
+        data = response.json()
+        raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        return {"response": raw_output, "usage": usage}
+    
+    def generate_json_response(self, system_prompt: str, user_prompt: str,response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
+        """
+        Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
+        """
+        raw_json = "No response received"
+        try:
+            log(f"System Prompt: <see trajectory>", caller=self.model)    
+            log(f"User Prompt: <see trajectory>", caller=self.model)    
+            # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
+            # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
+
+
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content":  user_prompt}],
+                "max_tokens": 4096,
+                "effort": "high",
+                # "stream": self.stream,
+                # **self.default_params,
+                # "temperature": temperature,  # override per-call
+            }
+
+            raw_output = ""
+            usage = {"prompt_tokens": 0, "completion_tokens": 0}
+
+            response = requests.post(
+                self.api_url,
+                headers=self.headers,
+                json=payload,
+                timeout=180,
+            )
+            response.raise_for_status()
+            data = response.json()
+            raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+            print(raw_output)
+            parsed_data = response_model.model_validate_json(raw_output)
+
+            # raw_json = response.choices[0].message.content
+            metrics = {} # self._calculate_metrics(response.usage, 0)
+
+            # print(raw_json)
+
+            telemetry = {} # self._save_trajectory(system_prompt, user_prompt, json.loads(raw_output), metrics, loop_info=loop_info)
+            # parsed_data = response_model.model_validate_json(raw_json)
+            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model)
+            # log(f"LLM response metrics: {metrics}", caller=self.model)
+
+            return parsed_data, metrics, telemetry
+        
+        except Exception as e:
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.model, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.model, level=logging.ERROR)
+            e.raw_output = raw_output
+            raise
+
+    def generate_raw_response(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
+        """
+        Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
+        """
+        raw_json = "No response received"
+        try:
+            log(f"System Prompt: <see trajectory>", caller=self.model)    
+            log(f"User Prompt: <see trajectory>", caller=self.model)    
+            # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
+            # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
+
+
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content":  user_prompt}],
+                "max_tokens": 4096,
+                "effort": "high",
+                # "stream": self.stream,
+                # **self.default_params,
+                # "temperature": temperature,  # override per-call
+            }
+
+            raw_output = ""
+            usage = {"prompt_tokens": 0, "completion_tokens": 0}
+
+            response = requests.post(
+                self.api_url,
+                headers=self.headers,
+                json=payload,
+                timeout=180,
+            )
+            response.raise_for_status()
+            data = response.json()
+            raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+            # print(raw_output)
+
+            # raw_json = response.choices[0].message.content
+            metrics = {} # self._calculate_metrics(response.usage, 0)
+
+            # print(raw_json)
+
+            telemetry = {} # self._save_trajectory(system_prompt, user_prompt, json.loads(raw_output), metrics, loop_info=loop_info)
+            # parsed_data = response_model.model_validate_json(raw_json)
+            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model)
+            # log(f"LLM response metrics: {metrics}", caller=self.model)
+
+            return raw_output, metrics, telemetry
+        
+        except Exception as e:
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.model, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.model, level=logging.ERROR)
+            e.raw_output = raw_output
             raise

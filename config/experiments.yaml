@@ -5,11 +5,11 @@ active_experiments: ["spade_trial_run"]
 experiments:
   spade_trial_run:
     description: "Trial run of SWE-Bench-Lite with sample bugs: astropy_scikit-learn"
-    k_patterns: 2
+    k_patterns: 1
     n_outer_loops: 1
     m_inner_loops: 1
     v_patience: 1
-    bug_list: ["scikit-learn__scikit-learn-10297"]
+    bug_list: ["astropy__astropy-12907"] # [""] astropy__astropy-12907 scikit-learn__scikit-learn-10297
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
     snippet_context_lines: 15
     # Optional: override default config: "llm.yaml" and "prompts.yaml"
