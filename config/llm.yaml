@@ -2,35 +2,35 @@
 agents:
   fl_ensemble:
     provider: "ollama" # model providers: "ollama", "openai", "gemini" etc
-    model: "qwen2.5-coder:latest"
+    model: "gemma3:4b"
     temperature: 0.3
     base_url: "http://localhost:11434/v1" # For local models, this is the URL of the local server. For cloud models, this would be the API endpoint. e.g., "https://generativelanguage.googleapis.com/v1beta/openai/"
     api_key_env: null  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
 
   pattern_selection:
     provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    model: "gemma3:4b"
     temperature: 0.1
     base_url: "http://localhost:11434/v1"
     api_key_env: null
 
   patchgen:
     provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    model: "gemma3:4b"
     temperature: 0.3
     base_url: "http://localhost:11434/v1"
     api_key_env: null 
 
   debaters:
     provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    model: "gemma3:4b"
     temperature: 0.3
     base_url: "http://localhost:11434/v1"
     api_key_env: null
 
   judge:
     provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    model: "gemma3:4b"
     temperature: 0.3
     base_url: "http://localhost:11434/v1"
     api_key_env: null

@@ -40,6 +40,9 @@ class BugContext(BaseModel):
     related_functions: Dict[str, List[str]] = {}
     edit_locations: List[EditLocation] = []
 
+    # Retrieved code snippets for each file
+    file_snippets: Dict[str, str] = {}
+
     # Expected output from  Reproduction steps 
     error_trace: Optional[str] = None
 
