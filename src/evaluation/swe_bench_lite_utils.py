@@ -332,11 +332,13 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 
 	if not report_file_data["method_success"]:
 		log(f"{run_id}: Failed to get report file data: {report_file_data.get('error')}", caller=CALLER, level=logging.ERROR)
-		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=report_file_data.get("error", "Unknown error while reading report file."))
+		log("Most likely patch application failed, please check the logs for details.", caller=CALLER, level=logging.ERROR)
+		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=report_file_data.get("error", "Patch Application Failed, Check logs for details."))
 	
 	if not test_output_data["method_success"]:
 		log(f"{run_id}: Failed to get test output file data: {test_output_data.get('error')}", caller=CALLER, level=logging.ERROR)
-		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=test_output_data.get("error", "Unknown error while reading test output file."))
+		log("Most likely patch application failed, please check the logs for details.", caller=CALLER, level=logging.ERROR)
+		return EvaluationResult(evaluation_ran_successfully=False, evaluation_error_message=test_output_data.get("error", "Patch Application Failed, Check logs for details."))
 
 	# bug_status = is_bug_resolved(instance_id, run_id, predictions_path).get("test_case_passed", False)
 	test_case_results = get_test_case_results(report_file_data["report_data"])
