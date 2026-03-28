@@ -218,3 +218,4 @@ __marimo__/
 
 # Project-specific ignores
 data/
+/config/api_keys.yaml

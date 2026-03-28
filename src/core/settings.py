@@ -23,10 +23,12 @@ FL_RESULTSET = ""
 # Default Configuration Paths
 DEFAULT_LLM_CONFIG_PATH = BASE_DIR / "config" / "llm.yaml"
 DEFAULT_PROMPTS_CONFIG_PATH = BASE_DIR / "config" / "prompts.yaml"
+DEFAULT_API_KEY_CONFIG_PATH = BASE_DIR / "config" / "api_keys.yaml"
 
 # Active Configuration Paths (can be overridden by experiments)
 LLM_CONFIG_PATH = DEFAULT_LLM_CONFIG_PATH
 PROMPTS_CONFIG_PATH = DEFAULT_PROMPTS_CONFIG_PATH
+API_KEY_CONFIG_PATH = DEFAULT_API_KEY_CONFIG_PATH
 
 # Expose the configuration dictionaries globally
 LLM_AGENTS = {}
@@ -43,7 +45,7 @@ def load_llm_config(config_path: pathlib.Path):
 def update_orchestration_settings(experiment_id: str):
     """Updates global orchestration constants and config paths based on the experiment_id."""
     global K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE, SNIPPET_CONTEXT_LINES, FL_RESULTSET
-    global LLM_CONFIG_PATH, PROMPTS_CONFIG_PATH
+    global LLM_CONFIG_PATH, PROMPTS_CONFIG_PATH, API_KEY_CONFIG_PATH
 
     exp = EXPERIMENTS.get(experiment_id)
     if not exp:
@@ -75,6 +77,12 @@ def update_orchestration_settings(experiment_id: str):
         PROMPTS_CONFIG_PATH = BASE_DIR / prompts_cfg
     else:
         PROMPTS_CONFIG_PATH = DEFAULT_PROMPTS_CONFIG_PATH
+
+    api_key_cfg = exp.get("api_key_config")
+    if api_key_cfg:
+        API_KEY_CONFIG_PATH = BASE_DIR / api_key_cfg
+    else:
+        API_KEY_CONFIG_PATH = DEFAULT_API_KEY_CONFIG_PATH
 
     # Reload LLM config
     load_llm_config(LLM_CONFIG_PATH)

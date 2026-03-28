@@ -321,8 +321,112 @@ patch_generation:
       
       {failed_patches_history}
 
-      Generate the patch STRICTLY as a single, valid JSON object. 
+      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
 
+#----------------------------
+patch_generation_new: 
+  json_response_one_shot: | # to be concatenated into system and user prompt
+    
+    
+  failed_patches_history: |
+    ## Previously Failed Patches
+    The patches listed below were previously generated but failed verification. 
+    {failed_patches}
+
+    **Rules for using this history:**
+    1. **Do Not Repeat:** You MUST NOT generate a patch that is identical to any of these failed attempts.
+    2. **Analyze the Flaws:** Use these failures as negative constraints. Analyze them to understand what specific logic, syntax, or architectural choices to avoid.
+  
+  # debate_history_section: | # to add debate history later
+  #   **Prior Debate History (for context — do NOT repeat failed approaches):**
+  #   {debate_history}
+
+  pattern_guided:
+    user: |
+      You are an expert code-repair agent. Your task is to fix a bug in a specific file using a provided Fix-Pattern.
+
+      Return EXACTLY one SEARCH/REPLACE block for patching the code.
+      
+      ### INSTRUCTIONS
+      Follow these steps in order:
+
+      1. **REASONING**: Briefly explain where in the code corrections are needed based on the Fix-Pattern. 
+      2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE block. 
+
+      ### CRITICAL RULES
+      - The SEARCH block must match the Source Code EXACTLY (same indentation, same spaces).
+      - Include 3 to 5 lines of surrounding context in the SEARCH block to make it unique.
+      - If no bugs are found, respond exactly with: `# No changes needed`
+
+      ### OUTPUT FORMAT
+
+      ```python
+      ### {filepath}
+      <<<<<<< SEARCH
+      [exact code from source code]
+      =======
+      [your fixed code]
+      >>>>>>> REPLACE
+      ```
+
+      ## Bug Issue Description
+      {issue_text}
+
+      ## Error Trace
+      {error_trace}
+
+      ## Suspicious Code Snippets
+      {suspicious_snippets}
+
+      ## Fix-Pattern
+      **Name:** {active_pattern}
+      **Description:** {active_pattern_description}
+      **Rationale:** {active_pattern_rationale}
+
+      {failed_patches_history}
+
+      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
+      
+  unconstrained:
+    user: |
+      You are an expert Software Engineer specializing in Automated Program Repair (APR).
+      Your goal is to generate a code patch to fix a bug.
+
+      ### INSTRUCTIONS
+      Follow these steps in order:
+
+      1. **REASONING**: Briefly explain where in the code corrections are needed.
+      2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE block. 
+
+      ### CRITICAL RULES
+      - The SEARCH block must match the Source Code EXACTLY (same indentation, same spaces).
+      - Include 3 to 5 lines of surrounding context in the SEARCH block to make it unique.
+      - If no bugs are found, respond exactly with: `# No changes needed`
+
+      ### OUTPUT FORMAT
+
+      ```python
+      ### {filepath}
+      <<<<<<< SEARCH
+      [exact code from source code]
+      =======
+      [your fixed code]
+      >>>>>>> REPLACE
+      ```
+
+      ## Bug Issue Description
+      {issue_text}
+
+      ## Error Trace
+      {error_trace}
+
+      ## Suspicious Code Snippets
+      {suspicious_snippets}
+
+      {failed_patches_history}
+
+      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
+  
 # =============================================================================
 # Debater Prompts
 # =============================================================================

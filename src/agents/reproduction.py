@@ -1,5 +1,5 @@
 from src.utils.logger import log
-from src.core.state import SpadeState
+from src.core.state import EvaluationResult, SpadeState
 from src.evaluation.swe_bench_lite_utils import run_evaluation_with_no_patch, cleanup_logs_and_results_for_run
 from src.utils.db_logger import db_logger
 import os
@@ -43,6 +43,25 @@ def run(state: SpadeState):
 
     log(f"Running reproduction check for Bug ID: {bug_id} with Run ID: {run_id}", caller=agent_name)
 
+    # create dummy evaluation result for now to test the flow
+    # evaluation_result = EvaluationResult(
+    #     evaluation_error_message = "dummy",
+    #     evaluation_ran_successfully = True,
+    #     bug_resolved = False,
+    #     patch_applied_successfully = False,
+    #     total_tests = -1,
+    #     pass_to_pass_success = False,
+    #     fail_to_pass_success = False,
+    #     pass_to_pass_failed_tests = [],
+    #     fail_to_pass_failed_tests = [],
+    #     pass_to_pass_successful_tests = [],
+    #     fail_to_pass_successful_tests = [],
+    #     test_output = "",
+    #     failed_test_traces = {}
+    # )
+    # return {"bug_context": bug_context,
+    #         "reproduction_evaluation_result": evaluation_result}
+
     try:
         # Run evaluation with no patch to confirm the bug is reproducible
         evaluation_result = run_evaluation_with_no_patch(
@@ -82,15 +101,6 @@ def run(state: SpadeState):
             log(f"No pre-processed error trace found for instance {bug_id}. Using error trace from evaluation result.", caller=agent_name)
 
         bug_context.error_trace = evaluation_result.test_output
-
-        # TEMP TEST - retrive pre-run error trace to speed up 
-        # SKIP error trace 
-        # trace_file = f"fl_results/swe_bench_lite_gold_patch/astropy__astropy/{bug_id}_error_trace.txt"
-        # if os.path.exists(trace_file):
-        #     log(f"TEMP FIX: Reading error trace from {trace_file}", caller=agent_name)
-        #     with open(trace_file, "r") as f:
-        #         test_output = f.read()
-        #         bug_context.error_trace = test_output
 
         return {
             "bug_context": bug_context,

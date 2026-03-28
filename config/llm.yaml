@@ -5,35 +5,37 @@ agents:
     model: "qwen2.5-coder:latest"
     temperature: 0.3
     base_url: "http://localhost:11434/v1" # For local models, this is the URL of the local server. For cloud models, this would be the API endpoint. e.g., "https://generativelanguage.googleapis.com/v1beta/openai/"
-    api_key_env: null  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
+    api_key: null  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
 
   pattern_selection:
     provider: "ollama"
     model: "qwen2.5-coder:latest"
     temperature: 0.1
     base_url: "http://localhost:11434/v1"
-    api_key_env: null
+    api_key: null
 
   patchgen:
-    provider: "ollama"
-    model: "qwen2.5-coder:latest"
-    temperature: 0.3
-    base_url: "http://localhost:11434/v1"
-    api_key_env: null 
+    provider: "openrouter.ai"
+    model: "gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
+    base_url: "https://openrouter.ai/api/v1"
+    temperature: 0.2
+    top_p: 0.95,
+    top_k: 20,
+    api_key: null 
 
   debaters:
     provider: "ollama"
     model: "qwen2.5-coder:latest"
     temperature: 0.3
     base_url: "http://localhost:11434/v1"
-    api_key_env: null
+    api_key: null
 
   judge:
     provider: "ollama"
     model: "qwen2.5-coder:latest"
     temperature: 0.3
     base_url: "http://localhost:11434/v1"
-    api_key_env: null
+    api_key: null
 
 # Cost per 1,000,000 (1 Million) tokens in USD
 costs:

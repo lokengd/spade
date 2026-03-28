@@ -278,6 +278,8 @@ class DBLogger:
 
     def log_telemetry(self, run_id: str, agent_name: str, log_data: dict) -> int:
         with sqlite3.connect(self.db_path) as conn:
+            metrics = log_data.get("metrics") or {}
+            loop = log_data.get("loop_info") or {}
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO llm_telemetry (
@@ -287,11 +289,19 @@ class DBLogger:
                     prompt_json, response_json
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                run_id, agent_name, log_data["model"], log_data["provider"],
-                log_data["loop_info"]["n"], log_data["loop_info"]["m"], log_data["loop_info"]["v"],
-                log_data["metrics"]["total_prompt_tokens"], log_data["metrics"]["total_completion_tokens"],
-                log_data["metrics"]["total_cost_usd"], log_data["metrics"]["total_seconds"],
-                json.dumps(log_data["prompts"]), json.dumps(log_data["response"])
+                run_id,
+                agent_name,
+                log_data.get("model"),
+                log_data.get("provider"),
+                loop.get("n"),
+                loop.get("m"),
+                loop.get("v"),
+                metrics.get("total_prompt_tokens"),
+                metrics.get("total_completion_tokens"),
+                metrics.get("total_cost_usd"),
+                metrics.get("total_seconds"),
+                json.dumps(log_data.get("prompts")) if log_data.get("prompts") is not None else None,
+                json.dumps(log_data.get("response")) if log_data.get("response") is not None else None
             ))
             return cursor.lastrowid
 
