@@ -24,7 +24,7 @@ class PatchGenerationResponse(BaseModel):
     code_diff: str = Field(description="The generated patch in UNIFIED DIFF format.")
 
 
-def generate_v1_patch_bk(state: SpadeState):
+def generate_v1_patch_backup(state: SpadeState):
     # active_pattern is passed via Send API in graph.py
     active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
     run_id = state.get("thread_id")
@@ -187,7 +187,7 @@ def generate_v1_patch_bk(state: SpadeState):
         "total_metrics": metrics
     }
 
-def generate_refined_patch(state: SpadeState):
+def generate_refined_patch_backup(state: SpadeState):
     ## BUG? origin_id should be renamed to winning_patch_id ? winning_patch_id maybe in v2, or v3 if v_patience is more than 2 
     origin_id = state.get("current_v1_id", "unknown_origin") 
     refined_patches = state.get("refined_patches", [])
@@ -329,21 +329,17 @@ def generate_refined_patch(state: SpadeState):
 
 
 
+
 # ---------------------
 
-import argparse
 from email.mime import text
 import json
 import os
 import shutil
-import subprocess
 import hashlib
 import requests
 from difflib import unified_diff
 from pathlib import Path
-from datetime import datetime
-
-from datasets import load_dataset
 
 import re
 from typing import Dict, List, Tuple, Optional, Set
@@ -651,6 +647,11 @@ def generate_v1_patch( #todo ------------------------------------
     # Combine all patches
     final_patch = "\n\n".join(all_patches)
 
+    # export final patch to txt for debugging
+    with open(f"final_patch_{instance_id}.txt", "w") as f:
+        f.write(final_patch)
+
+
     explanation = "<skip>"
     # # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
@@ -684,5 +685,252 @@ def generate_v1_patch( #todo ------------------------------------
     
     return {
         "v1_patches": [patch],
+        "total_metrics": metrics
+    }
+
+
+
+
+def generate_refined_patch(state: SpadeState,
+                           MAX_ITERATIONS: int = 1,
+                            NUM_SAMPLES: int = 1,
+                            verbose: bool = True, 
+    ):
+    ## BUG? origin_id should be renamed to winning_patch_id ? winning_patch_id maybe in v2, or v3 if v_patience is more than 2 
+    origin_id = state.get("current_v1_id", "unknown_origin") 
+    refined_patches = state.get("refined_patches", [])
+    v1_patches = state.get("v1_patches", [])
+    run_id = state.get("thread_id")
+    
+    # Deciding lineage: Search for the most recent refinement of this winner
+    previous_patch = None
+    for p in reversed(refined_patches):
+        if p.origin_v1_id == origin_id:
+            previous_patch = p
+            break
+    
+    active_pattern = ""           
+    pattern_rationale = ""
+    if previous_patch:
+        prev_version = previous_patch.version
+        log(f"Start refinement chain for {origin_id} from v{prev_version}...", agent_base_name)
+        previous_patch_diff = previous_patch.code_diff
+        active_pattern = previous_patch.pattern
+        pattern_rationale = previous_patch.rationale or ""
+        v_now = prev_version + 1
+    else:
+        log(f"Starting refinement for {origin_id} (v2)...", agent_base_name)
+        v_now = 2
+        previous_patch_diff = ""
+        active_pattern = P_UNCONSTRAINED # default for now, may be overwritten at code segment below        
+        # Find the v1 base
+        for p in v1_patches:
+            if p.id == origin_id:
+                previous_patch_diff = p.code_diff
+                active_pattern = p.pattern
+                pattern_rationale = p.rationale or ""
+                break
+
+    # Update version before getting loop info
+    temp_state = state.copy()
+    temp_state["current_patch_version"] = v_now
+    loop_info_str, loop_info_dict = get_loop_info(temp_state, include_inner=True)
+    
+    specific_agent_name = f"{agent_base_name}-{active_pattern}"
+    log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
+
+    agent_config = settings.LLM_AGENTS["patchgen"]
+    # client = LLM_Client(agent=specific_agent_name, **agent_config)
+    client = OpenRouterClient(agent=specific_agent_name, **agent_config)
+    prompts_config = load_prompts()
+
+    # Format failed patches section
+    failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=active_pattern)
+
+    # --- get file contents
+    instance_id = state["bug_context"].bug_id
+    pred_files = state["bug_context"].suspicious_files
+
+    repo_path = state["bug_context"].local_repo_path
+    file_contents = get_file_contents(repo_path, pred_files)
+
+    bug_context = state["bug_context"]
+    
+    if not file_contents:
+        return {"instance_id": instance_id, "patch": "", "success": False, "error": "No files loaded"}
+
+    # Maintain lineage by using the same UUID suffix as the original v1 winner
+    if "_" in origin_id:
+        suffix = origin_id.split("_")[-1]
+    else:
+        suffix = uuid.uuid4().hex[:6] # Fallback if ID format is unexpected
+
+    metrics = {}
+    raw_telemetry = {}
+    patch_id = f"v{v_now}_{suffix}"
+
+    all_patches = []
+    edited_files = []
+    all_generations = []
+
+    # ============== PROCESS EACH FILE SEPARATELY ==============
+    for filepath in file_contents.keys():
+        log(f"\n🔧 Processing file: {filepath}", specific_agent_name)
+        
+        file_content = file_contents[filepath]
+        
+        # Iterative refinement: keep improving the same file content.
+        current_content = file_content
+
+        for iter_idx in range(MAX_ITERATIONS):
+            iter_file_context = f"### {filepath}\n"
+            iter_file_context += bug_context.file_snippets[filepath]
+
+
+            refine_instruction = ""
+            if iter_idx > 0:
+                refine_instruction = (
+                    "\n\nRefinement Round Instruction:\n"
+                    "You already proposed a previous patch for this file. "
+                    "Review the current updated file context and determine whether there is anything else to improve to produce a better patch for the same bug. If no additional change is needed, respond with '# No changes needed'."
+                )
+            # Explicitly pass the accumulated patch so the model can refine on top of it.
+            current_patch = generate_diff(filepath, file_content, current_content).strip()
+            if current_patch:
+                patch_history = (
+                    "\n\nCurrent accumulated patch for this file (already applied):\n"
+                    "```diff\n"
+                    f"{current_patch}\n"
+                    "```\n"
+                    "Use this patch history plus the updated file context to decide if another improvement is needed."
+                )
+            else:
+                patch_history = (
+                    "\n\nCurrent accumulated patch for this file (already applied):\n"
+                    "(none yet)"
+                )
+
+            # Format prompts based on unconstrained flag #TODO<<<<<<<<<<<<<<<<<<<<<
+            # Format failed patches section
+            
+            system_prompt = "" # TODO not used?
+            pattern_description = prompts_config.get("pattern_taxonomy", {}).get(active_pattern, "")
+            user_prompt = prompts_config["patch_generation_new"]["refinement"]["user"].format(
+                issue_text=state["bug_context"].issue_text,
+                active_pattern=active_pattern or "No available.",
+                active_pattern_description=pattern_description or "No available.",
+                active_pattern_rationale=pattern_rationale or "No available.", 
+                version=v_now - 1, 
+                previous_patch_diff=previous_patch_diff,
+                verdict=state.get("verdict", "No verdict available."),
+                dynamic_argument=state.get("dynamic_argument", "No argument."),
+                static_argument=state.get("static_argument", "No argument."),
+                failed_patches_history=failed_patches_history
+            )
+            user_prompt += patch_history + refine_instruction
+
+            # print(user_prompt)
+            temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1]) #TODO what is this for? not used anywhere
+            if verbose:
+                log(
+                    f"  Iteration {iter_idx+1}/{MAX_ITERATIONS} - "
+                    f"sample {1}/{NUM_SAMPLES} ...", specific_agent_name
+                )
+
+            try:
+                structured_response, metrics, raw_telemetry = client.generate_raw_response(
+                                            system_prompt=system_prompt,
+                                            user_prompt=user_prompt,
+                                            loop_info=loop_info_dict
+                )
+            except Exception as e:
+                log(f"{loop_info_str} Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
+                return {
+                    "resolution_status": ["patchgen_failed"],
+                    "total_metrics": metrics
+                }
+            # structured_response, metrics, raw_telemetry = "", {}, {} 
+
+            # print(">>>>  response:")
+            # print(structured_response)
+
+            raw_output = structured_response
+            all_generations.append({
+                "file": filepath,
+                "iteration": iter_idx + 1,
+                "sample": 1,
+                "temperature": temperature,
+                "output": raw_output,
+            })
+
+            if raw_output is not None:
+                blocks = extract_python_blocks(raw_output)
+                if not blocks:
+                    if verbose:
+                        log("  ⚠ NO CODE BLOCKS found in the response.",  specific_agent_name)
+                    continue
+            else:
+                log("  raw_output is None.",  specific_agent_name)
+            
+            edited, new_contents = parse_search_replace(blocks[-1], {filepath: current_content}, repo_path=repo_path)
+            if edited and new_contents:
+                new_content = new_contents[0]
+                if new_content != current_content:
+                    current_content = new_content
+                    # total_applied_iterations += 1
+                    log(f"  ✓ Applied refinement patch in iteration {iter_idx+1}",  specific_agent_name)
+                    break
+
+            
+        final_file_patch = ""
+        if current_content != file_content:
+            final_file_patch = generate_diff(filepath, file_content, current_content)
+            if final_file_patch.strip():
+                edited_files.append(filepath)
+                all_patches.append(final_file_patch)
+                log(
+                    f"  ✓ Finalized patch for {filepath} ", specific_agent_name
+                )
+
+        if not final_file_patch:
+            log(f"  ⚠ No valid patch generated for {filepath}", specific_agent_name)
+    
+    # Combine all patches
+    final_patch = "\n\n".join(all_patches)
+
+
+    explanation = "<skip>"
+    # Log Telemetry and Patch to DB
+    if run_id and raw_telemetry:
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_refined_{active_pattern}", raw_telemetry)
+        db_logger.log_patch(
+            patch_id=patch_id,
+            run_id=run_id,
+            patch_version=v_now,
+            loop_n=state.get("outer_loop_count", 1),
+            loop_m=state.get("inner_loop_count", 1),
+            loop_v=v_now,
+            pattern=active_pattern,
+            rationale=pattern_rationale,
+            explanation=explanation,
+            diff=final_patch,
+            tests_passed=False, #new patch gen, not yet passed
+            feedback=state.get("verdict")
+        )
+
+    patch = PatchCandidate(
+        id=patch_id, 
+        code_diff=final_patch,
+        pattern=active_pattern,
+        rationale=pattern_rationale,
+        origin_v1_id=origin_id,
+        version=v_now,
+        status="pending",
+        explanation=explanation,
+    )
+
+    return {
+        "refined_patches": [patch],
+        "current_patch_version": v_now, # Sync the global state counter
         "total_metrics": metrics
     }

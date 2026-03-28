@@ -1,17 +1,17 @@
 # LLM Configuration for agents
 agents:
   fl_ensemble:
-    provider: "ollama" # model providers: "ollama", "openai", "gemini" etc
-    model: "qwen2.5-coder:latest"
+    provider: "openrouter.ai" # model providers: "ollama", "openai", "gemini" etc
+    model: "gpt-oss-120b:nitro"
     temperature: 0.3
-    base_url: "http://localhost:11434/v1" # For local models, this is the URL of the local server. For cloud models, this would be the API endpoint. e.g., "https://generativelanguage.googleapis.com/v1beta/openai/"
+    base_url: "https://openrouter.ai/api/v1" # For local models, this is the URL of the local server. For cloud models, this would be the API endpoint. e.g., "https://generativelanguage.googleapis.com/v1beta/openai/"
     api_key: null  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
 
   pattern_selection:
-    provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    provider: "openrouter.ai"
+    model: "gpt-oss-120b:nitro"
     temperature: 0.1
-    base_url: "http://localhost:11434/v1"
+    base_url: "https://openrouter.ai/api/v1"
     api_key: null
 
   patchgen:
@@ -24,17 +24,17 @@ agents:
     api_key: null 
 
   debaters:
-    provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    provider: "openrouter.ai"
+    model: "gpt-oss-120b:nitro" 
     temperature: 0.3
-    base_url: "http://localhost:11434/v1"
+    base_url: "https://openrouter.ai/api/v1"
     api_key: null
 
   judge:
-    provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    provider: "openrouter.ai"
+    model: "gpt-oss-120b:nitro" 
     temperature: 0.3
-    base_url: "http://localhost:11434/v1"
+    base_url: "https://openrouter.ai/api/v1"
     api_key: null
 
 # Cost per 1,000,000 (1 Million) tokens in USD
