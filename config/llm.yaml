@@ -5,14 +5,14 @@ agents:
     model: "gpt-oss-120b:nitro"
     temperature: 0.3
     base_url: "https://openrouter.ai/api/v1" # For local models, this is the URL of the local server. For cloud models, this would be the API endpoint. e.g., "https://generativelanguage.googleapis.com/v1beta/openai/"
-    api_key: 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  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
+    api_key: null  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
 
   pattern_selection:
     provider: "openrouter.ai"
     model: "gpt-oss-120b:nitro"
     temperature: 0.1
     base_url: "https://openrouter.ai/api/v1"
-    api_key: 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
+    api_key: null
 
   patchgen:
     provider: "openrouter.ai"
@@ -21,21 +21,21 @@ agents:
     temperature: 0.2
     top_p: 0.95,
     top_k: 20,
-    api_key: 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 
+    api_key: null 
 
   debaters:
     provider: "openrouter.ai"
     model: "gpt-oss-120b:nitro" 
     temperature: 0.3
     base_url: "https://openrouter.ai/api/v1"
-    api_key: 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
+    api_key: null
 
   judge:
     provider: "openrouter.ai"
     model: "gpt-oss-120b:nitro" 
     temperature: 0.3
     base_url: "https://openrouter.ai/api/v1"
-    api_key: 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
+    api_key: null
 
 # Cost per 1,000,000 (1 Million) tokens in USD
 costs:
