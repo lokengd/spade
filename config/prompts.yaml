@@ -55,6 +55,9 @@ pattern_selection:
     ## Suspicious Locations
     {suspicious_locations}
 
+    ## Suspicious Code Snippets
+    {suspicious_code_snippets}
+
     ## Error Trace
     {error_trace}
 

@@ -12,7 +12,7 @@ experiments:
     v_patience: 2
     bug_list: "*"
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
 
   spade_trial_run:
     description: "Trial run of SWE-Bench-Lite with sample bugs: astropy_scikit-learn"
@@ -26,7 +26,7 @@ experiments:
     # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy.jsonl"
     # fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
     # Optional: override default config: "llm.yaml" and "prompts.yaml"
     # llm_config: "config/llm_trial_run.yaml"
     # prompts_config: "config/prompts_trial_run.yaml"
@@ -39,7 +39,7 @@ experiments:
     v_patience: 2
     bug_list: ["astropy__astropy-12907"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
     llm_config: "config/llm_qwen3-coder-30b.yaml"
     prompts_config: "config/prompts_qwen3-coder-30b.yaml"
 
@@ -52,7 +52,7 @@ experiments:
     bug_list: ["astropy__astropy-12907"]
     # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
     # TODO: override default llm and prompts config to support ablation
 
   spade_ablation_k0_with_debate: # This experiment (k=0) does not make sense as we need more than one patch candidate for debate
@@ -64,7 +64,7 @@ experiments:
     bug_list: ["astropy__astropy-12907"]
     # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
     # TODO: override default llm and prompts config to support ablation
 
   spade_ablation_no_debate:
@@ -75,7 +75,7 @@ experiments:
     v_patience: 2
     bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
     # TODO: override default llm and prompts config to support ablation
 
   swe_bench_lite_subset1:
@@ -86,7 +86,7 @@ experiments:
     v_patience: 2
     bug_list: "*" # all bugs in fl_resultset
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
-    snippet_context_lines: 15
+    snippet_context_lines: 10
     # Optional: override default config: "llm.yaml" and "prompts.yaml"
     # llm_config: "config/llm_full_run.yaml"
     # prompts_config: "config/prompts_full_run.yaml"

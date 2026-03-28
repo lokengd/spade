@@ -2,12 +2,13 @@ from src.utils.logger import log, get_loop_info
 import logging
 import yaml
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.core import settings
 from src.utils.db_logger import db_logger
 from src.utils.prompt_helper import get_failed_patches_section
+from src.utils.snippet_extractor2 import extract_snippet
 
 agent_name = "Pattern_Selection"
 
@@ -53,6 +54,27 @@ def run(state: SpadeState):
 
     # Format the User Prompt from BugContext (returned by FL Ensemble)
     bug_context = state["bug_context"]
+    
+    # Extract snippets for suspicious locations
+    # Convert BugContext edit_locations (List) to Dict for snippet extractor
+    edit_locs_dict = {}
+    if bug_context.edit_locations:
+        for loc in bug_context.edit_locations:
+            if loc.file not in edit_locs_dict:
+                edit_locs_dict[loc.file] = {"function": loc.function, "lines": loc.lines}
+            else:
+                # Merge lines if file already exists
+                if loc.lines:
+                    edit_locs_dict[loc.file]["lines"] = sorted(list(set(edit_locs_dict[loc.file].get("lines", []) + loc.lines)))
+
+    code_snippets = extract_snippet(
+        repo_path=bug_context.local_repo_path,
+        suspicious_files=bug_context.suspicious_files or [],
+        related_functions=bug_context.related_functions or {},
+        edit_locations=edit_locs_dict,
+        margin=settings.SNIPPET_CONTEXT_LINES
+    )
+
     locations_str = ""
     if bug_context.suspicious_files:
         locations_str += "--- Suspicious Files ---\n"
@@ -71,9 +93,6 @@ def run(state: SpadeState):
             func_str = f" | Func: {loc.function}" if loc.function else ""
             lines_str = f" | Lines: {loc.lines}" if loc.lines else ""
             locations_str += f"- File: {loc.file}{func_str}{lines_str}\n"
-            # Inject code snippet if available
-            if loc.snippet:
-                locations_str += f"{loc.snippet}\n\n"
 
     if not locations_str.strip():
         locations_str = "No specific locations identified by Fault Localization."
@@ -89,6 +108,7 @@ def run(state: SpadeState):
         issue_text=bug_context.issue_text,
         error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
         suspicious_locations=locations_str.strip(),
+        suspicious_code_snippets=code_snippets,
         failed_patches_history=failed_patches_history
     )
 
