@@ -14,6 +14,7 @@ import yaml
 
 T = TypeVar('T', bound=BaseModel)
 
+
 class LLM_Client:
     def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None):
         self.agent_name = agent
@@ -288,6 +289,8 @@ class OpenRouterClient(LLM_Client):
         #     self.headers["X-Title"] = app_name
         self.caller = f"{self.agent_name}-{self.model_name}"
 
+        print(f"Created OpenRouterClient for agent '{self.agent_name}' with model '{self.model_name}' with api key '{self.api_key}'")
+
     def check_connection(self) -> bool:
         """Check API key and model availability."""
         try:
@@ -399,6 +402,7 @@ class OpenRouterClient(LLM_Client):
         """
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """
+        print("API key", self.api_key)
         raw_json = "No response received"
         try:
             log(f"System Prompt: <see trajectory>", caller=self.caller)    

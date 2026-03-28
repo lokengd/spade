@@ -21,8 +21,8 @@ experiments:
     m_inner_loops: 1
     v_patience: 2
     # bug_list: "*"
-    # bug_list: ["astropy__astropy-12907"]
-    bug_list: ["astropy__astropy-14182"]
+    bug_list: ["astropy__astropy-12907"]
+    # bug_list: ["astropy__astropy-14182"]
     # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy.jsonl"
     # fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"

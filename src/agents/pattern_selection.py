@@ -6,6 +6,7 @@ from typing import List, Optional, Dict
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.core import settings
+from src.core.factory import create_llm_client
 from src.utils.db_logger import db_logger
 from src.utils.prompt_helper import get_failed_patches_section
 from src.utils.snippet_extractor2 import extract_snippet
@@ -31,7 +32,12 @@ def run(state: SpadeState):
 
     # Initialize 
     agent_config = settings.LLM_AGENTS["pattern_selection"]
-    client = LLM_Client(agent=agent_name, **agent_config)
+    client = create_llm_client(
+            agent_name="pattern_selection",
+            **agent_config  # unpacks provider, model, temperature, etc.
+        )
+    # check what kind of instance of LLM_Client (ollama or openrouter) and log the model being used
+
     run_id = state.get("thread_id")
 
     # Load configuration and patterns
