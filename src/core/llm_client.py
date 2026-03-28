@@ -10,23 +10,12 @@ from src.utils.logger import log, get_current_log_dir
 from src.utils.state_printer import pretty_print_state
 import logging
 import requests
+import yaml
 
 T = TypeVar('T', bound=BaseModel)
 
-LLM_SETTINGS = {
-    "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "top_k": 20,
-    "min_p": 0.0,
-    "presence_penalty": 1.5,
-    "repetition_penalty": 2.0,
-}
-API_KEY = "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"
-
-
 class LLM_Client:
-    def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key_env: str = None):
+    def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None):
         self.agent_name = agent
         self.provider = provider
         self.model_name = model 
@@ -34,12 +23,12 @@ class LLM_Client:
         
         # Resolve API Key dynamically from the environment
         resolved_key = "dummy_key" 
-        if api_key_env:
-            env_key = os.environ.get(api_key_env)
+        if api_key:
+            env_key = os.environ.get(api_key)
             if env_key:
                 resolved_key = env_key
             else:
-                log(f"{api_key_env} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
+                log(f"{api_key} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
 
         # Initialize the appropriate client based on provider
         client_kwargs = {"api_key": resolved_key}
@@ -235,27 +224,39 @@ class LLM_Client:
 
 
 
-class OpenRouterClient:
+class OpenRouterClient(LLM_Client):
     """Minimal OpenRouter API client with optional streaming support."""
+    DEFAULT_LLM_SETTINGS = {
+        "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repetition_penalty": 2.0,
+    }
 
     def __init__(
         self,
+        agent: str, 
+        provider: str,
         api_key: str,
-        model: str = LLM_SETTINGS["model"],
+        model: str = DEFAULT_LLM_SETTINGS["model"],
         base_url: str = "https://openrouter.ai/api/v1",
         verbose: bool = False,
-        temperature: float = LLM_SETTINGS["temperature"],
-        top_p: float = LLM_SETTINGS["top_p"],
-        top_k: int = LLM_SETTINGS["top_k"],
-        min_p: float = LLM_SETTINGS["min_p"],
-        presence_penalty: float = LLM_SETTINGS["presence_penalty"],
-        repetition_penalty: float = LLM_SETTINGS["repetition_penalty"],
+        temperature: float = DEFAULT_LLM_SETTINGS["temperature"],
+        top_p: float = DEFAULT_LLM_SETTINGS["top_p"],
+        top_k: int = DEFAULT_LLM_SETTINGS["top_k"],
+        min_p: float = DEFAULT_LLM_SETTINGS["min_p"],
+        presence_penalty: float = DEFAULT_LLM_SETTINGS["presence_penalty"],
+        repetition_penalty: float = DEFAULT_LLM_SETTINGS["repetition_penalty"],
         stream: bool = False,
         site_url: str | None = None,
         app_name: str | None = None,
     ):
-        self.model = model
-        self.api_key = api_key
+        self.agent_name = agent
+        self.provider = provider
+        self.model_name = model
         self.base_url = base_url.rstrip("/")
         self.api_url = f"{self.base_url}/chat/completions"
         self.models_url = f"{self.base_url}/models"
@@ -268,6 +269,15 @@ class OpenRouterClient:
             "frequency_penalty": repetition_penalty,  # closest OpenRouter/OpenAI-compatible analog
         }
 
+        if api_key:
+            self.api_key = api_key
+        else:
+            def load_api_key():
+                with open(settings.API_KEY_CONFIG_PATH, "r") as f:
+                    return yaml.safe_load(f)
+            api_key_config = load_api_key()
+            self.api_key = api_key_config["openrouter"]["api_key"]
+
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -276,6 +286,7 @@ class OpenRouterClient:
         #     self.headers["HTTP-Referer"] = site_url
         # if app_name:
         #     self.headers["X-Title"] = app_name
+        self.caller = f"{self.agent_name}-{self.model_name}"
 
     def check_connection(self) -> bool:
         """Check API key and model availability."""
@@ -285,13 +296,13 @@ class OpenRouterClient:
             data = resp.json()
             models = [m.get("id", "") for m in data.get("data", [])]
             if self.model not in models:
-                print(f"⚠ Model '{self.model}' not found via OpenRouter.")
-                print(f"Available examples: {', '.join(models[:10])}")
+                log(f"⚠ Model '{self.model}' not found via OpenRouter.", caller=self.caller)
+                log(f"Available examples: {', '.join(models[:10])}", caller=self.caller)
                 return False
-            print(f"✅ OpenRouter connected. Model '{self.model}' ready.")
+            log(f"✅ OpenRouter connected. Model '{self.model}' ready.", caller=self.caller)
             return True
         except Exception as e:
-            print(f"❌ Cannot connect to OpenRouter: {e}")
+            log(f"❌ Cannot connect to OpenRouter: {e}", caller=self.caller, level=logging.ERROR)
             return False
 
     def generate_text(
@@ -333,14 +344,14 @@ class OpenRouterClient:
         """
         raw_json = "No response received"
         try:
-            log(f"System Prompt: <see trajectory>", caller=self.model)    
-            log(f"User Prompt: <see trajectory>", caller=self.model)    
+            log(f"System Prompt: <see trajectory>", caller=self.caller)    
+            log(f"User Prompt: <see trajectory>", caller=self.caller)    
             # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
             # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
 
             payload = {
-                "model": self.model,
+                "model": self.model_name,
                 "messages": [{"role": "user", "content":  user_prompt}],
                 "max_tokens": 4096,
                 "effort": "high",
@@ -370,16 +381,17 @@ class OpenRouterClient:
 
             # print(raw_json)
 
-            telemetry = {} # self._save_trajectory(system_prompt, user_prompt, json.loads(raw_output), metrics, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, parsed_data, metrics, loop_info=loop_info)
+            # telemetry = self._save_trajectory(system_prompt, user_prompt, json.loads(parsed_data), metrics, loop_info=loop_info)
             # parsed_data = response_model.model_validate_json(raw_json)
-            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model)
-            # log(f"LLM response metrics: {metrics}", caller=self.model)
+            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model_name)
+            # log(f"LLM response metrics: {metrics}", caller=self.model_name)
 
             return parsed_data, metrics, telemetry
         
         except Exception as e:
-            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.model, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.model, level=logging.ERROR)
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.caller, level=logging.ERROR)
             e.raw_output = raw_output
             raise
 
@@ -389,14 +401,14 @@ class OpenRouterClient:
         """
         raw_json = "No response received"
         try:
-            log(f"System Prompt: <see trajectory>", caller=self.model)    
-            log(f"User Prompt: <see trajectory>", caller=self.model)    
+            log(f"System Prompt: <see trajectory>", caller=self.caller)    
+            log(f"User Prompt: <see trajectory>", caller=self.caller)
             # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
             # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
 
 
             payload = {
-                "model": self.model,
+                "model": self.model_name,
                 "messages": [{"role": "user", "content":  user_prompt}],
                 "max_tokens": 4096,
                 "effort": "high",
@@ -425,15 +437,15 @@ class OpenRouterClient:
 
             # print(raw_json)
 
-            telemetry = {} # self._save_trajectory(system_prompt, user_prompt, json.loads(raw_output), metrics, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, raw_output, metrics, loop_info=loop_info)
             # parsed_data = response_model.model_validate_json(raw_json)
-            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model)
-            # log(f"LLM response metrics: {metrics}", caller=self.model)
+            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model_name)
+            # log(f"LLM response metrics: {metrics}", caller=self.model_name)
 
             return raw_output, metrics, telemetry
         
         except Exception as e:
-            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.model, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.model, level=logging.ERROR)
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.caller, level=logging.ERROR)
             e.raw_output = raw_output
             raise

@@ -1,39 +1,68 @@
 # List of experiment IDs to run
+# active_experiments: ["spade_trial_run_qwen3-coder-30b"]
 active_experiments: ["spade_trial_run"]
 
 # Experiments collection
 experiments:
+  spade_astropy_k2_n3_m1_v2:
+    description: "Trial run astropy"
+    k_patterns: 2
+    n_outer_loops: 3
+    m_inner_loops: 1
+    v_patience: 2
+    bug_list: "*"
+    fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy.jsonl"
+    snippet_context_lines: 15
+
   spade_trial_run:
     description: "Trial run of SWE-Bench-Lite with sample bugs: astropy_scikit-learn"
     k_patterns: 1
     n_outer_loops: 1
     m_inner_loops: 1
-    v_patience: 1
-    bug_list: ["astropy__astropy-12907"] # [""] astropy__astropy-12907 scikit-learn__scikit-learn-10297
-    fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
+    v_patience: 2
+    # bug_list: "*"
+    # bug_list: ["astropy__astropy-12907"]
+    bug_list: ["astropy__astropy-14182"]
+    # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
+    fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy.jsonl"
+    # fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
     snippet_context_lines: 15
     # Optional: override default config: "llm.yaml" and "prompts.yaml"
     # llm_config: "config/llm_trial_run.yaml"
     # prompts_config: "config/prompts_trial_run.yaml"
 
+  spade_trial_run_qwen3-coder-30b:
+    description: "Trial run of SWE-Bench-Lite on llm_qwen3-coder-30b: astropy"
+    k_patterns: 2
+    n_outer_loops: 1
+    m_inner_loops: 1
+    v_patience: 2
+    bug_list: ["astropy__astropy-12907"]
+    fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
+    snippet_context_lines: 15
+    llm_config: "config/llm_qwen3-coder-30b.yaml"
+    prompts_config: "config/prompts_qwen3-coder-30b.yaml"
+
   spade_ablation_k0_no_debate:
     description: "Ablation Study: K=0, unconstrained PatchGen only, no PatternSelection, M=0, no debate panel"
     k_patterns: 0 # K=0, no pattern selection
-    n_outer_loops: 1
+    n_outer_loops: 2
     m_inner_loops: 0 # M=0, no debate panel
     v_patience: 2
-    bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
+    bug_list: ["astropy__astropy-12907"]
+    # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
     snippet_context_lines: 15
     # TODO: override default llm and prompts config to support ablation
 
-  spade_ablation_k0_with_debate:
+  spade_ablation_k0_with_debate: # This experiment (k=0) does not make sense as we need more than one patch candidate for debate
     description: "Ablation Study: K=0, unconstrained PatchGen only, no PatternSelection, with debate"
     k_patterns: 0 # K=0, no pattern selection
     n_outer_loops: 1
     m_inner_loops: 1
     v_patience: 2
-    bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
+    bug_list: ["astropy__astropy-12907"]
+    # bug_list: ["astropy__astropy-12907", "scikit-learn__scikit-learn-10297"]
     fl_resultset: "fl_results/afl-qwen2.5_32b/afl-qwen2.5_32b_astropy_scikit-learn.jsonl"
     snippet_context_lines: 15
     # TODO: override default llm and prompts config to support ablation

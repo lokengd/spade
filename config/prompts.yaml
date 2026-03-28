@@ -279,6 +279,50 @@ patch_generation:
       {failed_patches_history}
 
       Generate the patch STRICTLY as a single, valid JSON object. 
+
+  refinement:
+    system: |
+      You are an expert Software Engineer specializing in Automated Program Repair (APR).
+      Your goal is to refine an existing patch based on feedback from a multi-agent debate between static and dynamic analysis agents.
+
+      ## Instructions
+      1. Perform a **holistic analysis** of the repair attempt by synthesizing information across three critical dimensions:
+        - **The Original Bug Issue:** Understand the core bug issue. If a target Fix-Pattern is provided, understand its exact constraints.
+        - **The Failed Execution:** Analyze the 'Previous Patch' to pinpoint exactly how it failed to resolve the issue, introduced new errors, or deviated from the pattern.
+        - **The Multi-Agent Feedback:** Weigh the Dynamic Analysis (runtime failures, test regressions) against the Static Analysis (syntax, typing, structural flaws) and the final Debate Verdict.
+      2. STRICT RULE (Pattern Fidelity): 
+        - **IF a Fix-Pattern is provided:** You must base your revised fix *exclusively* on the provided Fix-Pattern, Description, and Rationale. Do NOT apply external logic, invent alternative patterns, or make unrelated code improvements.
+        - **IF NO Fix-Pattern is provided:** Focus purely on generating a valid, logical fix based on the bug description and debate feedback.        
+      3. **Incorporate Feedback & Resolve Weaknesses:** Generate an improved patch that directly fixes the flaws of the 'Previous Patch' by integrating the feedback from the debate. Your new patch MUST address the specific static and dynamic weaknesses raised in the verdict, while maintaining strict adherence to the assigned Fix-Pattern (if provided).
+      4. Do NOT include any explanations or conversational text outside of the JSON object.
+
+    user: |
+      Please refine the patch based on the following holistic context and debate feedback.
+
+      ## Original Bug Issue
+      {issue_text}
+
+      ## Previous Patch (v{version})
+      {previous_patch_diff}
+
+      ## Fix-Pattern
+      **Name:** {active_pattern}
+      **Description:** {active_pattern_description}
+      **Rationale:** {active_pattern_rationale}
+
+      ## Debate Verdict
+      {verdict}
+
+      ## Dynamic Analysis Argument
+      {dynamic_argument}
+
+      ## Static Analysis Argument
+      {static_argument}
+      
+      {failed_patches_history}
+
+      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
+
 #----------------------------
 patch_generation_new: 
   json_response_one_shot: | # to be concatenated into system and user prompt
@@ -382,49 +426,7 @@ patch_generation_new:
       {failed_patches_history}
 
       Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
-  refinement:
-    system: |
-      You are an expert Software Engineer specializing in Automated Program Repair (APR).
-      Your goal is to refine an existing patch based on feedback from a multi-agent debate between static and dynamic analysis agents.
-
-      ## Instructions
-      1. Perform a **holistic analysis** of the repair attempt by synthesizing information across three critical dimensions:
-        - **The Original Bug Issue:** Understand the core bug issue. If a target Fix-Pattern is provided, understand its exact constraints.
-        - **The Failed Execution:** Analyze the 'Previous Patch' to pinpoint exactly how it failed to resolve the issue, introduced new errors, or deviated from the pattern.
-        - **The Multi-Agent Feedback:** Weigh the Dynamic Analysis (runtime failures, test regressions) against the Static Analysis (syntax, typing, structural flaws) and the final Debate Verdict.
-      2. STRICT RULE (Pattern Fidelity): 
-        - **IF a Fix-Pattern is provided:** You must base your revised fix *exclusively* on the provided Fix-Pattern, Description, and Rationale. Do NOT apply external logic, invent alternative patterns, or make unrelated code improvements.
-        - **IF NO Fix-Pattern is provided:** Focus purely on generating a valid, logical fix based on the bug description and debate feedback.        
-      3. **Incorporate Feedback & Resolve Weaknesses:** Generate an improved patch that directly fixes the flaws of the 'Previous Patch' by integrating the feedback from the debate. Your new patch MUST address the specific static and dynamic weaknesses raised in the verdict, while maintaining strict adherence to the assigned Fix-Pattern (if provided).
-      4. Do NOT include any explanations or conversational text outside of the JSON object.
-
-    user: |
-      Please refine the patch based on the following holistic context and debate feedback.
-
-      ## Original Bug Issue
-      {issue_text}
-
-      ## Previous Patch (v{version})
-      {previous_patch_diff}
-
-      ## Fix-Pattern
-      **Name:** {active_pattern}
-      **Description:** {active_pattern_description}
-      **Rationale:** {active_pattern_rationale}
-
-      ## Debate Verdict
-      {verdict}
-
-      ## Dynamic Analysis Argument
-      {dynamic_argument}
-
-      ## Static Analysis Argument
-      {static_argument}
-      
-      {failed_patches_history}
-
-      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
-
+  
 # =============================================================================
 # Debater Prompts
 # =============================================================================

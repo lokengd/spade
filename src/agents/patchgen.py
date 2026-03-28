@@ -1,5 +1,5 @@
 import requests
-
+import os
 from src.utils.logger import log, get_loop_info
 import uuid
 import yaml
@@ -13,57 +13,6 @@ from src.utils.db_logger import db_logger
 from src.utils.prompt_helper import get_failed_patches_section
 
 agent_base_name = "PatchGen"
-
-TEMPERATURE_RANGE = [0.1, 0.8]
-LLM_SETTINGS = {
-    "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "top_k": 20,
-    "min_p": 0.0,
-    "presence_penalty": 1.5,
-    "repetition_penalty": 2.0,
-}
-
-NUM_SAMPLES = 1
-
-PROMPT = """
-            You are an expert code-repair agent. Your task is to fix a bug in a specific file using a provided Fix-Pattern.
-
-            ### 1. INPUT DATA
-            - **File Path**: {filepath}
-            - **Fix-Pattern**: {pattern}
-
-            --- BEGIN ISSUE ---
-            {problem_statement}
-            --- END ISSUE ---
-
-            --- SOURCE CODE ---
-            {file_context}
-            --- END SOURCE CODE ---
-
-            ### 2. INSTRUCTIONS
-            Follow these steps in order:
-
-            1. **REASONING**: Briefly explain where in the code corrections are needed based on the Fix-Pattern. 
-            2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE block. 
-
-            ### 3. CRITICAL RULES
-            - The SEARCH block must match the Source Code EXACTLY (same indentation, same spaces).
-            - Include 3 to 5 lines of surrounding context in the SEARCH block to make it unique.
-            - If no bugs are found, respond exactly with: `# No changes needed`
-
-            ### 4. OUTPUT FORMAT
-
-            ```python
-            ### {filepath}
-            <<<<<<< SEARCH
-            [exact code from source]
-            =======
-            [your fixed code]
-            >>>>>>> REPLACE
-        """
-
 
 
 def load_prompts():
@@ -101,7 +50,7 @@ def generate_v1_patch_bk(state: SpadeState):
 
     agent_config = settings.LLM_AGENTS["patchgen"]
     # client = LLM_Client(agent=specific_agent_name, **agent_config)
-    client = OpenRouterClient(api_key=API_KEY, model=LLM_SETTINGS["model"])
+    client = OpenRouterClient(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 
     # Extract suspicious code snippets
@@ -284,7 +233,7 @@ def generate_refined_patch(state: SpadeState):
 
     agent_config = settings.LLM_AGENTS["patchgen"]
     # client = LLM_Client(agent=specific_agent_name, **agent_config)
-    client = OpenRouterClient(api_key=API_KEY, model=LLM_SETTINGS["model"])
+    client = OpenRouterClient(agent=specific_agent_name, **agent_config)
     prompts_config = load_prompts()
 
     # Format failed patches section
@@ -402,17 +351,7 @@ import random
 
 
 # ============== Configuration ==============
-API_KEY = "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"
-TEMPERATURE_RANGE = [0.1, 0.8]
-LLM_SETTINGS = {
-    "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "top_k": 20,
-    "min_p": 0.0,
-    "presence_penalty": 1.8,
-    "repetition_penalty": 2.5,
-}
+TEMPERATURE_RANGE = [0.1, 0.8] #TODO what is this for?
 
 # ============== Code Processing ==============
 
@@ -432,7 +371,7 @@ def extract_python_blocks(text: str) -> list[str]:
     return [block.rstrip("\n") for block in fence_re.findall(text)]
 
 
-def parse_search_replace(block: str, file_contents: dict, verbose: bool = True) -> tuple[list, list]:
+def parse_search_replace(block: str, file_contents: dict, repo_path: str, verbose: bool = True) -> tuple[list, list]:
     """Parse SEARCH/REPLACE blocks and apply edits."""
     edited_files, new_contents = [], []
     current_file = None
@@ -447,7 +386,7 @@ def parse_search_replace(block: str, file_contents: dict, verbose: bool = True) 
             if current_file not in edits:
                 edits[current_file] = []
             if verbose:
-                print(f"  📁 Found file: {current_file}")
+                log(f"  📁 Found file: {current_file}", agent_base_name)
         elif line.strip() == "<<<<<<< SEARCH":
             search_lines = []
             i += 1
@@ -464,17 +403,18 @@ def parse_search_replace(block: str, file_contents: dict, verbose: bool = True) 
             if current_file:
                 edits[current_file].append((search_text, replace_text))
                 if verbose:
-                    print(f"  📝 Found edit: {len(search_text)} chars → {len(replace_text)} chars")
+                    log(f"  📝 Found edit: {len(search_text)} chars → {len(replace_text)} chars", agent_base_name)
         i += 1
     
     if verbose:
-        print(f"\n  Total edits parsed: {sum(len(v) for v in edits.values())}")
+        log(f"\n  Total edits parsed: {sum(len(v) for v in edits.values())}", agent_base_name)
 
     for filepath, file_edits in edits.items():
+        filepath = os.path.join(repo_path, filepath)
         if filepath not in file_contents:
             if verbose:
-                print(f"  ⚠ File not found: {filepath}")
-                print(f"    Available: {list(file_contents.keys())}")
+                log(f"  ⚠ File not found: {filepath}", agent_base_name)
+                log(f"    Available: {list(file_contents.keys())}", agent_base_name)
             continue
         
         content = file_contents[filepath]
@@ -484,17 +424,17 @@ def parse_search_replace(block: str, file_contents: dict, verbose: bool = True) 
             # Check if SEARCH and REPLACE are identical (LLM bug)
             if search_text == replace_text:
                 if verbose:
-                    print(f"  ⚠ SEARCH == REPLACE (no change) for {filepath}")
+                    log(f"  ⚠ SEARCH == REPLACE (no change) for {filepath}", agent_base_name)
                 continue
             
             if search_text in content:
                 content = content.replace(search_text, replace_text, 1)
                 applied = True
                 if verbose:
-                    print(f"  ✓ Applied edit to {filepath}")
+                    log(f"  ✓ Applied edit to {filepath}", agent_base_name)
             else:
                 if verbose:
-                    print(f"  ✗ SEARCH text not found in {filepath}")
+                    log(f"  ✗ SEARCH text not found in {filepath}", agent_base_name)
                     # print(f"    SEARCH length: {len(search_text)} chars")
                     # Show first 100 chars for debugging
                     # print(f"    SEARCH preview: {search_text[:100]}...")
@@ -524,8 +464,6 @@ def get_file_contents(repo_path: str, files: list) -> dict:
         if full_path.exists():
             contents[filepath] = full_path.read_text()
     return contents
-
-
 
 
 def generate_v1_patch( #todo ------------------------------------
@@ -581,12 +519,11 @@ def generate_v1_patch( #todo ------------------------------------
     all_generations = []
 
     agent_config = settings.LLM_AGENTS["patchgen"]
-    # client = LLM_Client(agent=specific_agent_name, **agent_config)
-    client = OpenRouterClient(api_key=API_KEY, model=LLM_SETTINGS["model"])
+    client = OpenRouterClient(agent=specific_agent_name, **agent_config)
     
     # ============== PROCESS EACH FILE SEPARATELY ==============
     for filepath in file_contents.keys():
-        print(f"\n🔧 Processing file: {filepath}")
+        log(f"\n🔧 Processing file: {filepath}", specific_agent_name)
         
         file_content = file_contents[filepath]
         
@@ -627,7 +564,7 @@ def generate_v1_patch( #todo ------------------------------------
             refined_patches = state.get("refined_patches", [])
             failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=pattern)
             
-            system_prompt = ""
+            system_prompt = "" # TODO not used?
             user_prompt = ""
             if is_unconstrained or not is_unconstrained:
                 
@@ -651,12 +588,12 @@ def generate_v1_patch( #todo ------------------------------------
                     filepath=filepath
                 )  + patch_history + refine_instruction
 
-            print(user_prompt)
-            temp = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1])
+            # print(user_prompt)
+            temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1]) #TODO what is this for? not used anywhere
             if verbose:
-                print(
+                log(
                     f"  Iteration {iter_idx+1}/{MAX_ITERATIONS} - "
-                    f"sample {1}/{NUM_SAMPLES} ..."
+                    f"sample {1}/{NUM_SAMPLES} ...", specific_agent_name
                 )
 
             structured_response, metrics, raw_telemetry = client.generate_raw_response(
@@ -674,23 +611,26 @@ def generate_v1_patch( #todo ------------------------------------
                 "file": filepath,
                 "iteration": iter_idx + 1,
                 "sample": 1,
-                "temperature": temp,
+                "temperature": temperature,
                 "output": raw_output,
             })
 
-            blocks = extract_python_blocks(raw_output)
-            if not blocks:
-                if verbose:
-                    print("  ⚠ NO CODE BLOCKS found in the response.")
-                continue
+            if raw_output is not None:
+                blocks = extract_python_blocks(raw_output)
+                if not blocks:
+                    if verbose:
+                        log("  ⚠ NO CODE BLOCKS found in the response.",  specific_agent_name)
+                    continue
+            else:
+                log("  raw_output is None.",  specific_agent_name)
             
-            edited, new_contents = parse_search_replace(blocks[-1], {filepath: current_content})
+            edited, new_contents = parse_search_replace(blocks[-1], {filepath: current_content}, repo_path=repo_path)
             if edited and new_contents:
                 new_content = new_contents[0]
                 if new_content != current_content:
                     current_content = new_content
                     # total_applied_iterations += 1
-                    print(f"  ✓ Applied refinement patch in iteration {iter_idx+1}")
+                    log(f"  ✓ Applied refinement patch in iteration {iter_idx+1}",  specific_agent_name)
                     break
 
             
@@ -701,33 +641,34 @@ def generate_v1_patch( #todo ------------------------------------
             if final_file_patch.strip():
                 edited_files.append(filepath)
                 all_patches.append(final_file_patch)
-                print(
-                    f"  ✓ Finalized patch for {filepath} "
+                log(
+                    f"  ✓ Finalized patch for {filepath} ", specific_agent_name
                 )
 
         if not final_file_patch:
-            print(f"  ⚠ No valid patch generated for {filepath}")
+            log(f"  ⚠ No valid patch generated for {filepath}", specific_agent_name)
     
     # Combine all patches
     final_patch = "\n\n".join(all_patches)
 
+    explanation = "<skip>"
     # # Log Telemetry and Patch to DB
-    # if run_id and raw_telemetry:
-    #     db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
-    #     db_logger.log_patch(
-    #         patch_id=patch_id,
-    #         run_id=run_id,
-    #         patch_version=1,
-    #         loop_n=state.get("outer_loop_count", 1),
-    #         loop_m=state.get("inner_loop_count", 1),
-    #         loop_v=1,
-    #         pattern=pattern,
-    #         rationale=pattern_rationale,
-    #         explanation=explanation,
-    #         diff=code_diff,
-    #         tests_passed=False, #new patch gen, not yet passed
-    #         feedback=""
-    #     )
+    if run_id and raw_telemetry:
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
+        db_logger.log_patch(
+            patch_id=patch_id,
+            run_id=run_id,
+            patch_version=1,
+            loop_n=state.get("outer_loop_count", 1),
+            loop_m=state.get("inner_loop_count", 1),
+            loop_v=1,
+            pattern=pattern,
+            rationale=pattern_rationale,
+            explanation=explanation,
+            diff=final_patch,
+            tests_passed=False, #new patch gen, not yet passed
+            feedback=""
+        )
  
     patch = PatchCandidate(
         id=patch_id, 
@@ -738,10 +679,8 @@ def generate_v1_patch( #todo ------------------------------------
         version=1,
         status="pending",
         execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-        explanation="None",
+        explanation=explanation,
     )
-
-    exit(1)
     
     return {
         "v1_patches": [patch],
