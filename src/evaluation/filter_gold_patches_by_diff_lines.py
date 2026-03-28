@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 GOLD_PATCH_RESULTS_DIR = ROOT / "gold_patch_results"
 
-LINE_CHANGE_THRESHOLD = 3  # Set the threshold for what counts as a "simple fix"
+LINE_CHANGE_THRESHOLD = 4  # Set the threshold for what counts as a "simple fix"
 FILE_CHANGE_THRESHOLD = 1  # Optional: Set a threshold for the number of files changed in the patch
 OUTPUT_FILE = GOLD_PATCH_RESULTS_DIR / f"instances_with_simple_fixes.txt"
 
