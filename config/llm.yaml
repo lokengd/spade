@@ -14,7 +14,7 @@ agents:
     temperature: 0.1
     top_p: 0.95,
     # top_k: 20,
-    api_key: 'openrouter.api_key' # pass in [].api_keys to trigger LLM_client to load api keys from the config/api_keys.yaml file
+    api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 
   patchgen:
     provider: "openrouter.ai"
