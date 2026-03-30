@@ -24,23 +24,24 @@ class LLM_Client:
         self.top_k = top_k
         self.base_url = base_url
         
-        # Resolve API Key dynamically from the environment
+        # Resolve API Key dynamically
         if api_key:
-            self.api_key = api_key
-        else:
             def load_api_key():
                 with open(settings.API_KEY_CONFIG_PATH, "r") as f:
                     return yaml.safe_load(f)
-            api_key_config = load_api_key()
-            self.api_key = api_key_config["openrouter"]["api_key"]
+                
+            try:
+                api_key_config = load_api_key()
+                provider, key_name = api_key.split(".", 1)
+                log(f"Loading {api_key} from {settings.API_KEY_CONFIG_PATH}", caller=self.agent_name)
+                self.api_key = api_key_config[provider][key_name]
 
-        # resolved_key = "dummy_key" 
-        # if api_key:
-        #     env_key = os.environ.get(api_key)
-        #     if env_key:
-        #         self.api_key = env_key
-        #     else:
-        #         log(f"{api_key} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
+            except (ValueError, KeyError, FileNotFoundError) as e:
+                log(
+                    f"{api_key} is missing or invalid! ({e})",
+                    caller=self.agent_name,
+                    level=logging.WARNING
+                )
 
         # Initialize the appropriate client based on provider
         client_kwargs = {"api_key": self.api_key}
