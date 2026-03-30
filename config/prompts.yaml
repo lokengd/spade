@@ -346,25 +346,32 @@ patch_generation_new:
 
   pattern_guided:
     user: |
-      You are an expert code-repair agent. Your task is to fix a bug in a specific file using a provided Fix-Pattern.
+      You are an expert code-repair agent. Your task is to fix a bug in specific files using exclusively provided Fix-Pattern.
 
-      Return EXACTLY one SEARCH/REPLACE block for patching the code.
+      Return SEARCH/REPLACE blocks for patching the code.
       
       ### INSTRUCTIONS
       Follow these steps in order:
 
       1. **REASONING**: Briefly explain where in the code corrections are needed based on the Fix-Pattern. 
-      2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE block. 
+      2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE blocks. 
 
       ### CRITICAL RULES
-      - The SEARCH block must match the Source Code EXACTLY (same indentation, same spaces).
-      - Include 3 to 5 lines of surrounding context in the SEARCH block to make it unique.
+      - The SEARCH blocks must match the Source Code EXACTLY (same indentation, same spaces).
+      - Include 2 to 4 lines of surrounding context in the SEARCH block to make it unique.
       - If no bugs are found, respond exactly with: `# No changes needed`
 
       ### OUTPUT FORMAT
 
       ```python
-      ### {filepath}
+      ### <the edited file path 1>
+      <<<<<<< SEARCH
+      [exact code from source code]
+      =======
+      [your fixed code]
+      >>>>>>> REPLACE
+
+      ### <the edited file path 2>
       <<<<<<< SEARCH
       [exact code from source code]
       =======
@@ -388,7 +395,7 @@ patch_generation_new:
 
       {failed_patches_history}
 
-      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
+      Generate the patch as valid SEARCH/REPLACE blocks.
       
   unconstrained:
     user: |
@@ -399,17 +406,28 @@ patch_generation_new:
       Follow these steps in order:
 
       1. **REASONING**: Briefly explain where in the code corrections are needed.
-      2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE block. 
+      2. **OUTPUT PATCH**: Generate the SEARCH/REPLACE blocks.
 
-      ### CRITICAL RULES
-      - The SEARCH block must match the Source Code EXACTLY (same indentation, same spaces).
-      - Include 3 to 5 lines of surrounding context in the SEARCH block to make it unique.
+      ### CRITICAL RULES FOR SEARCH BLOCKS
+      - **COPY-PASTE ONLY**: The text inside `<<<<<<< SEARCH` must be a SUBSTRING of the file content provided above.
+      - **DO NOT GUESS**: Do not try to recreate indentation from memory. Copy it directly from the Input Context.
+      - **UNIQUENESS**: Include 3 lines of context above and below the change to ensure the search string is unique.
+      - **WHITESPACE**: Preserve all tabs, spaces, INDENTATION, and newlines exactly as they appear in the Input Context.
+      - **NO LINE NUMBERS**: Do NOT include line numbers (e.g., "202:", "203:") in SEARCH blocks.
+      - Must wrap the entire patch in ```python code fences.
       - If no bugs are found, respond exactly with: `# No changes needed`
 
       ### OUTPUT FORMAT
 
       ```python
-      ### {filepath}
+      ### <the edited file path 1>
+      <<<<<<< SEARCH
+      [exact code from source code]
+      =======
+      [your fixed code]
+      >>>>>>> REPLACE
+
+      ### <the edited file path 2>
       <<<<<<< SEARCH
       [exact code from source code]
       =======
@@ -428,7 +446,70 @@ patch_generation_new:
 
       {failed_patches_history}
 
-      Generate the patch STRICTLY as a single, valid SEARCH/REPLACE block.
+      Generate the patch as valid SEARCH/REPLACE blocks.
+  refinement:
+    system: |
+
+
+    user: |
+      You are an expert Software Engineer specializing in Automated Program Repair (APR).
+      Your goal is to refine an existing patch based on feedback from a multi-agent debate between static and dynamic analysis agents.
+
+      ## Instructions
+      1. Perform a **holistic analysis** of the repair attempt by synthesizing information across three critical dimensions:
+        - **The Original Bug Issue:** Understand the core bug issue. If a target Fix-Pattern is provided, understand its exact constraints.
+        - **The Failed Execution:** Analyze the 'Previous Patch' to pinpoint exactly how it failed to resolve the issue, introduced new errors, or deviated from the pattern.
+        - **The Multi-Agent Feedback:** Weigh the Dynamic Analysis (runtime failures, test regressions) against the Static Analysis (syntax, typing, structural flaws) and the final Debate Verdict.
+      2. STRICT RULE (Pattern Fidelity):
+        - **IF a Fix-Pattern is provided:** You must base your revised fix *exclusively* on the provided Fix-Pattern, Description, and Rationale. Do NOT apply external logic, invent alternative patterns, or make unrelated code improvements.
+        - **IF NO Fix-Pattern is provided:** Focus purely on generating a valid, logical fix based on the bug description and debate feedback.
+      3. **Incorporate Feedback & Resolve Weaknesses:** Generate an improved patch that directly fixes the flaws of the 'Previous Patch' by integrating the feedback from the debate. Your new patch MUST address the specific static and dynamic weaknesses raised in the verdict, while maintaining strict adherence to the assigned Fix-Pattern (if provided).
+      4. Do NOT include any explanations or conversational text outside of the JSON object.
+      5. If no bugs are found, respond exactly with: `# No changes needed`
+
+      ### OUTPUT FORMAT
+
+      ```python
+      ### <the edited file path 1>
+      <<<<<<< SEARCH
+      [exact code from source code]
+      =======
+      [your fixed code]
+      >>>>>>> REPLACE
+
+      ### <the edited file path 2>
+      <<<<<<< SEARCH
+      [exact code from source code]
+      =======
+      [your fixed code]
+      >>>>>>> REPLACE
+      ```
+
+      Please refine the patch based on the following holistic context and debate feedback.
+
+      ## Original Bug Issue
+      {issue_text}
+
+      ## Previous Patch (v{version})
+      {previous_patch_diff}
+
+      ## Fix-Pattern
+      **Name:** {active_pattern}
+      **Description:** {active_pattern_description}
+      **Rationale:** {active_pattern_rationale}
+
+      ## Debate Verdict
+      {verdict}
+
+      ## Dynamic Analysis Argument
+      {dynamic_argument}
+
+      ## Static Analysis Argument
+      {static_argument}
+
+      {failed_patches_history}
+
+      Refine the patch SEARCH/REPLACE blocks.
   
 # =============================================================================
 # Debater Prompts

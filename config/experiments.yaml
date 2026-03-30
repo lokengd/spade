@@ -16,7 +16,7 @@ experiments:
 
   spade_trial_run:
     description: "Trial run of SWE-Bench-Lite with sample bugs: astropy_scikit-learn"
-    k_patterns: 1
+    k_patterns: 2
     n_outer_loops: 1
     m_inner_loops: 1
     v_patience: 2

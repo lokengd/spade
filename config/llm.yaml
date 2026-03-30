@@ -21,7 +21,7 @@ agents:
     model: "gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
     base_url: "https://openrouter.ai/api/v1"
     temperature: 0.2
-    top_p: 0.95
+    # top_p: 0.95
     # top_k: 20
     api_key: null 
 
@@ -29,8 +29,8 @@ agents:
     provider: "openrouter.ai"
     model: "openai/gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
     base_url: "https://openrouter.ai/api/v1"
-    temperature: 0.3
-    top_p: 0.95
+    temperature: 0.5
+    # top_p: 0.95
     # top_k: 20
     api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 
@@ -38,8 +38,8 @@ agents:
     provider: "openrouter.ai"
     model: "openai/gpt-oss-120b:nitro" 
     base_url: "https://openrouter.ai/api/v1"
-    temperature: 0.3
-    top_p: 0.95
+    temperature: 0.5
+    # top_p: 0.95
     # top_k: 20
     api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 
@@ -56,8 +56,8 @@ costs:
     input: 0.0
     output: 0.0
   gpt-4o:
-    input: 2.50
-    output: 10.00
+    input: 0
+    output: 0
   gemini-2.5-flash:
     input: 0.075
     output: 0.30

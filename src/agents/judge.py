@@ -202,7 +202,10 @@ def run(state: SpadeState):
                 verdict = JudgeVerdict(**remapped)
                 log(f"Key remapping succeeded: {remapped['winning_patch_id']}", agent_name, level=logging.INFO)
             except Exception as remap_err:
-                log(f"Key remapping also failed: {remap_err}", agent_name, level=logging.WARNING)
+                log(f"Key remapping also failed: {remap_err}", agent_name, level=logging.ERROR)
+                return {
+                    "resolution_status": ["judge_failed"], 
+                }
         
         # True fallback if remapping didn't work
         if verdict is None:
