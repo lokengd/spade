@@ -4,7 +4,7 @@ import yaml
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from src.core.state import SpadeState
-from src.core.llm_client import LLM_Client
+from src.core.llm_client import Ollama_Client
 from src.core.factory import create_llm_client
 from src.core import settings
 from src.utils.db_logger import db_logger

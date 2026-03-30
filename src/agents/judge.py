@@ -2,7 +2,7 @@ import json
 import yaml
 from pydantic import BaseModel
 from src.core.state import SpadeState
-from src.core.llm_client import LLM_Client
+from src.core.llm_client import Ollama_Client
 from src.utils.logger import log, get_loop_info
 from src.core import settings
 from src.core.factory import create_llm_client

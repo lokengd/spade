@@ -14,31 +14,12 @@ import yaml
 
 T = TypeVar('T', bound=BaseModel)
 
-class LLM_Client:
-    def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None):
+class Base_LLM_Client:
+    def __init__(self, agent: str, provider: str, model: str):
         self.agent_name = agent
         self.provider = provider
-        self.model_name = model 
-        self.temperature = temperature
+        self.model_name = model
         
-        # Resolve API Key dynamically from the environment
-        resolved_key = "dummy_key" 
-        if api_key:
-            env_key = os.environ.get(api_key)
-            if env_key:
-                resolved_key = env_key
-            else:
-                log(f"{api_key} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
-
-        # Initialize the appropriate client based on provider
-        client_kwargs = {"api_key": resolved_key}
-        if base_url:
-            client_kwargs["base_url"] = base_url
-            
-        # Initialize 
-        self.client = OpenAI(**client_kwargs)
-
-
     def _calculate_metrics(self, usage, duration: float) -> dict:
         if not usage:
             return {"total_seconds": round(duration, 3)}
@@ -144,6 +125,37 @@ class LLM_Client:
             log(f"Failed to save trajectory: {e}", caller=self.agent_name, level=logging.ERROR)
             
         return entry
+    
+    def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict, dict]:
+        raise NotImplementedError("Must be implemented by subclass.")
+
+    def generate_json_response(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
+        raise NotImplementedError("Must be implemented by subclass.")
+    
+class Ollama_Client(Base_LLM_Client):
+    def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None):
+        super().__init__(agent, provider, model)
+        self.temperature = temperature
+        
+        # Resolve API Key dynamically from the environment
+        resolved_key = "dummy_key" 
+        if api_key:
+            env_key = os.environ.get(api_key)
+            if env_key:
+                resolved_key = env_key
+            else:
+                log(f"{api_key} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
+
+        # Initialize the appropriate client based on provider
+        client_kwargs = {"api_key": resolved_key}
+        if base_url:
+            client_kwargs["base_url"] = base_url
+            
+        # Initialize 
+        self.client = OpenAI(**client_kwargs)
+
+
+    
 
     def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict, dict]:
         """Returns a simple, unstructured Python string (str), metrics, and raw telemetry."""
@@ -219,21 +231,14 @@ class LLM_Client:
             log(f"Raw LLM Response that possibly caused the error: \n{raw_json}", caller=self.agent_name, level=logging.ERROR)
             e.raw_json = raw_json
             raise
+    
 
 
-
-
-
-class OpenRouterClient(LLM_Client):
+class OpenRouterClient(Base_LLM_Client):
     """Minimal OpenRouter API client with optional streaming support."""
     DEFAULT_LLM_SETTINGS = {
         "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
-        "temperature": 0.7,
-        # "top_p": 0.95,
-        # "top_k": 20,
-        # "min_p": 0.0,
-        # "presence_penalty": 1.5,
-        # "repetition_penalty": 2.0,
+        "temperature": 0.1,
     }
 
     def __init__(
@@ -245,18 +250,11 @@ class OpenRouterClient(LLM_Client):
         base_url: str = "https://openrouter.ai/api/v1",
         verbose: bool = False,
         temperature: float = DEFAULT_LLM_SETTINGS["temperature"],
-        # top_p: float = DEFAULT_LLM_SETTINGS["top_p"],
-        # top_k: int = DEFAULT_LLM_SETTINGS["top_k"],
-        # min_p: float = DEFAULT_LLM_SETTINGS["min_p"],
-        # presence_penalty: float = DEFAULT_LLM_SETTINGS["presence_penalty"],
-        # repetition_penalty: float = DEFAULT_LLM_SETTINGS["repetition_penalty"],
         stream: bool = False,
         site_url: str | None = None,
         app_name: str | None = None,
     ):
-        self.agent_name = agent
-        self.provider = provider
-        self.model_name = model
+        super().__init__(agent, provider, model)
         self.base_url = base_url.rstrip("/")
         self.api_url = f"{self.base_url}/chat/completions"
         self.models_url = f"{self.base_url}/models"
@@ -264,9 +262,6 @@ class OpenRouterClient(LLM_Client):
         self.stream = stream
         self.default_params = {
             "temperature": temperature,
-            # "top_p": top_p,
-            # "presence_penalty": presence_penalty,
-            # "frequency_penalty": repetition_penalty,  # closest OpenRouter/OpenAI-compatible analog
         }
 
         if api_key:
@@ -307,38 +302,38 @@ class OpenRouterClient(LLM_Client):
             log(f"❌ Cannot connect to OpenRouter: {e}", caller=self.caller, level=logging.ERROR)
             return False
 
-    def generate_text(
-        self,
-        prompt: str,
-        max_tokens: int = 4096,
-        temperature: float = 0.2,
-        sample_id: int = 0,
-    ) -> dict:
-        """Generate completion from OpenRouter chat/completions."""
-        payload = {
-            "model": self.model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens,
-            "effort": "low",
-            # "stream": self.stream,
-            # **self.default_params,
-            # "temperature": temperature,  # override per-call
-        }
+    # def generate_text(
+    #     self,
+    #     prompt: str,
+    #     max_tokens: int = 4096,
+    #     temperature: float = 0.2,
+    #     sample_id: int = 0,
+    # ) -> dict:
+    #     """Generate completion from OpenRouter chat/completions."""
+    #     payload = {
+    #         "model": self.model,
+    #         "messages": [{"role": "user", "content": prompt}],
+    #         "max_tokens": max_tokens,
+    #         "effort": "low",
+    #         # "stream": self.stream,
+    #         # **self.default_params,
+    #         # "temperature": temperature,  # override per-call
+    #     }
 
-        raw_output = ""
-        usage = {"prompt_tokens": len(prompt) // 4, "completion_tokens": 0}
+    #     raw_output = ""
+    #     usage = {"prompt_tokens": len(prompt) // 4, "completion_tokens": 0}
 
-        response = requests.post(
-            self.api_url,
-            headers=self.headers,
-            json=payload,
-            timeout=180,
-        )
-        response.raise_for_status()
-        data = response.json()
-        raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+    #     response = requests.post(
+    #         self.api_url,
+    #         headers=self.headers,
+    #         json=payload,
+    #         timeout=180,
+    #     )
+    #     response.raise_for_status()
+    #     data = response.json()
+    #     raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-        return {"response": raw_output, "usage": usage}
+    #     return {"response": raw_output, "usage": usage}
     
     def generate_json_response(self, system_prompt: str, user_prompt: str,response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
@@ -354,7 +349,10 @@ class OpenRouterClient(LLM_Client):
 
             payload = {
                 "model": self.model_name,
-                "messages": [{"role": "user", "content":  user_prompt}],
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
                 "max_tokens": 4096,
                 "effort": "high",
                 # "stream": self.stream,
@@ -397,7 +395,7 @@ class OpenRouterClient(LLM_Client):
             e.raw_output = raw_output
             raise
 
-    def generate_raw_response(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
+    def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
         """
@@ -411,7 +409,10 @@ class OpenRouterClient(LLM_Client):
 
             payload = {
                 "model": self.model_name,
-                "messages": [{"role": "user", "content":  user_prompt}],
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
                 "max_tokens": 4096,
                 "effort": "high",
                 # "stream": self.stream,

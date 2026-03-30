@@ -6,7 +6,7 @@ import yaml
 import logging
 from pydantic import BaseModel, Field
 from src.core.state import SpadeState, PatchCandidate, P_UNCONSTRAINED
-from src.core.llm_client import LLM_Client, OpenRouterClient
+from src.core.llm_client import Ollama_Client, OpenRouterClient
 from src.core.factory import create_llm_client
 from src.utils.snippet_extractor import extract_snippet, extract_snippet_fix
 from src.core import settings
@@ -940,7 +940,7 @@ def generate_v1_patch_backup2( #todo ------------------------------------
 
     agent_config = settings.LLM_AGENTS["patchgen"]
     # client = OpenRouterClient(agent=specific_agent_name, **agent_config)
-    client = LLM_Client(agent=specific_agent_name, **agent_config)
+    client = Ollama_Client(agent=specific_agent_name, **agent_config)
     
     # ============== PROCESS EACH FILE SEPARATELY ==============
     for filepath in file_contents.keys():
@@ -1017,7 +1017,7 @@ def generate_v1_patch_backup2( #todo ------------------------------------
                     f"sample {1}/{NUM_SAMPLES} ...", specific_agent_name
                 )
 
-            structured_response, metrics, raw_telemetry = client.generate_raw_response(
+            structured_response, metrics, raw_telemetry = client.generate_text(
                                         system_prompt=system_prompt,
                                         user_prompt=user_prompt,
                                         loop_info=loop_info_dict
@@ -1266,7 +1266,7 @@ def generate_refined_patch(state: SpadeState,
         client.temperature = temperature 
 
         try:
-            structured_response, metrics, raw_telemetry = client.generate_raw_response(
+            structured_response, metrics, raw_telemetry = client.generate_text(
                                         system_prompt=system_prompt,
                                         user_prompt=user_prompt,
                                         loop_info=loop_info_dict
@@ -1509,7 +1509,7 @@ def generate_v1_patch( #todo ------------------------------------
             )
 
         client.temperature = temperature  # Set temperature for this generation
-        structured_response, metrics, raw_telemetry = client.generate_raw_response(
+        structured_response, metrics, raw_telemetry = client.generate_text(
                                     system_prompt=system_prompt,
                                     user_prompt=user_prompt,
                                     loop_info=loop_info_dict
