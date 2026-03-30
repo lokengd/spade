@@ -747,26 +747,27 @@ judge_select:
     5. **The Refinement Blueprint:** Provide a concrete improvement instructions for the 'PatchGen' agent to refine the winning patch. You MUST synthesize and include the most valid critiques from *both* debaters in these instructions.
 
     Use the above rules to identify the winning patch and your justification.
-  # Respond ONLY with a valid JSON object matching this schema:
-  # {
-  #   "winning_patch_id": string,
-  #   "improvement_instructions": string,
-  #   "justification": string
-  # }
 
-  # Rules:
-  # - Do NOT return the schema. Fill in actual values.
-  # - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
-  # - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
-  # - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
-  # - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+    Respond ONLY with a valid JSON object matching this schema:
+    {
+      "winning_patch_id": string,
+      "improvement_instructions": string,
+      "justification": string
+    }
 
-  # Example (do NOT copy these values):
-  # {
-  #   "winning_patch_id": "v1_abc123",
-  #   "improvement_instructions": "Add store_cv_values as a parameter in __init__ with default False, and pass it to super().__init__(). Ensure the parameter is documented in the docstring.",
-  #   "justification": "Both debaters agree v1_abc123 addresses the root cause. The Dynamic Debater confirmed it fixes the TypeError, and the Static Debater confirmed the diff is syntactically valid."
-  # }
+    Rules:
+    - Do NOT return the schema. Fill in actual values.
+    - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification".
+    - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
+    - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
+    - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+
+    Example (do NOT copy these values):
+    {
+      "winning_patch_id": "v1_abc123",
+      "improvement_instructions": "Add store_cv_values as a parameter in __init__ with default False, and pass it to super().__init__(). Ensure the parameter is documented in the docstring.",
+      "justification": "Both debaters agree v1_abc123 addresses the root cause. The Dynamic Debater confirmed it fixes the TypeError, and the Static Debater confirmed the diff is syntactically valid."
+    }
   
   user: |
     Please evaluate the following bug, patch candidates, and agent debate.    
@@ -798,19 +799,19 @@ judge_select:
 
     Based on the evaluation rules, you MUST select the single best patch from the v1 candidate pool to act as the base for the patch refinement.
 
-  # Respond ONLY with a valid JSON object matching this schema:
-  # {{
-  #   "winning_patch_id": string,
-  #   "improvement_instructions": string,
-  #   "justification": string
-  # }}
+    Respond ONLY with a valid JSON object matching this schema:
+    {{
+      "winning_patch_id": string,
+      "improvement_instructions": string,
+      "justification": string
+    }}
 
-  # Rules:
-  # - Do NOT return the schema. Fill in actual values.
-  # - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification". 
-  # - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
-  # - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
-  # - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
+    Rules:
+    - Do NOT return the schema. Fill in actual values.
+    - The keys MUST be exactly "winning_patch_id", "improvement_instructions", and "justification". 
+    - "winning_patch_id" must be the exact ID of the best v1 candidate, e.g. v1_abc123.
+    - Do NOT use "winning_patch", "winner", "patch_id", or any other variation.    
+    - Do NOT include any explanations, conversational text, or markdown code blocks outside of the required JSON object.
 
 judge_select_old:
   system: |
