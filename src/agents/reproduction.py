@@ -44,23 +44,23 @@ def run(state: SpadeState):
     log(f"Running reproduction check for Bug ID: {bug_id} with Run ID: {run_id}", caller=agent_name)
 
     # create dummy evaluation result for now to test the flow
-    # evaluation_result = EvaluationResult(
-    #     evaluation_error_message = "dummy",
-    #     evaluation_ran_successfully = True,
-    #     bug_resolved = False,
-    #     patch_applied_successfully = False,
-    #     total_tests = -1,
-    #     pass_to_pass_success = False,
-    #     fail_to_pass_success = False,
-    #     pass_to_pass_failed_tests = [],
-    #     fail_to_pass_failed_tests = [],
-    #     pass_to_pass_successful_tests = [],
-    #     fail_to_pass_successful_tests = [],
-    #     test_output = "",
-    #     failed_test_traces = {}
-    # )
-    # return {"bug_context": bug_context,
-    #         "reproduction_evaluation_result": evaluation_result}
+    evaluation_result = EvaluationResult(
+        evaluation_error_message = "dummy",
+        evaluation_ran_successfully = True,
+        bug_resolved = False,
+        patch_applied_successfully = False,
+        total_tests = -1,
+        pass_to_pass_success = False,
+        fail_to_pass_success = False,
+        pass_to_pass_failed_tests = [],
+        fail_to_pass_failed_tests = [],
+        pass_to_pass_successful_tests = [],
+        fail_to_pass_successful_tests = [],
+        test_output = "",
+        failed_test_traces = {}
+    )
+    return {"bug_context": bug_context,
+            "reproduction_evaluation_result": evaluation_result}
 
     try:
         # Run evaluation with no patch to confirm the bug is reproducible

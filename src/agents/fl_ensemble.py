@@ -101,7 +101,7 @@ def run(state: SpadeState):
     log(f">>> suspicious_loc: {suspicious_locs}", agent_name)
 
     too_long_files = []
-    MAX_LINES = 500 # Threshold for too long snippets
+    MAX_LINES = 250 # Threshold for too long snippets
     file_snippets = {}
     for file, funcloc in suspicious_locs.items(): #bug_context.suspicious_locs:
         # log(f">> Processing file: {file} with suspicious locations: {funcloc}", agent_name)

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
+from src.core.factory import create_llm_client
 from src.core import settings
 from src.utils.db_logger import db_logger
 from src.utils.prompt_helper import get_failed_patches_section
@@ -31,7 +32,7 @@ def run(state: SpadeState):
 
     # Initialize 
     agent_config = settings.LLM_AGENTS["pattern_selection"]
-    client = LLM_Client(agent=agent_name, **agent_config)
+    client = create_llm_client(agent_name=agent_name, **agent_config)
     run_id = state.get("thread_id")
 
     # Load configuration and patterns

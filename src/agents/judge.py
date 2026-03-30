@@ -5,6 +5,8 @@ from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.utils.logger import log, get_loop_info
 from src.core import settings
+from src.core.factory import create_llm_client
+
 from src.utils.db_logger import db_logger
 import logging
 from src.core.state import DebateRecord
@@ -174,7 +176,11 @@ def run(state: SpadeState):
 
     # Call LLM with structured output
     agent_config = settings.LLM_AGENTS["judge"]
-    client = LLM_Client(agent=agent_name, **agent_config)
+    # client = LLM_Client(agent=agent_name, **agent_config)
+    client = create_llm_client(
+        agent_name=agent_name,
+        **agent_config  # unpacks provider, model, temperature, etc.
+    )
     metrics = {}
     raw_telemetry = {}
 

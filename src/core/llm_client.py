@@ -83,7 +83,7 @@ class LLM_Client:
                 pretty_print_state([entry])
             pretty_output = f.getvalue()
             # Print to console for immediate feedback
-            print(pretty_output)
+            # print(pretty_output)
         except Exception as e:
             log(f"Failed to pretty print trajectory: {e}", caller=self.agent_name, level=logging.WARNING)
             pretty_output = None
@@ -229,27 +229,27 @@ class OpenRouterClient(LLM_Client):
     DEFAULT_LLM_SETTINGS = {
         "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
         "temperature": 0.7,
-        "top_p": 0.95,
-        "top_k": 20,
-        "min_p": 0.0,
-        "presence_penalty": 1.5,
-        "repetition_penalty": 2.0,
+        # "top_p": 0.95,
+        # "top_k": 20,
+        # "min_p": 0.0,
+        # "presence_penalty": 1.5,
+        # "repetition_penalty": 2.0,
     }
 
     def __init__(
         self,
         agent: str, 
         provider: str,
-        api_key: str,
+        api_key: str = None,
         model: str = DEFAULT_LLM_SETTINGS["model"],
         base_url: str = "https://openrouter.ai/api/v1",
         verbose: bool = False,
         temperature: float = DEFAULT_LLM_SETTINGS["temperature"],
-        top_p: float = DEFAULT_LLM_SETTINGS["top_p"],
-        top_k: int = DEFAULT_LLM_SETTINGS["top_k"],
-        min_p: float = DEFAULT_LLM_SETTINGS["min_p"],
-        presence_penalty: float = DEFAULT_LLM_SETTINGS["presence_penalty"],
-        repetition_penalty: float = DEFAULT_LLM_SETTINGS["repetition_penalty"],
+        # top_p: float = DEFAULT_LLM_SETTINGS["top_p"],
+        # top_k: int = DEFAULT_LLM_SETTINGS["top_k"],
+        # min_p: float = DEFAULT_LLM_SETTINGS["min_p"],
+        # presence_penalty: float = DEFAULT_LLM_SETTINGS["presence_penalty"],
+        # repetition_penalty: float = DEFAULT_LLM_SETTINGS["repetition_penalty"],
         stream: bool = False,
         site_url: str | None = None,
         app_name: str | None = None,
@@ -264,9 +264,9 @@ class OpenRouterClient(LLM_Client):
         self.stream = stream
         self.default_params = {
             "temperature": temperature,
-            "top_p": top_p,
-            "presence_penalty": presence_penalty,
-            "frequency_penalty": repetition_penalty,  # closest OpenRouter/OpenAI-compatible analog
+            # "top_p": top_p,
+            # "presence_penalty": presence_penalty,
+            # "frequency_penalty": repetition_penalty,  # closest OpenRouter/OpenAI-compatible analog
         }
 
         if api_key:
@@ -287,6 +287,8 @@ class OpenRouterClient(LLM_Client):
         # if app_name:
         #     self.headers["X-Title"] = app_name
         self.caller = f"{self.agent_name}-{self.model_name}"
+
+        print(f"Initialized OpenRouterClient for agent '{self.agent_name}' with api_key '{self.api_key[:4]}***' and model '{self.model_name}'")
 
     def check_connection(self) -> bool:
         """Check API key and model availability."""
@@ -373,15 +375,15 @@ class OpenRouterClient(LLM_Client):
             data = response.json()
             raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-            print(raw_output)
             parsed_data = response_model.model_validate_json(raw_output)
+            response_for_trajectory = parsed_data.model_dump(mode='json')  # Pydantic v2
+
 
             # raw_json = response.choices[0].message.content
             metrics = {} # self._calculate_metrics(response.usage, 0)
 
-            # print(raw_json)
 
-            telemetry = self._save_trajectory(system_prompt, user_prompt, parsed_data, metrics, loop_info=loop_info)
+            telemetry = self._save_trajectory(system_prompt, user_prompt, response_for_trajectory, metrics, loop_info=loop_info)
             # telemetry = self._save_trajectory(system_prompt, user_prompt, json.loads(parsed_data), metrics, loop_info=loop_info)
             # parsed_data = response_model.model_validate_json(raw_json)
             # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model_name)
@@ -430,12 +432,10 @@ class OpenRouterClient(LLM_Client):
             data = response.json()
             raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-            # print(raw_output)
 
             # raw_json = response.choices[0].message.content
             metrics = {} # self._calculate_metrics(response.usage, 0)
 
-            # print(raw_json)
 
             telemetry = self._save_trajectory(system_prompt, user_prompt, raw_output, metrics, loop_info=loop_info)
             # parsed_data = response_model.model_validate_json(raw_json)
