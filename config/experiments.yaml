@@ -6,8 +6,8 @@ active_experiments: ["spade_trial_run"]
 experiments:
   spade_astropy_k2_n3_m1_v2:
     description: "Trial run astropy"
-    k_patterns: 2
-    n_outer_loops: 3
+    k_patterns: 1
+    n_outer_loops: 2
     m_inner_loops: 1
     v_patience: 2
     bug_list: "*"
@@ -16,7 +16,7 @@ experiments:
 
   spade_trial_run:
     description: "Trial run of SWE-Bench-Lite with sample bugs: astropy_scikit-learn"
-    k_patterns: 2
+    k_patterns: 1
     n_outer_loops: 2
     m_inner_loops: 1
     v_patience: 2

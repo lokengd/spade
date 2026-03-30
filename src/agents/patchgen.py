@@ -1212,11 +1212,11 @@ def generate_refined_patch(state: SpadeState,
 
     for iter_idx in range(MAX_ITERATIONS):
         
-        # ✅ REBUILD and UPDATE current snippets from current_content
-        snippets_text = ""
-        for file in bug_context.suspicious_files:
-            snippet = current_snippets.get(file)
-            snippets_text += f"\nFile: {file}\n{snippet}\n"
+        # # ✅ REBUILD and UPDATE current snippets from current_content
+        # snippets_text = ""
+        # for file in bug_context.suspicious_files:
+        #     snippet = current_snippets.get(file)
+        #     snippets_text += f"\nFile: {file}\n{snippet}\n"
 
         refine_instruction = ""
         if iter_idx > 0:
@@ -1227,6 +1227,7 @@ def generate_refined_patch(state: SpadeState,
             )
         # Explicitly pass the accumulated patch so the model can refine on top of it.
         current_diffs = generate_diff_all(file_contents, current_content)
+        
         current_patch = "\n\n".join(current_diffs.values()).strip() # stringify the dict of diffs
         if current_patch:
             patch_history = (
@@ -1476,7 +1477,7 @@ def generate_v1_patch( #todo ------------------------------------
         
         system_prompt = "" # TODO not used?
         user_prompt = ""
-        if is_unconstrained or not is_unconstrained:
+        if is_unconstrained:
             
             user_prompt = prompts_config["patch_generation_new"]["unconstrained"]["user"].format(
                 issue_text=bug_context.issue_text,
