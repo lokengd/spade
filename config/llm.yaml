@@ -5,14 +5,16 @@ agents:
     model: "qwen2.5-coder:latest"
     temperature: 0.3
     base_url: "http://localhost:11434/v1" # For local models, this is the URL of the local server. For cloud models, this would be the API endpoint. e.g., "https://generativelanguage.googleapis.com/v1beta/openai/"
-    api_key: null  # Local models don't need a real env variable, cloud models: "GEMINI_API_KEY", or "OPENAI_API_KEY"
+    api_key: null  # Local models don't need a api key; For cloud models: use openai.api_key, gemini.api_key, openrouter.api_key etc (refer to config/api_keys.yaml)
 
   pattern_selection:
-    provider: "ollama"
-    model: "qwen2.5-coder:latest"
+    provider: "openrouter.ai"
+    model: "openai/gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
+    base_url: "https://openrouter.ai/api/v1"
     temperature: 0.1
-    base_url: "http://localhost:11434/v1"
-    api_key: null
+    top_p: 0.95,
+    # top_k: 20,
+    api_key: 'openrouter.api_key' # pass in [].api_keys to trigger LLM_client to load api keys from the config/api_keys.yaml file
 
   patchgen:
     provider: "openrouter.ai"
@@ -54,3 +56,9 @@ costs:
   gemini-2.5-flash:
     input: 0.075
     output: 0.30
+  openai/gpt-oss-120b: # standard, by openai Aug 6, 2025 131K context $0.039/M input tokens $0.19/M output tokens
+    input: 0.039
+    output: 0.19
+  openai/gpt-oss-120b:nitro: # Released Aug 5, 2025, Knowledge cutoff Jun 30, 2024, 131,072 context, $0.039/M input tokens $0.19/M output tokens
+    input: 0.039
+    output: 0.19

@@ -15,25 +15,37 @@ import yaml
 T = TypeVar('T', bound=BaseModel)
 
 class LLM_Client:
-    def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None):
+    def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None, top_p: float = 0.0, top_k: int = 0):
         self.agent_name = agent
         self.provider = provider
         self.model_name = model 
         self.temperature = temperature
+        self.top_p = top_p
+        self.top_k = top_k
+        self.base_url = base_url
         
         # Resolve API Key dynamically from the environment
-        resolved_key = "dummy_key" 
         if api_key:
-            env_key = os.environ.get(api_key)
-            if env_key:
-                resolved_key = env_key
-            else:
-                log(f"{api_key} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
+            self.api_key = api_key
+        else:
+            def load_api_key():
+                with open(settings.API_KEY_CONFIG_PATH, "r") as f:
+                    return yaml.safe_load(f)
+            api_key_config = load_api_key()
+            self.api_key = api_key_config["openrouter"]["api_key"]
+
+        # resolved_key = "dummy_key" 
+        # if api_key:
+        #     env_key = os.environ.get(api_key)
+        #     if env_key:
+        #         self.api_key = env_key
+        #     else:
+        #         log(f"{api_key} is missing from environment variables!", caller=self.agent_name, level=logging.WARNING)
 
         # Initialize the appropriate client based on provider
-        client_kwargs = {"api_key": resolved_key}
-        if base_url:
-            client_kwargs["base_url"] = base_url
+        client_kwargs = {"api_key": self.api_key}
+        if self.base_url:
+            client_kwargs["base_url"] = self.base_url
             
         # Initialize 
         self.client = OpenAI(**client_kwargs)
