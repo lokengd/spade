@@ -360,7 +360,7 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
                     # If function is provided but no target line is inside it, the whole function is extracted.
                     ranges.append((start, end))
                     if class_idx is not None:
-                        ranges.append((class_idx, class_idx + 1))
+                        ranges.append((class_idx, start))
                 else:
                     # Extract within margin + function/class headers
                     ranges.append((start, start + 1)) # function header
