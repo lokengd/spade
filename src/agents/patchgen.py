@@ -643,6 +643,23 @@ def _find_with_indentation_flexibility(content: str, search_text: str) -> Option
             end = start + len(candidate)
             return start, end, candidate
     
+    # Strategy 4: First/Last line anchor match (handles LLM abbreviation with ...)
+    search_lines = search_text.splitlines()
+    if len(search_lines) >= 2:
+        first_stripped = search_lines[0].strip()
+        last_stripped = search_lines[-1].strip()
+        if first_stripped and last_stripped and '...' not in first_stripped and '...' not in last_stripped:
+            for i in range(len(content_lines)):
+                if content_lines[i].strip() == first_stripped:
+                    # Found first line, now find last line after it
+                    for j in range(i + 1, min(i + 50, len(content_lines))):  # 50 line max span
+                        if content_lines[j].strip() == last_stripped:
+                            candidate = "\n".join(content_lines[i:j + 1])
+                            start = sum(len(line) + 1 for line in content_lines[:i])
+                            end = start + len(candidate)
+                            return start, end, candidate
+    
+    
     return None
 
 def _apply_replacement_with_indentation(content: str, search_text: str, replace_text: str, 

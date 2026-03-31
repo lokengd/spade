@@ -359,6 +359,7 @@ patch_generation_new:
       ### CRITICAL RULES
       - The SEARCH blocks must match the Source Code EXACTLY (same indentation, same spaces).
       - Include 2 to 4 lines of surrounding context in the SEARCH block to make it unique.
+      - Do NOT use "..." or ellipsis to abbreviate code. The SEARCH block must contain the COMPLETE, EXACT lines from the source code with no omissions.
       - If no bugs are found, respond exactly with: `# No changes needed`
 
       ### OUTPUT FORMAT
@@ -414,6 +415,7 @@ patch_generation_new:
       - **UNIQUENESS**: Include 3 lines of context above and below the change to ensure the search string is unique.
       - **WHITESPACE**: Preserve all tabs, spaces, INDENTATION, and newlines exactly as they appear in the Input Context.
       - **NO LINE NUMBERS**: Do NOT include line numbers (e.g., "202:", "203:") in SEARCH blocks.
+      - Do NOT use "..." or ellipsis to abbreviate code. The SEARCH block must contain the COMPLETE, EXACT lines from the source code with no omissions.
       - Must wrap the entire patch in ```python code fences.
       - If no bugs are found, respond exactly with: `# No changes needed`
 
