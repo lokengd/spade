@@ -1124,6 +1124,7 @@ def generate_v1_patch_backup2( #todo ------------------------------------
 def generate_refined_patch(state: SpadeState,
                            MAX_ITERATIONS: int = 1,
                             NUM_SAMPLES: int = 1,
+                            MAX_ATTEMPTS: int = 5,
                             verbose: bool = True, 
     ):
     ## BUG? origin_id should be renamed to winning_patch_id ? winning_patch_id maybe in v2, or v3 if v_patience is more than 2 
@@ -1205,101 +1206,116 @@ def generate_refined_patch(state: SpadeState,
     all_patches = []
 
 
-    # Iterative refinement: keep improving the same file content.
-    current_content = file_contents.copy()
-    current_snippets = bug_context.file_snippets.copy()
+    
     
 
-    for iter_idx in range(MAX_ITERATIONS):
-        
-        # # ✅ REBUILD and UPDATE current snippets from current_content
-        # snippets_text = ""
-        # for file in bug_context.suspicious_files:
-        #     snippet = current_snippets.get(file)
-        #     snippets_text += f"\nFile: {file}\n{snippet}\n"
+    attempt = 0
+    while len(all_patches) == 0 and attempt < MAX_ATTEMPTS:
+        attempt += 1
+        log(f"\nAttempt {attempt}/{MAX_ATTEMPTS} to generate a valid patch...", specific_agent_name)
 
-        refine_instruction = ""
-        if iter_idx > 0:
-            refine_instruction = (
-                "\n\nRefinement Round Instruction:\n"
-                "You already proposed a previous patch for this file. "
-                "Review the current updated file context and determine whether there is anything else to improve to produce a better patch for the same bug. If no additional change is needed, respond with '# No changes needed'."
-            )
-        # Explicitly pass the accumulated patch so the model can refine on top of it.
-        current_diffs = generate_diff_all(file_contents, current_content)
-        
-        current_patch = "\n\n".join(current_diffs.values()).strip() # stringify the dict of diffs
-        if current_patch:
-            patch_history = (
-                "\n\nCurrent accumulated patch for this file (already applied):\n"
-                "```diff\n"
-                f"{current_patch}\n"
-                "```\n"
-                "Use this patch history plus the updated file context to decide if another improvement is needed."
-            )
-        else:
-            patch_history = (
-                "\n\nCurrent accumulated patch for this file (already applied):\n"
-                "(none yet)"
-            )
+        # Iterative refinement: keep improving the same file content.
+        current_content = file_contents.copy()
+        current_snippets = bug_context.file_snippets.copy()
 
-        # Format prompts based on unconstrained flag #TODO<<<<<<<<<<<<<<<<<<<<<
-        # Format failed patches section
-        
-        system_prompt = "" # TODO not used?
-        pattern_description = prompts_config.get("pattern_taxonomy", {}).get(active_pattern, "")
-        user_prompt = prompts_config["patch_generation_new"]["refinement"]["user"].format(
-            issue_text=state["bug_context"].issue_text,
-            active_pattern=active_pattern or "No available.",
-            active_pattern_description=pattern_description or "No available.",
-            active_pattern_rationale=pattern_rationale or "No available.", 
-            version=v_now - 1, 
-            previous_patch_diff=previous_patch_diff,
-            verdict=state.get("verdict", "No verdict available."),
-            dynamic_argument=state.get("dynamic_argument", "No argument."),
-            static_argument=state.get("static_argument", "No argument."),
-            failed_patches_history=failed_patches_history
-        )
-        user_prompt += patch_history + refine_instruction
-
-        # print(user_prompt)
-        temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1]) #TODO what is this for? not used anywhere
-        client.temperature = temperature 
-
-        try:
-            structured_response, metrics, raw_telemetry = client.generate_text(
-                                        system_prompt=system_prompt,
-                                        user_prompt=user_prompt,
-                                        loop_info=loop_info_dict
-            )
-        except Exception as e:
-            log(f"{loop_info_str} Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
-            return {
-                "resolution_status": ["patchgen_failed"],
-                "total_metrics": metrics
-            }
-        # structured_response, metrics, raw_telemetry = "", {}, {} 
-
-        raw_output = structured_response
-
-        # export raw output for debugging
-        with open(f"raw_output_{instance_id}_iter{iter_idx+1}.txt", "w") as f:
-            f.write(raw_output if raw_output else "")
-
-        if raw_output is None:
-            log("  raw_output is None.",  specific_agent_name)
-            continue
+        for iter_idx in range(MAX_ITERATIONS):
             
-        updated_contents, updated_snippets = parse_multiple_search_replace_with_snippets(raw_output, current_content, verbose=verbose, suspicious_snippets=current_snippets)
+            # # ✅ REBUILD and UPDATE current snippets from current_content
+            # snippets_text = ""
+            # for file in bug_context.suspicious_files:
+            #     snippet = current_snippets.get(file)
+            #     snippets_text += f"\nFile: {file}\n{snippet}\n"
 
-        if updated_contents != current_content:
-            current_content = updated_contents
-            current_snippets = updated_snippets
-            log(f"  ✓ APPLIED patch in iteration {iter_idx+1}", specific_agent_name)
-        else:
-            log(f"  ⚠ NO valid patch generated", specific_agent_name)
+            refine_instruction = ""
+            if iter_idx > 0:
+                refine_instruction = (
+                    "\n\nRefinement Round Instruction:\n"
+                    "You already proposed a previous patch for this file. "
+                    "Review the current updated file context and determine whether there is anything else to improve to produce a better patch for the same bug. If no additional change is needed, respond with '# No changes needed'."
+                )
+            # Explicitly pass the accumulated patch so the model can refine on top of it.
+            current_diffs = generate_diff_all(file_contents, current_content)
+            
+            current_patch = "\n\n".join(current_diffs.values()).strip() # stringify the dict of diffs
+            if current_patch:
+                patch_history = (
+                    "\n\nCurrent accumulated patch for this file (already applied):\n"
+                    "```diff\n"
+                    f"{current_patch}\n"
+                    "```\n"
+                    "Use this patch history plus the updated file context to decide if another improvement is needed."
+                )
+            else:
+                patch_history = (
+                    "\n\nCurrent accumulated patch for this file (already applied):\n"
+                    "(none yet)"
+                )
+
+            # Format prompts based on unconstrained flag #TODO<<<<<<<<<<<<<<<<<<<<<
+            # Format failed patches section
+            
+            system_prompt = "" # TODO not used?
+            pattern_description = prompts_config.get("pattern_taxonomy", {}).get(active_pattern, "")
+            user_prompt = prompts_config["patch_generation_new"]["refinement"]["user"].format(
+                issue_text=state["bug_context"].issue_text,
+                active_pattern=active_pattern or "No available.",
+                active_pattern_description=pattern_description or "No available.",
+                active_pattern_rationale=pattern_rationale or "No available.", 
+                version=v_now - 1, 
+                previous_patch_diff=previous_patch_diff,
+                verdict=state.get("verdict", "No verdict available."),
+                dynamic_argument=state.get("dynamic_argument", "No argument."),
+                static_argument=state.get("static_argument", "No argument."),
+                failed_patches_history=failed_patches_history
+            )
+            user_prompt += patch_history + refine_instruction
+
+            # print(user_prompt)
+            temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1]) #TODO what is this for? not used anywhere
+            client.temperature = temperature 
+
+            try:
+                structured_response, metrics, raw_telemetry = client.generate_text(
+                                            system_prompt=system_prompt,
+                                            user_prompt=user_prompt,
+                                            loop_info=loop_info_dict
+                )
+            except Exception as e:
+                log(f"{loop_info_str} Error generating refined patch: {e}", specific_agent_name, level=logging.ERROR)
+                return {
+                    "resolution_status": ["patchgen_failed"],
+                    "total_metrics": metrics
+                }
+            # structured_response, metrics, raw_telemetry = "", {}, {} 
+
+            raw_output = structured_response
+
+            # export raw output for debugging
+            with open(f"raw_output_{instance_id}_iter{iter_idx+1}.txt", "w") as f:
+                f.write(raw_output if raw_output else "")
+
+            if raw_output is None:
+                log("  raw_output is None.",  specific_agent_name)
+                continue
+                
+            updated_contents, updated_snippets = parse_multiple_search_replace_with_snippets(raw_output, current_content, verbose=verbose, suspicious_snippets=current_snippets)
+
+            if updated_contents != current_content:
+                current_content = updated_contents
+                current_snippets = updated_snippets
+                log(f"  ✓ APPLIED patch in iteration {iter_idx+1}", specific_agent_name)
+            # else:
+            #     log(f"  ⚠ NO valid patch generated", specific_agent_name)
+        
+        # then check the current_content is patched
+        if current_content != file_contents:
+            all_patches.append(current_content)
 
     # -----------------------------
+    if len(all_patches) == 0: # still empty after many attempts
+        log(f"   [ERROR] NO valid patch generated", specific_agent_name)
+
+    current_content = all_patches[0]
         
     # Compare original file_contents to current_content after all iterations
     current_diffs = generate_diff_all(file_contents, current_content)
@@ -1356,6 +1372,7 @@ def generate_v1_patch( #todo ------------------------------------
     state: SpadeState,
     MAX_ITERATIONS: int = 2,
     NUM_SAMPLES: int = 1,
+    MAX_ATTEMPTS: int = 5,
     verbose: bool = True,   
 ):
     """Generate patches one file at a time for better focus and quality."""
@@ -1401,16 +1418,13 @@ def generate_v1_patch( #todo ------------------------------------
     raw_telemetry = {}
 
     all_patches = []
-    edited_files = []
 
     agent_config = settings.LLM_AGENTS["patchgen"]
-    # client = OpenRouterClient(agent=specific_agent_name, **agent_config)
     print(f">>> Agent Config: {agent_config}")
     client = create_llm_client(
         agent_name=specific_agent_name,
         **agent_config  # unpacks provider, model, temperature, etc.
     )
-    # client = LLM_Client(agent=specific_agent_name, **agent_config)
 
 
     # suspicious_snippets = ""
@@ -1433,112 +1447,129 @@ def generate_v1_patch( #todo ------------------------------------
     #     suspicious_snippets = "No code snippets available."
 
             
-    # Iterative refinement: keep improving the same file content.
-    current_content = file_contents.copy()
-    current_snippets = bug_context.file_snippets.copy()
-
-    for iter_idx in range(MAX_ITERATIONS):
-
-        # ✅ REBUILD and UPDATE current snippets from current_content
-        snippets_text = ""
-        for file in bug_context.suspicious_files:
-            snippet = current_snippets.get(file)
-            snippets_text += f"\nFile: {file}\n{snippet}\n"
-            
-        refine_instruction = ""
-        if iter_idx > 0:
-            refine_instruction = (
-                "\n\nRefinement Round Instruction:\n"
-                "You already proposed a previous patch for this file. "
-                "Review the current updated file context and determine whether there is anything else to improve to produce a better patch for the same bug. If no additional change is needed, respond with '# No changes needed'."
-            )
-        # Explicitly pass the accumulated patch so the model can refine on top of it.
-        current_diffs = generate_diff_all(file_contents, current_content)
-        current_patch = "\n\n".join(current_diffs.values()).strip() # stringify the dict of diffs
-        if current_patch:
-            patch_history = (
-                "\n\nCurrent accumulated patch for this file (already applied):\n"
-                "```diff\n"
-                f"{current_patch}\n"
-                "```\n"
-                "Use this patch history plus the updated file context to decide if another improvement is needed."
-            )
-        else:
-            patch_history = (
-                "\n\nCurrent accumulated patch for this file (already applied):\n"
-                "(none yet)"
-            )
-
-        # Format prompts based on unconstrained flag #TODO<<<<<<<<<<<<<<<<<<<<<
-        # Format failed patches section
-        v1_patches = state.get("v1_patches", [])
-        refined_patches = state.get("refined_patches", [])
-        failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=pattern)
-        
-        system_prompt = "" # TODO not used?
-        user_prompt = ""
-        if is_unconstrained:
-            
-            user_prompt = prompts_config["patch_generation_new"]["unconstrained"]["user"].format(
-                issue_text=bug_context.issue_text,
-                error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-                suspicious_snippets=snippets_text, 
-                failed_patches_history=failed_patches_history,
-            )  + patch_history + refine_instruction
-        else:
-            
-            user_prompt = prompts_config["patch_generation_new"]["pattern_guided"]["user"].format(
-                issue_text=bug_context.issue_text,
-                error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-                suspicious_snippets=snippets_text, 
-                active_pattern=pattern_str,
-                active_pattern_description=pattern_description,
-                active_pattern_rationale=pattern_rationale,
-                failed_patches_history=failed_patches_history,
-            )  + patch_history + refine_instruction
-
-        # print(user_prompt)
-        # export user prompt for debugging
-        with open(f"user_prompt_{instance_id}_iter{iter_idx+1}.txt", "w") as f:
-            f.write(user_prompt)
-
-        temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1]) #TODO what is this for? not used anywhere
-        if verbose:
-            log(
-                f"  Iteration {iter_idx+1}/{MAX_ITERATIONS} - "
-                f"sample {1}/{NUM_SAMPLES} ...", specific_agent_name
-            )
-
-        client.temperature = temperature  # Set temperature for this generation
-        structured_response, metrics, raw_telemetry = client.generate_text(
-                                    system_prompt=system_prompt,
-                                    user_prompt=user_prompt,
-                                    loop_info=loop_info_dict
-        )
-        # structured_response, metrics, raw_telemetry = "", {}, {} 
-
-
-        raw_output = structured_response
-
-        # export raw output for debugging
-        with open(f"raw_output_{instance_id}_iter{iter_idx+1}.txt", "w") as f:
-            f.write(raw_output if raw_output else "")
-
-        if raw_output is None:
-            log("  raw_output is None.",  specific_agent_name)
-            continue
-            
-        updated_contents, updated_snippets = parse_multiple_search_replace_with_snippets(raw_output, current_content, verbose=verbose, suspicious_snippets=current_snippets)
-
-        
-
-        if updated_contents != current_content:
-            current_content = updated_contents
-            current_snippets = updated_snippets
-            log(f"  ✓ APPLIED patch in iteration {iter_idx+1}", specific_agent_name)
-        else:
-            log(f"  ⚠ NO valid patch generated", specific_agent_name)
     
+
+    #TODO: Random start instead of purely incremental? 
+    attempt = 0
+    while len(all_patches) == 0 and attempt < MAX_ATTEMPTS:
+        attempt += 1
+        log(f"\nAttempt {attempt}/{MAX_ATTEMPTS} to generate a valid patch...", specific_agent_name)
+
+        # Iterative refinement: keep improving the same file content.
+        current_content = file_contents.copy()
+        current_snippets = bug_context.file_snippets.copy()
+
+        for iter_idx in range(MAX_ITERATIONS):
+
+            # ✅ REBUILD and UPDATE current snippets from current_content
+            snippets_text = ""
+            for file in bug_context.suspicious_files:
+                snippet = current_snippets.get(file)
+                snippets_text += f"\nFile: {file}\n{snippet}\n"
+                
+            refine_instruction = ""
+            if iter_idx > 0:
+                refine_instruction = (
+                    "\n\nRefinement Round Instruction:\n"
+                    "You already proposed a previous patch for this file. "
+                    "Review the current updated file context and determine whether there is anything else to improve to produce a better patch for the same bug. If no additional change is needed, respond with '# No changes needed'."
+                )
+            # Explicitly pass the accumulated patch so the model can refine on top of it.
+            current_diffs = generate_diff_all(file_contents, current_content)
+            current_patch = "\n\n".join(current_diffs.values()).strip() # stringify the dict of diffs
+            if current_patch:
+                patch_history = (
+                    "\n\nCurrent accumulated patch for this file (already applied):\n"
+                    "```diff\n"
+                    f"{current_patch}\n"
+                    "```\n"
+                    "Use this patch history plus the updated file context to decide if another improvement is needed."
+                )
+            else:
+                patch_history = (
+                    "\n\nCurrent accumulated patch for this file (already applied):\n"
+                    "(none yet)"
+                )
+
+            # Format prompts based on unconstrained flag #TODO<<<<<<<<<<<<<<<<<<<<<
+            # Format failed patches section
+            v1_patches = state.get("v1_patches", [])
+            refined_patches = state.get("refined_patches", [])
+            failed_patches_history = get_failed_patches_section(prompts_config, v1_patches, refined_patches, "patch_generation", pattern_filter=pattern)
+            
+            system_prompt = "" # TODO not used?
+            user_prompt = ""
+            if is_unconstrained:
+                
+                user_prompt = prompts_config["patch_generation_new"]["unconstrained"]["user"].format(
+                    issue_text=bug_context.issue_text,
+                    error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+                    suspicious_snippets=snippets_text, 
+                    failed_patches_history=failed_patches_history,
+                )  + patch_history + refine_instruction
+            else:
+                
+                user_prompt = prompts_config["patch_generation_new"]["pattern_guided"]["user"].format(
+                    issue_text=bug_context.issue_text,
+                    error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+                    suspicious_snippets=snippets_text, 
+                    active_pattern=pattern_str,
+                    active_pattern_description=pattern_description,
+                    active_pattern_rationale=pattern_rationale,
+                    failed_patches_history=failed_patches_history,
+                )  + patch_history + refine_instruction
+
+            # print(user_prompt)
+            # export user prompt for debugging
+            with open(f"user_prompt_{instance_id}_iter{iter_idx+1}.txt", "w") as f:
+                f.write(user_prompt)
+
+            temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1]) #TODO what is this for? not used anywhere
+            if verbose:
+                log(
+                    f"  Iteration {iter_idx+1}/{MAX_ITERATIONS} - "
+                    f"sample {1}/{NUM_SAMPLES} ...", specific_agent_name
+                )
+
+            client.temperature = temperature  # Set temperature for this generation
+            structured_response, metrics, raw_telemetry = client.generate_text(
+                                        system_prompt=system_prompt,
+                                        user_prompt=user_prompt,
+                                        loop_info=loop_info_dict
+            )
+            # structured_response, metrics, raw_telemetry = "", {}, {} 
+
+
+            raw_output = structured_response
+
+            # export raw output for debugging
+            with open(f"raw_output_{instance_id}_iter{iter_idx+1}.txt", "w") as f:
+                f.write(raw_output if raw_output else "")
+
+            if raw_output is None:
+                log("  raw_output is None.",  specific_agent_name)
+                continue
+                
+            updated_contents, updated_snippets = parse_multiple_search_replace_with_snippets(raw_output, current_content, verbose=verbose, suspicious_snippets=current_snippets)
+
+            
+
+            if updated_contents != current_content:
+                current_content = updated_contents
+                current_snippets = updated_snippets
+                log(f"  ✓ APPLIED patch in iteration {iter_idx+1}", specific_agent_name)
+            # else:
+            #     log(f"  ⚠ NO valid patch generated", specific_agent_name)
+        
+        # then check the current_content is patched
+        if current_content != file_contents:
+            all_patches.append(current_content)
+    
+    if len(all_patches) == 0: # still empty after many attempts
+        log(f"   [ERROR] NO valid patch generated", specific_agent_name)
+
+    current_content = all_patches[0]
+
     # Compare original file_contents to current_content after all iterations
     current_diffs = generate_diff_all(file_contents, current_content)
     all_patches = [diff for diff in current_diffs.values() if diff.strip()]

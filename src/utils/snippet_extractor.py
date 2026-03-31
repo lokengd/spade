@@ -401,17 +401,17 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
     if imports:
         result.append("# --- Imports ---")
         result.extend(imports)
-        result.append("...")
+        # result.append("...")
 
     for i, (start, end) in enumerate(merged):
-        if i > 0:
-            result.append("    ...") # Gap between ranges
+        # if i > 0:
+        #     result.append("    ...") # Gap between ranges
         
         last_was_skipped = False
         for idx in range(start, end):
             if idx in docstring_indices:
-                if not last_was_skipped:
-                    result.append("    ...") # Jump over docstring
+                # if not last_was_skipped:
+                #     result.append("    ...") # Jump over docstring
                 last_was_skipped = True
                 continue
             
