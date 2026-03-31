@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = ROOT.parent
 
 INSTANCES_DATA_FILE = ROOT / "afl-qwen2.5_32b.jsonl"
-INSTANCES_LIST_FILE = PROJECT_ROOT / "instances_with_simple_fixes.txt"
+INSTANCES_LIST_FILE = PROJECT_ROOT / "fl_results" / "instances_with_simple_fixes.txt"
 
 SAVING_FOLDER_NAME = "subset_files"
 SAVING_FILE_NAME = "spade_baseline_k2_n3_m1_v2_subset_{subset_number}.jsonl"
