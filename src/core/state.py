@@ -8,6 +8,7 @@ P_UNCONSTRAINED = "P_unconstrained" # Unconstrained pattern identifier
 # Pydantic Models (Strictly Typed Artifacts)
 class EditLocation(BaseModel):
     file: str
+    classname: Optional[str] = None
     function: Optional[str] = None
     lines: Optional[List[int]] = None
     related_functions: List[Optional[str]] = None

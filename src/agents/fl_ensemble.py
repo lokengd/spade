@@ -24,9 +24,11 @@ def load_fl_data(bug_id: str):
                 continue
             if data.get("instance_id") == bug_id:
                 suspicious_files = data.get("found_files", [])
-                
+                # print(f"\nsuspicious_files: {suspicious_files}")
+
                 # Parse related functions
                 raw_related = data.get("found_related_locs", {})
+                # print(f"\nraw_related: {raw_related}")
                 related_functions = {}
                 for file, locs in raw_related.items():
                     funcs = []
@@ -37,17 +39,23 @@ def load_fl_data(bug_id: str):
                                 funcs.append(part.replace('function: ', '').strip())
                     related_functions[file] = funcs
                 
+                # print(f"\nrelated_functions: {related_functions}")
+
                 # Parse edit locations from found_edit_locs
                 raw_edits = data.get("found_edit_locs", {})
+                # print(f"\nraw_edits: {raw_edits}")
                 edit_locations = []
                 for file, locs in raw_edits.items():
                     for loc in locs:
                         if not loc: continue
                         lines = []
                         function_name = None
+                        class_name = None
                         for part in loc.split('\n'):
                             if part.startswith('function: '):
                                 function_name = part.replace('function: ', '').strip()
+                            elif part.startswith('class: '):
+                                class_name = part.replace('class: ', '').strip()
                             elif part.startswith('line: '):
                                 try:
                                     lines.append(int(part.replace('line: ', '').strip()))
@@ -56,11 +64,14 @@ def load_fl_data(bug_id: str):
                         
                         edit_locations.append(EditLocation(
                             file=file,
+                            classname=class_name,
                             function=function_name,
                             lines=lines if lines else None,
                             related_functions=related_functions.get(file, [])
                         ))
                 
+                # print(f"\nedit_locations: {edit_locations}")
+
                 return suspicious_files, related_functions, edit_locations
     return None
 
@@ -92,12 +103,22 @@ def run(state: SpadeState):
         suspicious_locs[file] = {}
         for func in related_functions.get(file, []):
             suspicious_locs[file][func] = []
+        for edit_loc in edit_locations:
+            if edit_loc.function:
+                suspicious_locs[file][edit_loc.function] = []
+            if edit_loc.classname:
+                suspicious_locs[file][edit_loc.classname] = []
 
     for edit_loc in edit_locations:
         file = edit_loc.file
+        classname = edit_loc.classname
         func = edit_loc.function
-        suspicious_locs[file][func].extend(edit_loc.lines)
-    
+        # print(f"\n file: {file}, classname: {classname}, func: {func}")
+        if func and suspicious_locs[file][func]:
+            suspicious_locs[file][func].extend(edit_loc.lines)
+        if classname and suspicious_locs[file][classname]:
+            suspicious_locs[file][classname].extend(edit_loc.lines)
+
     log(f">>> suspicious_loc: {suspicious_locs}", agent_name)
 
     too_long_files = []

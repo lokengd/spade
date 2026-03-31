@@ -12,7 +12,7 @@ agents:
     model: "openai/gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
     base_url: "https://openrouter.ai/api/v1"
     temperature: 0.1
-    top_p: 0.95
+    # top_p: 0.95
     # top_k: 20
     api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 

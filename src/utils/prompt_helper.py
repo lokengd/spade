@@ -95,3 +95,29 @@ def get_debate_history_section(prompts_config: dict, debate_history: list, secti
         return ""
     
     return inclusion_template.format(debate_history=debate_str)
+
+def get_suspicious_locations(bug_context):
+    locations_str = ""
+    if bug_context.suspicious_files:
+        locations_str += "--- Suspicious Files ---\n"
+        locations_str += "\n".join([f"- {f}" for f in bug_context.suspicious_files])
+        locations_str += "\n"
+        
+    if bug_context.related_functions:
+        locations_str += "\n--- Related Functions ---\n"
+        for file, funcs in bug_context.related_functions.items():
+            locations_str += f"- {file}: {', '.join(funcs)}\n"
+        locations_str += "\n"
+            
+    if bug_context.edit_locations:
+        locations_str += "--- Edit Locations ---\n"
+        for loc in bug_context.edit_locations:
+            class_str = f" | Class: {loc.classname}" if loc.classname else ""
+            func_str = f" | Func: {loc.function}" if loc.function else ""
+            lines_str = f" | Lines: {loc.lines}" if loc.lines else ""
+            locations_str += f"- File: {loc.file}{class_str}{func_str}{lines_str}\n"
+
+    if not locations_str.strip():
+        locations_str = "No specific locations identified by Fault Localization."
+
+    return locations_str.strip()

@@ -7,8 +7,9 @@ from src.core.state import SpadeState
 from src.core.llm_client import LLM_Client
 from src.core import settings
 from src.utils.db_logger import db_logger
-from src.utils.prompt_helper import get_failed_patches_section
+from src.utils.prompt_helper import get_failed_patches_section, get_suspicious_locations
 from src.utils.snippet_extractor2 import extract_snippet
+
 
 agent_name = "Pattern_Selection"
 
@@ -75,27 +76,6 @@ def run(state: SpadeState):
         margin=settings.SNIPPET_CONTEXT_LINES
     )
 
-    locations_str = ""
-    if bug_context.suspicious_files:
-        locations_str += "--- Suspicious Files ---\n"
-        locations_str += "\n".join([f"- {f}" for f in bug_context.suspicious_files])
-        locations_str += "\n"
-        
-    if bug_context.related_functions:
-        locations_str += "\n--- Related Functions ---\n"
-        for file, funcs in bug_context.related_functions.items():
-            locations_str += f"- {file}: {', '.join(funcs)}\n"
-        locations_str += "\n"
-            
-    if bug_context.edit_locations:
-        locations_str += "--- Edit Locations ---\n"
-        for loc in bug_context.edit_locations:
-            func_str = f" | Func: {loc.function}" if loc.function else ""
-            lines_str = f" | Lines: {loc.lines}" if loc.lines else ""
-            locations_str += f"- File: {loc.file}{func_str}{lines_str}\n"
-
-    if not locations_str.strip():
-        locations_str = "No specific locations identified by Fault Localization."
 
     # Format failed patches section
     v1_patches = state.get("v1_patches", [])
@@ -107,7 +87,7 @@ def run(state: SpadeState):
     user_prompt = user_template.format(
         issue_text=bug_context.issue_text,
         error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
-        suspicious_locations=locations_str.strip(),
+        suspicious_locations=get_suspicious_locations(bug_context),
         suspicious_code_snippets=code_snippets,
         failed_patches_history=failed_patches_history
     )
