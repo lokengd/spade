@@ -115,7 +115,7 @@ def run(state: SpadeState):
         func = edit_loc.function
         # print(f"\n file: {file}, classname: {classname}, func: {func}")
         if func and suspicious_locs[file][func]:
-            suspicious_locs[file][func].extend(edit_loc.lines)
+            suspicious_locs[file].setdefault(func, []).extend(edit_loc.lines)
         if classname and suspicious_locs[file][classname]:
             suspicious_locs[file][classname].extend(edit_loc.lines)
 
