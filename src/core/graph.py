@@ -13,7 +13,7 @@ from src.agents import (
 logger = logging.getLogger(__name__)
 
 def activate_patchgen_agents(state: SpadeState):
-    """Dynamically activates K+1 parallel patch generation agents."""
+    """Dynamically activates pattern-guided (K*P) and unconstrained (Q) patch generation agents."""
     sends = []
     
     # Grab the current counters to pass them down
@@ -23,11 +23,27 @@ def activate_patchgen_agents(state: SpadeState):
     thread_id = state.get("thread_id")
     experiment_id = state.get("experiment_id")
 
-    # Activate K agents
-    if settings.K_PATTERNS > 0:
+    # Activate K * P agents
+    if settings.K_PATTERNS > 0 and settings.P_SAMPLES > 0:
         for pattern in state.get("selected_patterns", [])[:settings.K_PATTERNS]:
+            for sample_idx in range(1, settings.P_SAMPLES + 1):
+                sends.append(Send("generate_v1_patch", {
+                    "active_pattern": pattern,
+                    "sample_index": sample_idx,
+                    "bug_context": state["bug_context"],
+                    "outer_loop_count": current_n,
+                    "inner_loop_count": current_m,
+                    "current_patch_version": current_v,
+                    "thread_id": thread_id,
+                    "experiment_id": experiment_id
+                }))
+        
+    # Activate Q Unconstrained LLM agents
+    if settings.Q_SAMPLES > 0:
+        for sample_idx in range(1, settings.Q_SAMPLES + 1):
             sends.append(Send("generate_v1_patch", {
-                "active_pattern": pattern,
+                "active_pattern": P_UNCONSTRAINED,
+                "sample_index": sample_idx,
                 "bug_context": state["bug_context"],
                 "outer_loop_count": current_n,
                 "inner_loop_count": current_m,
@@ -35,17 +51,6 @@ def activate_patchgen_agents(state: SpadeState):
                 "thread_id": thread_id,
                 "experiment_id": experiment_id
             }))
-        
-    # Activate the +1 Unconstrained LLM agent
-    sends.append(Send("generate_v1_patch", {
-        "active_pattern": P_UNCONSTRAINED,
-        "bug_context": state["bug_context"],
-        "outer_loop_count": current_n,
-        "inner_loop_count": current_m,
-        "current_patch_version": current_v,
-        "thread_id": thread_id,
-        "experiment_id": experiment_id
-    }))
     
     return sends
 

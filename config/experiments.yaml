@@ -1,11 +1,13 @@
 # List of experiment IDs to run
 # active_experiments: ["spade_trial_run_qwen3-coder-30b"]
-active_experiments: ["spade_baseline_k2_n3_m1_v2_subset_1"]
+active_experiments: ["spade_run_subset1"]
 
 # Experiments collection
 experiments:
   spade_run_subset1:
     description: "spade_baseline_k2_n3_m1_v2_subset_1"
+    p_samples: 1
+    q_samples: 1
     k_patterns: 2
     n_outer_loops: 3
     m_inner_loops: 1

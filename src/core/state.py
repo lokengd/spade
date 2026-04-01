@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import operator
 from typing_extensions import NotRequired
 
-P_UNCONSTRAINED = "P_unconstrained" # Unconstrained pattern identifier
+P_UNCONSTRAINED = "P0_unconstrained" # Unconstrained pattern identifier
 
 # Pydantic Models (Strictly Typed Artifacts)
 class EditLocation(BaseModel):
@@ -71,8 +71,9 @@ class EvaluationResult(BaseModel):
 
 class PatchCandidate(BaseModel):
     id: str
+    sample_idx: int = 1
     code_diff: str
-    pattern: str # K+1 patterns: p1, p2, p1+p2, + 1 Unconstrained: pX
+    pattern: str # K+1 patterns: p1, p2, p1+p2, + 1 Unconstrained: p0
     rationale: Optional[str] = None # the rationale of the selected pattern
     version: int = 1 # Version number (1 for v1, 2 for v2, etc.)
     origin_v1_id: Optional[str] = None # Link back to the original v1 candidate
