@@ -1,9 +1,23 @@
 # List of experiment IDs to run
 # active_experiments: ["spade_trial_run_qwen3-coder-30b"]
-active_experiments: ["spade_trial_run"]
+active_experiments: ["spade_baseline_k2_n3_m1_v2_subset_1"]
 
 # Experiments collection
 experiments:
+  spade_run_subset1:
+    description: "spade_baseline_k2_n3_m1_v2_subset_1"
+    k_patterns: 2
+    n_outer_loops: 3
+    m_inner_loops: 1
+    v_patience: 2
+    bug_list: ["matplotlib__matplotlib-23563"]
+    # bug_list: "*"
+    fl_resultset: "fl_results/subset_files/spade_baseline_k2_n3_m1_v2_subset_1.jsonl"
+    snippet_context_lines: 10
+    # Optional: override default config: "llm.yaml" and "prompts.yaml"
+    # llm_config: "config/llm_trial_run.yaml"
+    # prompts_config: "config/prompts_trial_run.yaml"
+
   spade_astropy_k2_n3_m1_v2:
     description: "Trial run astropy"
     k_patterns: 2
