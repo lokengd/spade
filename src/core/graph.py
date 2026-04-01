@@ -4,7 +4,8 @@ import logging
 from typing import Optional, List, Any
 from src.core.state import SpadeState, P_UNCONSTRAINED
 from src.core import settings
-from src.utils.logger import log
+from src.utils.logger import log, get_loop_info
+from src.utils.db_logger import db_logger
 from src.agents import (
     fl_ensemble, reproduction, pattern_selection, patchgen, debaters, judge, test_agent
 )
@@ -116,14 +117,59 @@ def route_after_v1(state: SpadeState):
         log("PatchGen failed. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
     
-    if settings.M_INNER_LOOPS == 0:
-        log("M=0: Skipping Debate Loop.", "Orchestrator")
-        if check_status(state, ["hit_max_limit"]):
-            log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
-            return "hard_stop"
-        # If we are transitioning to a new outer loop, we should respect the K=0 setting
-        return route_after_reproduction(state)
+    if check_status(state, ["v1_failed"]):
+        return "v1_fallback_policy"
 
+    return "debate_panel"
+
+def v1_fallback_policy(state: SpadeState):
+    """
+    Policy Method: Handles initial v1 failure.
+    Decides whether to proceed to debate panel or transition to new outer loop (if M=0).
+    """
+    run_id = state.get("thread_id")
+    loop_info_str, _ = get_loop_info(state, include_inner=False)
+
+    # Inner helper to update the DB for the current scenario
+    def _update_db_status(status: str = "failed"):
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=None, 
+                is_resolved=False,
+                status=status
+            )
+        return status
+
+    if settings.M_INNER_LOOPS == 0:
+        curr_n = state.get("outer_loop_count", 1)
+        if curr_n < settings.N_OUTER_LOOPS:
+            log(f"{loop_info_str} All v1 failed. M=0: Transitioning to Outer Loop N={curr_n + 1}.", "Orchestrator", level=logging.WARNING)
+            return {
+                "resolution_status": [_update_db_status(f"N{curr_n}_failed")], 
+                "inner_loop_count": 1, 
+                "outer_loop_count": curr_n + 1, 
+                "current_patch_version": 1
+            }
+        else:
+            log(f"{loop_info_str} All v1 failed. M=0: All outer loops exhausted. Hard Stop.", "Orchestrator", level=logging.WARNING)
+            return {"resolution_status": [_update_db_status("hit_max_limit")]}
+    
+    # If M > 0, we just continue with the current state (v1_failed is already in resolution_status)
+    return {}
+
+def route_after_v1_fallback(state: SpadeState):
+    """
+    Decides where to route after v1_fallback_policy.
+    """
+    if check_status(state, ["hit_max_limit"]):
+        return "hard_stop"
+        
+    statuses = state.get("resolution_status", [])        
+    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_failed"):
+        # Transitions to new outer loop: triggers reproduction/pattern_selection
+        return route_after_reproduction(state)
+        
     return "debate_panel"
 
 def route_after_refined(state: SpadeState):
@@ -131,29 +177,112 @@ def route_after_refined(state: SpadeState):
     if check_status(state, ["resolved"]):
         return "end"
     
+    loop_info_str, _ = get_loop_info(state, include_inner=False)
     if check_status(state, ["patchgen_failed", "test_agent_failed"]):
-        log(f"Agent error. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        log(f"{loop_info_str} Agent error. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
+    # Check if it failed verification (v*_failed)
+    statuses = state.get("resolution_status", [])
+    if statuses and statuses[-1].startswith("v") and statuses[-1].endswith("_failed"):
+         return "refined_fallback_policy"
+
     # Hard Stop check - if test_agent signaled failure or counters exceed limit
     if check_status(state, ["hit_max_limit"]) or state.get("outer_loop_count", 1) > settings.N_OUTER_LOOPS:        
-        log(f"MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        log(f"{loop_info_str} MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
         return "hard_stop"
         
+    return "hard_stop"
 
-    # Case 1: Transition to new Outer Loop (N+1)
+def refined_fallback_policy(state: SpadeState):
     """
-    Checks if the latest status indicates an N-th pattern failure 
-    (e.g., 'N1_failed', 'N2_failed') requiring an outer loop transition.
+    Policy Method: Records the test failure for refined patches and decides the next step.
     """
+    run_id = state.get("thread_id")
+    loop_info_str, _ = get_loop_info(state, include_inner=True)
+
+    refined_patches = state.get("refined_patches", [])
+    if not refined_patches:
+        log(f"{loop_info_str} No refined patches found in refined_fallback_policy.", caller="Orchestrator", level=logging.ERROR)
+        return {"resolution_status": ["hit_max_limit"]} 
+        
+    failed_patch = refined_patches[-1]
+    current_v = failed_patch.version
+    failed_trace_log = failed_patch.execution_trace
+
+    # Inner helper to update the DB for the current scenario
+    def _update_db_status(status: str = "failed"):
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=False, 
+                is_resolved=False,
+                status=status
+            )
+            return status
+        else:
+            return None  
+
+    curr_m = state.get("inner_loop_count", 1)
+    curr_n = state.get("outer_loop_count", 1)
+
+    # Case 1: Patience left -> Refine same winner (v+1)
+    if current_v < settings.V_PATIENCE:
+        next_v = current_v + 1
+        log(f"{loop_info_str} Patch v{current_v} failed. Iteratively refining to v{next_v} (Version {next_v}/{settings.V_PATIENCE}).", "Orchestrator", level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status(f"v{current_v}_failed")], 
+            "current_patch_version": next_v,
+            "failed_traces": [failed_trace_log]
+        }
+
+    # Case 2: Patience hit (current_v == V_PATIENCE), try next winner?
+    if curr_m < settings.M_INNER_LOOPS:
+        log(f"{loop_info_str} V_PATIENCE={settings.V_PATIENCE} REACHED for winner {failed_patch.origin_v1_id}. "
+            f"Backtracking to pick a NEW winner (Attempt {curr_m + 1}/{settings.M_INNER_LOOPS}).", "Orchestrator", level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status(f"v{current_v}_failed")], 
+            "inner_loop_count": curr_m + 1,
+            "current_patch_version": 1, 
+            "failed_traces": [failed_trace_log]
+        }
+
+    # Case 3: Inner loops hit, try next patterns? hard reset
+    if curr_n < settings.N_OUTER_LOOPS:
+        log(f"{loop_info_str} INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Hard reset to Pattern Selection, preparing for N={curr_n + 1}\n", "Orchestrator", level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status(f"N{curr_n}_failed")], 
+            "inner_loop_count": 1, # Reset M
+            "outer_loop_count": curr_n + 1, # Increment N
+            "current_patch_version": 1, # Reset v
+            "failed_traces": [failed_trace_log]
+        }
+
+    # Case 4: All limits hit -> Hard Stop
+    log(f"{loop_info_str} MAX LIMITS REACHED (N={curr_n}/{settings.N_OUTER_LOOPS}, M={curr_m}/{settings.M_INNER_LOOPS}). Hard stop.", "Orchestrator", level=logging.WARNING)
+    return {
+        "resolution_status": [_update_db_status("hit_max_limit")], 
+        "current_patch_version": current_v,
+        "inner_loop_count": curr_m,
+        "outer_loop_count": curr_n,
+        "failed_traces": [failed_trace_log]
+    }
+
+def route_after_refined_fallback(state: SpadeState):
+    """
+    Checks the latest status after refined_fallback_policy to decide where to route next.
+    """
+    loop_info_str, _ = get_loop_info(state, include_inner=True)
+    if check_status(state, ["hit_max_limit"]):
+        log(f"{loop_info_str} MAX LIMITS REACHED. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        return "hard_stop"
+        
     statuses = state.get("resolution_status", [])        
-    # Check if list has items AND matches the dynamic N..._failed pattern
     if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_failed"):
-        log(f"Dynamic failure ({statuses[-1]}). Transitioning to new Outer Loop (Pattern Selection).", caller="Orchestrator")
+        log(f"{loop_info_str} Dynamic failure ({statuses[-1]}). Transitioning to new Outer Loop (Pattern Selection).", caller="Orchestrator")
         return "pattern_selection"
         
-    # Case 2: Backtracking (pick new winner) or Iterative Refinement (v+1)
-    # Both stay in the debate panel.
+    # Default to debate panel for Iterative Refinement (v+1) or Backtracking (M+1)
     return "debate_panel"
 
 
@@ -166,7 +295,7 @@ def build_graph():
     graph.add_node("reproduction", reproduction.run)
     graph.add_node("pattern_selection", pattern_selection.run)
     graph.add_node("generate_v1_patch", patchgen.generate_v1_patch)    
-    graph.add_node("initial_verification", test_agent.verify_v1)
+    graph.add_node("verify_v1", test_agent.verify_v1)
     # Debate panel nodes
     graph.add_node("debate_panel", lambda state: {}) # Dummy node to trigger parallel fan-out
     graph.add_node("generate_dynamic_arg", debaters.generate_dynamic_arg)
@@ -177,6 +306,8 @@ def build_graph():
     graph.add_node("judge_verdict", judge.run)
     graph.add_node("generate_refined_patch", patchgen.generate_refined_patch) 
     graph.add_node("verify_refined", test_agent.verify_refined)        
+    graph.add_node("v1_fallback_policy", v1_fallback_policy)
+    graph.add_node("refined_fallback_policy", refined_fallback_policy)
 
     # Add edges
     graph.add_edge(START, "fl_ensemble")
@@ -211,13 +342,20 @@ def build_graph():
             "hard_stop": END
         }
     )
-    # Fan-In: Wait for all K+1 patches, then go to verification
-    graph.add_edge("generate_v1_patch", "initial_verification")
+    # Fan-In: Wait for all K+1 patches, then go to verify_v1
+    graph.add_edge("generate_v1_patch", "verify_v1")
     # Conditional route to Debate Setup
-    graph.add_conditional_edges("initial_verification", route_after_v1, {
+    graph.add_conditional_edges("verify_v1", route_after_v1, {
         "end": END, 
+        "v1_fallback_policy": "v1_fallback_policy",
         "debate_panel": "debate_panel",
+        "hard_stop": END
+    })
+
+    graph.add_conditional_edges("v1_fallback_policy", route_after_v1_fallback, {
         "pattern_selection": "pattern_selection",
+        "generate_v1_patch": "generate_v1_patch", # If route_after_reproduction returns Send
+        "debate_panel": "debate_panel",
         "hard_stop": END
     })
     
@@ -251,7 +389,12 @@ def build_graph():
     
     graph.add_conditional_edges("verify_refined", route_after_refined, {
         "end": END, 
-        "pattern_selection": "pattern_selection", 
+        "refined_fallback_policy": "refined_fallback_policy",
+        "hard_stop": END
+    })
+
+    graph.add_conditional_edges("refined_fallback_policy", route_after_refined_fallback, {
+        "pattern_selection": "pattern_selection",
         "debate_panel": "debate_panel",
         "hard_stop": END
     })
