@@ -1,15 +1,15 @@
 # src/llm/factory.py
 from typing import Dict, Any, Type
-from src.core.llm_client2 import Ollama_Client, OpenRouterClient 
+from src.core.llm_client2 import Ollama_Client, OpenRouterClient, Base_LLM_Client
 # from .clients import OllamaClient, GeminiClient, etc.
 
-PROVIDER_MAP: Dict[str, Type[Ollama_Client]] = {
+PROVIDER_MAP: Dict[str, Type[Base_LLM_Client]] = {
     "openrouter.ai": OpenRouterClient,
-    # "ollama": OllamaClient,        # If you create this
+    "ollama": Ollama_Client,        # If you create this
     # "gemini": GeminiClient,        # If you create this
 }
 
-def create_llm_client(agent_name: str, provider: str, **config_kwargs) -> Ollama_Client:
+def create_llm_client(agent_name: str, provider: str, **config_kwargs) -> Base_LLM_Client:
     """
     Factory: Returns the correct LLM client subclass based on provider.
     
