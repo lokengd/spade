@@ -93,31 +93,45 @@ def run(state: SpadeState):
     suspicious_files, related_functions, edit_locations = fl_data
 
     # Inject fl data into context
+    # process suspicious_files to make sure no duplicates
+    suspicious_files = list(set(suspicious_files))
     bug_context.suspicious_files = suspicious_files
+    # process related_functions to ensure no duplicates in function lists
+    for file, funcs in related_functions.items():
+        related_functions[file] = list(set(funcs))
     bug_context.related_functions = related_functions
+    # process edit_locations to ensure no duplicates (based on file + function + lines)
+    unique_locs = {}
+    for loc in edit_locations:
+        key = (loc.file, loc.function, tuple(loc.lines) if loc.lines else None)
+        if key not in unique_locs:
+            unique_locs[key] = loc
+    edit_locations = list(unique_locs.values())
     bug_context.edit_locations = edit_locations
 
     # Extract code snippets for each edit location
     suspicious_locs = {}
     for file in suspicious_files:
+        print(f"\n>>> Processing file: {file} with related functions: {related_functions.get(file, [])}")
         suspicious_locs[file] = {}
         for func in related_functions.get(file, []):
+            print(f">>> Initializing suspicious_locs[{file}][{func}] = []")
             suspicious_locs[file][func] = []
-        for edit_loc in edit_locations:
-            if edit_loc.function:
-                suspicious_locs[file][edit_loc.function] = []
-            if edit_loc.classname:
-                suspicious_locs[file][edit_loc.classname] = []
+        # for edit_loc in edit_locations:
+        #     if edit_loc.function:
+        #         suspicious_locs[file][edit_loc.function] = []
+        #     if edit_loc.classname:
+        #         suspicious_locs[file][edit_loc.classname] = []
 
-    for edit_loc in edit_locations:
-        file = edit_loc.file
-        classname = edit_loc.classname
-        func = edit_loc.function
-        # print(f"\n file: {file}, classname: {classname}, func: {func}")
-        if func and suspicious_locs[file][func]:
-            suspicious_locs[file].setdefault(func, []).extend(edit_loc.lines)
-        if classname and suspicious_locs[file][classname]:
-            suspicious_locs[file][classname].extend(edit_loc.lines)
+    # for edit_loc in edit_locations:
+    #     file = edit_loc.file
+    #     classname = edit_loc.classname
+    #     func = edit_loc.function
+    #     # print(f"\n file: {file}, classname: {classname}, func: {func}")
+    #     if func and suspicious_locs[file][func]:
+    #         suspicious_locs[file].setdefault(func, []).extend(edit_loc.lines)
+    #     if classname and suspicious_locs[file][classname]:
+    #         suspicious_locs[file][classname].extend(edit_loc.lines)
 
     log(f">>> suspicious_loc: {suspicious_locs}", agent_name)
 
@@ -161,6 +175,17 @@ def run(state: SpadeState):
         log(f"Removed {len(too_long_files)} files with snippets longer than {MAX_LINES} lines from the context to avoid overwhelming the LLM.", agent_name)
         log(f"Files removed: {', '.join(too_long_files)}", agent_name)
     bug_context.file_snippets = file_snippets
+
+    # export snippets for debugging
+    export_dir = "debug/fl_snippets"
+    os.makedirs(export_dir, exist_ok=True)
+    for file, snippet in file_snippets.items():
+        export_path = os.path.join(export_dir, f"{bug_context.bug_id}_{os.path.basename(file).replace('/', '_')}.txt")
+        with open(export_path, "w") as f:
+            f.write(snippet)
+        log(f"Exported snippet for {file} to {export_path}", agent_name)
+    
+    # exit(0) # TEMPORARY EXIT TO TEST SNIPPET EXTRACTION BEFORE PROCEEDING WITH LLM INTERACTION
 
     # for file, snippet in file_snippets.items():
     #     log(f">>> 🔧 Snippet for {file}:\n{snippet}\n", agent_name)
