@@ -285,9 +285,8 @@ class DBLogger:
                 INSERT INTO llm_telemetry (
                     run_id, agent_name, model, provider, 
                     loop_n, loop_m, loop_v,
-                    prompt_tokens, completion_tokens, cost_usd, duration_seconds,
-                    prompt_json, response_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    prompt_tokens, completion_tokens, cost_usd, duration_seconds
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 run_id,
                 agent_name,
@@ -299,10 +298,30 @@ class DBLogger:
                 metrics.get("total_prompt_tokens"),
                 metrics.get("total_completion_tokens"),
                 metrics.get("total_cost_usd"),
-                metrics.get("total_seconds"),
-                json.dumps(log_data.get("prompts")) if log_data.get("prompts") is not None else None,
-                json.dumps(log_data.get("response")) if log_data.get("response") is not None else None
-            ))
+                metrics.get("total_seconds")
+            ))            
+            # cursor.execute("""
+            #     INSERT INTO llm_telemetry (
+            #         run_id, agent_name, model, provider, 
+            #         loop_n, loop_m, loop_v,
+            #         prompt_tokens, completion_tokens, cost_usd, duration_seconds,
+            #         prompt_json, response_json
+            #     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            # """, (
+            #     run_id,
+            #     agent_name,
+            #     log_data.get("model"),
+            #     log_data.get("provider"),
+            #     loop.get("n"),
+            #     loop.get("m"),
+            #     loop.get("v"),
+            #     metrics.get("total_prompt_tokens"),
+            #     metrics.get("total_completion_tokens"),
+            #     metrics.get("total_cost_usd"),
+            #     metrics.get("total_seconds"),
+            #     json.dumps(log_data.get("prompts")) if log_data.get("prompts") is not None else None,
+            #     json.dumps(log_data.get("response")) if log_data.get("response") is not None else None
+            # ))
             return cursor.lastrowid
 
     def log_patch(self, patch_id: str, run_id: str, patch_version: int, loop_n: int, loop_m: int, loop_v: int, pattern: str, rationale: str, explanation: str, diff: str, tests_passed: bool = False, feedback: str = None):
