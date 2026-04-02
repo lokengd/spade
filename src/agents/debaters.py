@@ -105,7 +105,9 @@ def generate_dynamic_arg(state: SpadeState):
 
     if v == 1:
         log(f"{loop_info_str} Selecting best v1 candidate (runtime analysis).", agent_name_dynamic)
-        candidates_block = _format_candidates_block(state.get("v1_patches", []))
+        current_n = state.get("outer_loop_count", 1)
+        v1_patches = [p for p in state.get("v1_patches", []) if getattr(p, "loop_n", 1) == current_n]
+        candidates_block = _format_candidates_block(v1_patches)        
         system_prompt = prompts["debater_dynamic_arg_select"]["system"]
         user_prompt = prompts["debater_arg_select"]["user"].format(
             candidates_block=candidates_block, **bug_kwargs
@@ -139,7 +141,9 @@ def generate_static_arg(state: SpadeState):
 
     if v == 1:
         log(f"{loop_info_str} Selecting best v1 candidate (structural analysis).", agent_name_static)
-        candidates_block = _format_candidates_block(state.get("v1_patches", []))
+        current_n = state.get("outer_loop_count", 1)
+        v1_patches = [p for p in state.get("v1_patches", []) if getattr(p, "loop_n", 1) == current_n]
+        candidates_block = _format_candidates_block(v1_patches)        
         system_prompt = prompts["debater_static_arg_select"]["system"]
         user_prompt = prompts["debater_arg_select"]["user"].format(
             candidates_block=candidates_block, **bug_kwargs
