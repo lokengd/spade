@@ -109,7 +109,7 @@ def generate_dynamic_arg(state: SpadeState):
         v1_patches = [p for p in state.get("v1_patches", []) if getattr(p, "loop_n", 1) == current_n]
         candidates_block = _format_candidates_block(v1_patches)        
         system_prompt = prompts["debater_dynamic_arg_select"]["system"]
-        user_prompt = prompts["debater_arg_select"]["user"].format(
+        user_prompt = prompts["debater_dynamic_arg_select_user"]["user"].format(
             candidates_block=candidates_block, **bug_kwargs
         )
     else:
@@ -117,7 +117,7 @@ def generate_dynamic_arg(state: SpadeState):
         refined_patches = state.get("refined_patches", [])
         pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = prompts["debater_dynamic_arg_refine"]["system"].format(version=v)
-        user_prompt = prompts["debater_arg_refine"]["user"].format(
+        user_prompt = prompts["debater_dynamic_arg_refine_user"]["user"].format(
             version=v,
             patch_id=pf["id"],
             patch_pattern=pf["pattern"],
@@ -145,7 +145,7 @@ def generate_static_arg(state: SpadeState):
         v1_patches = [p for p in state.get("v1_patches", []) if getattr(p, "loop_n", 1) == current_n]
         candidates_block = _format_candidates_block(v1_patches)        
         system_prompt = prompts["debater_static_arg_select"]["system"]
-        user_prompt = prompts["debater_arg_select"]["user"].format(
+        user_prompt = prompts["debater_static_arg_select_user"]["user"].format(
             candidates_block=candidates_block, **bug_kwargs
         )
     else:
@@ -153,13 +153,13 @@ def generate_static_arg(state: SpadeState):
         refined_patches = state.get("refined_patches", [])
         pf = _get_patch_fields(refined_patches[-1] if refined_patches else None)
         system_prompt = prompts["debater_static_arg_refine"]["system"].format(version=v)
-        user_prompt = prompts["debater_arg_refine"]["user"].format(
+        user_prompt = prompts["debater_static_arg_refine_user"]["user"].format(
             version=v,
             patch_id=pf["id"],
             patch_pattern=pf["pattern"],
             patch_diff=pf["code_diff"],
-            execution_trace=pf["execution_trace"],
-            failed_traces=json.dumps(state.get("failed_traces", [])[-5:]),
+            # execution_trace=pf["execution_trace"],
+            # failed_traces=json.dumps(state.get("failed_traces", [])[-5:]),
             historical_verdicts=json.dumps(state.get("historical_verdicts", [])[-3:]),
             **bug_kwargs,
         )

@@ -1,6 +1,6 @@
 # List of experiment IDs to run
 # active_experiments: ["spade_trial_run_qwen3-coder-30b"]
-active_experiments: ["spade_baseline_p3_q3_k2_n3_m1_v2_subset1"]
+active_experiments: ["spade_baseline_k2_n3_m1_v2_subset_1"]
 
 # Experiments collection
 experiments:
@@ -12,9 +12,9 @@ experiments:
     n_outer_loops: 3
     m_inner_loops: 1
     v_patience: 2
-    # bug_list: ["matplotlib__matplotlib-23563"]
-    bug_list: "*"
-    fl_resultset: "fl_results/subset_files/spade_baseline_k2_n3_m1_v2_subset_1.jsonl"
+    bug_list: ["sympy__sympy-12171"]
+    # bug_list: "*"
+    fl_resultset: "fl_results/subset_files/spade_baseline_k2_n3_m1_v2_subset_2.jsonl"
     snippet_context_lines: 10
     # Optional: override default config: "llm.yaml" and "prompts.yaml"
     # llm_config: "config/llm_trial_run.yaml"

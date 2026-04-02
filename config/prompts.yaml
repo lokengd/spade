@@ -615,11 +615,20 @@ debater_static_arg_select:
   # }}
 
 # Shared user template for both dynamic and static debaters in select mode
-debater_arg_select:
+debater_dynamic_arg_select_user:
   user: |
     Bug ID: {bug_id}
     Issue: {issue_text}
     Error Trace: {error_trace}
+    Suspicious Files: {suspicious_files}
+
+    v1 Patch Candidates:
+    {candidates_block}
+
+debater_static_arg_select_user:
+  user: |
+    Bug ID: {bug_id}
+    Issue: {issue_text}
     Suspicious Files: {suspicious_files}
 
     v1 Patch Candidates:
@@ -670,21 +679,36 @@ debater_static_arg_refine:
   # }
 
 # Shared user template for both dynamic and static debaters in refine mode
-debater_arg_refine:
+debater_dynamic_arg_refine_user:
   user: |
     Bug ID: {bug_id}
     Issue: {issue_text}
-    Error Trace (original): {error_trace}
+    Error Trace: {error_trace}
+    Suspicious Files: {suspicious_files}
 
-    Failed Patch (v{version}):
-      ID: {patch_id}
-      Pattern: {patch_pattern}
-      Diff:
+    Failed v{version} Patch:
+    - Patch ID: {patch_id}
+    - Pattern: {patch_pattern}
+    - Diff:
     {patch_diff}
-      Execution Trace: {execution_trace}
+    - Execution Trace: {execution_trace}
 
-    Prior Failed Traces: {failed_traces}
-    Prior Verdicts: {historical_verdicts}
+    Failed Traces (last 5): {failed_traces}
+    Historical Verdicts (last 3): {historical_verdicts}
+
+debater_static_arg_refine_user:
+  user: |
+    Bug ID: {bug_id}
+    Issue: {issue_text}
+    Suspicious Files: {suspicious_files}
+
+    Failed v{version} Patch:
+    - Patch ID: {patch_id}
+    - Pattern: {patch_pattern}
+    - Diff:
+    {patch_diff}
+
+    Historical Verdicts (last 3): {historical_verdicts}
 
 debater_dynamic_rebuttal:
   system: |
