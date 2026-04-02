@@ -1371,7 +1371,6 @@ def generate_refined_patch(state: SpadeState,
 
 
 
-
 def generate_v1_patch( #todo ------------------------------------
     state: SpadeState,
     MAX_ITERATIONS: int = 2,
@@ -1607,5 +1606,234 @@ def generate_v1_patch( #todo ------------------------------------
     
     return {
         "v1_patches": [patch],
+        "total_metrics": metrics
+    }
+
+
+
+def generate_v1_patch_new( 
+    state: SpadeState,
+    MAX_ITERATIONS: int = 2,
+    NUM_SAMPLES: int = 1,
+    MAX_ATTEMPTS: int = 5,
+    verbose: bool = True,   
+):
+    """Generate patches one file at a time for better focus and quality."""
+    instance_id = state["bug_context"].bug_id
+    pred_files = list(state["bug_context"].file_snippets.keys())
+
+    repo_path = state["bug_context"].local_repo_path
+    file_contents = get_file_contents(repo_path, pred_files)
+    
+    if not file_contents:
+        return {"instance_id": instance_id, "patch": "", "success": False, "error": "No files loaded"}
+
+    # FIX PATTERN--------------
+    active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
+    bug_context = state["bug_context"]
+    run_id = state.get("thread_id")
+    
+    loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
+    is_unconstrained = active_pattern == P_UNCONSTRAINED
+    
+    prompts_config = load_prompts()
+    pattern_rationale = ""
+    if isinstance(active_pattern, dict):
+        pattern = active_pattern.get('pattern_id')
+        pattern_str = f"{pattern} ({active_pattern.get('scope')})"
+        pattern_rationale = active_pattern.get('rationale', "")
+    else:
+        pattern_str = str(active_pattern)
+        pattern = str(active_pattern)
+    pattern_description = prompts_config.get("pattern_taxonomy", {}).get(pattern, "")
+
+    log_prefix = "Unconstrained" if is_unconstrained else pattern_str
+    specific_agent_name = f"{agent_base_name}-{pattern}"
+    log(f"{loop_info_str} {log_prefix} PatchGen working on pattern -> {pattern_str}", specific_agent_name)
+    # -------------------------------
+
+    metrics = {}
+    raw_telemetry = {}
+
+    agent_config = settings.LLM_AGENTS["patchgen"]
+    print(f">>> Agent Config: {agent_config}")
+    client = create_llm_client(
+        agent_name=specific_agent_name,
+        **agent_config 
+    )
+
+    # ---------------------------------------------------------
+    # METAHEURISTIC SETUP: Initialize candidate pool with the original code.
+    # ---------------------------------------------------------
+    candidate_pool = [{
+        "content": file_contents.copy(),
+        "snippets": bug_context.file_snippets.copy()
+    }]
+    
+    all_unique_contents = [] # Stores successfully modified, unique file states
+    attempt = 0
+    
+    # Run until we find NUM_SAMPLES diverse patches or exhaust MAX_ATTEMPTS
+    while len(all_unique_contents) < NUM_SAMPLES and attempt < MAX_ATTEMPTS:
+        attempt += 1
+        log(f"\nAttempt {attempt}/{MAX_ATTEMPTS} to generate valid patches (Found: {len(all_unique_contents)}/{NUM_SAMPLES})...", specific_agent_name)
+
+        # --- RANDOM RESTART ---
+        # Select a random starting state from our pool (includes the original unpatched code)
+        start_state = random.choice(candidate_pool)
+        current_content = start_state["content"].copy()
+        current_snippets = start_state["snippets"].copy()
+
+        for iter_idx in range(MAX_ITERATIONS):
+            snippets_text = ""
+            for file in bug_context.suspicious_files:
+                snippet = current_snippets.get(file)
+                snippets_text += f"\nFile: {file}\n{snippet}\n"
+                
+            # refine_instruction = ""
+            # if iter_idx > 0:
+            #     refine_instruction = (
+            #         "\n\nRefinement Round Instruction:\n"
+            #         "You already proposed a previous patch for this file. "
+            #         "Review the current updated file context and determine whether there is anything else to improve to produce a better patch for the same bug. If no additional change is needed, respond with '# No changes needed'."
+            #     )
+                
+            # current_diffs = generate_diff_all(file_contents, current_content)
+            # current_patch = "\n\n".join(current_diffs.values()).strip()
+            
+            # if current_patch:
+            #     patch_history = (
+            #         "\n\nCurrent accumulated patch for this file (already applied):\n"
+            #         "```diff\n"
+            #         f"{current_patch}\n"
+            #         "```\n"
+            #         "Use this patch history plus the updated file context to decide if another improvement is needed."
+            #     )
+            # else:
+            #     patch_history = "\n\nCurrent accumulated patch for this file (already applied):\n(none yet)"
+
+            v1_patches_history = state.get("v1_patches", [])
+            refined_patches_history = state.get("refined_patches", [])
+            failed_patches_history = get_failed_patches_section(prompts_config, v1_patches_history, refined_patches_history, "patch_generation", pattern_filter=pattern)
+            
+            system_prompt = "" 
+            
+            if is_unconstrained:
+                user_prompt = prompts_config["patch_generation_new"]["unconstrained"]["user"].format(
+                    issue_text=bug_context.issue_text,
+                    error_trace="No trace available.",
+                    suspicious_snippets=snippets_text, 
+                    failed_patches_history=failed_patches_history,
+                ) # + patch_history + refine_instruction
+            else:
+                user_prompt = prompts_config["patch_generation_new"]["pattern_guided"]["user"].format(
+                    issue_text=bug_context.issue_text,
+                    error_trace="No trace available.",
+                    suspicious_snippets=snippets_text, 
+                    active_pattern=pattern_str,
+                    active_pattern_description=pattern_description,
+                    active_pattern_rationale=pattern_rationale,
+                    failed_patches_history=failed_patches_history,
+                ) # + patch_history + refine_instruction
+
+            # Random temperature inherently helps the restart logic explore distinct paths
+            temperature = random.uniform(TEMPERATURE_RANGE[0], TEMPERATURE_RANGE[1])
+            if verbose:
+                log(f"  Iteration {iter_idx+1}/{MAX_ITERATIONS}...", specific_agent_name)
+
+            client.temperature = temperature 
+            structured_response, attempt_metrics, attempt_telemetry = client.generate_text(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                loop_info=loop_info_dict
+            )
+            
+            # Aggregate metrics
+            metrics.update(attempt_metrics)
+            raw_telemetry.update(attempt_telemetry)
+
+            raw_output = structured_response
+
+            if raw_output is None:
+                log("  raw_output is None.", specific_agent_name)
+                continue
+                
+            updated_contents, updated_snippets = parse_multiple_search_replace_with_snippets(
+                raw_output, current_content, verbose=verbose, suspicious_snippets=current_snippets
+            )
+
+            if updated_contents != current_content:
+                current_content = updated_contents
+                current_snippets = updated_snippets
+                log(f"  ✓ APPLIED patch in iteration {iter_idx+1}", specific_agent_name)
+
+        # --- EVALUATE ATTEMPT & UPDATE POOLS ---
+        if current_content != file_contents:
+            # Did we discover a brand new patch state?
+            if current_content not in all_unique_contents:
+                all_unique_contents.append(current_content)
+                log(f"  ⭐ Discovered new unique patch! (Total distinct patches: {len(all_unique_contents)})", specific_agent_name)
+            
+            # Add this mutated state to the candidate pool to allow future random restarts to build on it
+            if current_content not in [c["content"] for c in candidate_pool]:
+                candidate_pool.append({
+                    "content": current_content.copy(),
+                    "snippets": current_snippets.copy()
+                })
+    
+    if len(all_unique_contents) == 0:
+        log(f"   [ERROR] NO valid patch generated after {MAX_ATTEMPTS} attempts.", specific_agent_name)
+        # Fallback to the original file contents if everything failed
+        all_unique_contents.append(file_contents)
+
+    # ---------------------------------------------------------
+    # PACKAGE FINAL PATCHES
+    # ---------------------------------------------------------
+    final_v1_patches = []
+    explanation = "<skip>"
+
+    for content_variant in all_unique_contents:
+        current_diffs = generate_diff_all(file_contents, content_variant)
+        diff_list = [diff for diff in current_diffs.values() if diff.strip()]
+        final_patch = "\n\n".join(diff_list)
+
+        # Skip empty patches unless it's our only fallback
+        if not final_patch and len(all_unique_contents) > 1:
+            continue
+
+        patch_id = f"v1_{uuid.uuid4().hex[:6]}"
+
+        if run_id and raw_telemetry:
+            db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
+            db_logger.log_patch(
+                patch_id=patch_id,
+                run_id=run_id,
+                patch_version=1,
+                loop_n=state.get("outer_loop_count", 1),
+                loop_m=state.get("inner_loop_count", 1),
+                loop_v=1,
+                pattern=pattern,
+                rationale=pattern_rationale,
+                explanation=explanation,
+                diff=final_patch,
+                tests_passed=False, 
+                feedback=""
+            )
+     
+        patch = PatchCandidate(
+            id=patch_id, 
+            code_diff=final_patch,
+            pattern=pattern,
+            rationale=pattern_rationale,
+            origin_v1_id=patch_id,
+            version=1,
+            status="pending",
+            execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+            explanation=explanation,
+        )
+        final_v1_patches.append(patch)
+    
+    return {
+        "v1_patches": final_v1_patches,
         "total_metrics": metrics
     }
