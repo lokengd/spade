@@ -53,6 +53,7 @@ RUN_ID = "test_no_patch_run"
 evaluation_result = run_evaluation_with_no_patch(instance_id=INSTANCE_ID, run_id=RUN_ID)
 assert evaluation_result.evaluation_ran_successfully, f"Evaluation with no patch did not run successfully: {evaluation_result.evaluation_error_message}"
 assert not evaluation_result.bug_resolved, "Bug should not be resolved when running evaluation with no patch."
+assert not evaluation_result.patch_empty, "Patch should be empty when running evaluation with no patch."
 assert evaluation_result.test_output.split("\n")[2].__contains__("test process starts"), "Start Test output does not contain expected content."
 # assert evaluation_result.test_output.split("\n")[-1].__contains__("tests finished:"), "End Test output does not contain expected content."
 # assert evaluation_result.test_output.split("\n")[0].__contains__("==="), "Start Test output does not contain expected content."
@@ -75,6 +76,7 @@ for idx, result in enumerate(evaluation_results):
     assert result.evaluation_ran_successfully, f"Evaluation {idx} did not run successfully: {result.evaluation_error_message}"
     assert not result.bug_resolved, f"Bug should not be resolved in evaluation {idx} with no patch."
     assert result.test_output.split("\n")[2].__contains__("test process starts"), "Start Test output does not contain expected content."
+    assert not result.patch_empty, f"Patch should not be empty in evaluation {idx}."
 
 # Assert no json file containing DEFAULT_PREDICTIONS_PATH in name exists (DEFAULT_PREDICTIONS_PATH is "spade" as defined in constants.py)
 eval_dir = get_eval_dir_path()
@@ -86,6 +88,15 @@ logs_dir = get_logs_dir_path()
 assert not logs_dir.exists(), f"Expected no logs directory in evaluation directory after parallel evaluation, but found: {logs_dir}"
 
 print("Parallel evaluation with no patches completed successfully. ✅")
+
+print("Testing Empty Patch Application...")
+EMPTY_PATCH = ""
+RUN_ID = "empty_patch_test_run"
+evaluation_result = run_evaluation_on_instance(instance_id=INSTANCE_ID, run_id=RUN_ID, patch=EMPTY_PATCH)
+assert evaluation_result.evaluation_ran_successfully, f"Evaluation with empty patch did not run successfully: {evaluation_result.evaluation_error_message}"
+assert not evaluation_result.bug_resolved, "Bug should not be resolved when running evaluation with an empty patch."
+assert evaluation_result.patch_empty, "Patch should be marked as empty when running evaluation with an empty patch."
+print("Evaluation with empty patch completed successfully. ✅")
 
 print("Cleaning up evaluation directory...")
 assert cleanup_evaluation_dir(), "Failed to clean up evaluation directory."
