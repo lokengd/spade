@@ -109,6 +109,7 @@ def judge_fallback_policy(state: SpadeState):
     are reserved for the Test Agent.
     """
     run_id = state.get("thread_id")
+    curr_n = state.get("outer_loop_count", 1)
     curr_m = state.get("inner_loop_count", 1)
     loop_info_str, _ = get_loop_info(state, include_inner=True)
 
@@ -125,17 +126,28 @@ def judge_fallback_policy(state: SpadeState):
         return "failed"
 
     # Try next winner attempt (M+1)
-    if curr_m < settings.M_INNER_LOOPS:
-        log(f"{loop_info_str} Judge failed to find winner. Backtracking for attempt {curr_m + 1}/{settings.M_INNER_LOOPS}.", "Orchestrator", level=logging.WARNING)
+    # if curr_m < settings.M_INNER_LOOPS:
+    #     log(f"{loop_info_str} All v1 failed. M=0: Skip debate panel and reset to start new Outer Loop N={curr_n + 1}.", "Orchestrator", level=logging.WARNING)
+    #     log(f"{loop_info_str} Judge failed to find winner. Backtracking for attempt {curr_m + 1}/{settings.M_INNER_LOOPS}.", "Orchestrator", level=logging.WARNING)
+    #     return {
+    #         "resolution_status": [_update_db_status("judge_backtrack")], 
+    #         "inner_loop_count": curr_m + 1,
+    #         "current_patch_version": 1,
+    #     }
+    
+    # Inner loops hit, try next patterns? hard reset
+    if curr_n < settings.N_OUTER_LOOPS:
+        log(f"{loop_info_str} Judge failed to find winner. Hard reset to Pattern Selection, preparing for N={curr_n + 1}\n", "Orchestrator", level=logging.WARNING)
         return {
-            "resolution_status": [_update_db_status("judge_backtrack")], 
-            "inner_loop_count": curr_m + 1,
-            "current_patch_version": 1,
+            "resolution_status": [_update_db_status(f"N{curr_n}_reset")], 
+            "inner_loop_count": 1, # Reset M
+            "outer_loop_count": curr_n + 1, # Increment N
+            "current_patch_version": 1, # Reset v
         }
 
     # If M limit is hit, the Judge process for this pool is considered a failure.
     # We do NOT automatically try new patterns (N+1) here; we let the experiment stop.
-    log(f"{loop_info_str} Judge failed to find winner after {settings.M_INNER_LOOPS} attempts. Hard stop for current strategy.", "Orchestrator", level=logging.ERROR)
+    log(f"{loop_info_str} Judge failed to find winner after {settings.N_OUTER_LOOPS} attempts. Hard stop for current strategy.", "Orchestrator", level=logging.ERROR)
     return {
         "resolution_status": [_update_db_status("hit_max_limit")],
     }

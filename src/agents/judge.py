@@ -210,16 +210,16 @@ def run(state: SpadeState):
                 }
         
         # True fallback if remapping didn't work
-        if verdict is None:
-            fallback_id = "unknown"
-            if v1_patches:
-                fallback_id = (v1_patches[0].get("id", "unknown")
-                              if isinstance(v1_patches[0], dict) else v1_patches[0].id)
-            verdict = JudgeVerdict(
-                winning_patch_id=fallback_id,
-                improvement_instructions="Address the error trace directly. Ensure the fix is minimal and does not introduce regressions.",
-                justification="Fallback verdict due to LLM failure.",
-            )
+        # if verdict is None:
+        #     fallback_id = "unknown"
+        #     if v1_patches:
+        #         fallback_id = (v1_patches[0].get("id", "unknown")
+        #                       if isinstance(v1_patches[0], dict) else v1_patches[0].id)
+        #     verdict = JudgeVerdict(
+        #         winning_patch_id=fallback_id,
+        #         improvement_instructions="Address the error trace directly. Ensure the fix is minimal and does not introduce regressions.",
+        #         justification="Fallback verdict due to LLM failure.",
+        #     )
 
     # Validate the winning patch ID against the actual v1 pool
     validated_id = _validate_winning_patch_id(verdict, v1_patches)
