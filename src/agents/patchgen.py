@@ -186,6 +186,7 @@ def generate_v1_patch_backup(state: SpadeState):
         status="pending",
         execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
         explanation=explanation,
+        loop_n=state.get("outer_loop_count", 1),
     )
     
     return {
@@ -319,6 +320,7 @@ def generate_refined_patch_backup(state: SpadeState):
         version=v_now,
         status="pending",
         explanation=explanation,
+        loop_n=state.get("outer_loop_count", 1),
     )
 
     return {
@@ -1126,6 +1128,7 @@ def generate_v1_patch_backup2( #todo ------------------------------------
         status="pending",
         execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
         explanation=explanation,
+        loop_n=state.get("outer_loop_count", 1),
     )
     
     return {
@@ -1361,6 +1364,7 @@ def generate_refined_patch(state: SpadeState,
         version=v_now,
         status="pending",
         explanation=explanation,
+        loop_n=state.get("outer_loop_count", 1),
     )
 
     return {
@@ -1603,6 +1607,7 @@ def generate_v1_patch( #todo ------------------------------------
         status="pending",
         execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
         explanation=explanation,
+        loop_n=state.get("outer_loop_count", 1),
     )
     
     return {

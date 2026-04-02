@@ -133,7 +133,9 @@ def run(state: SpadeState):
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=True)
     v = state.get("current_patch_version", 1)
     bug_kwargs = _build_bug_context_kwargs(state)
-    v1_patches = state.get("v1_patches", [])
+    current_n = state.get("outer_loop_count", 1)
+    v1_patches_all = state.get("v1_patches", [])
+    v1_patches = [p for p in v1_patches_all if getattr(p, "loop_n", 1) == current_n]    
     candidates_block = _format_candidates_block(v1_patches)
     run_id = state.get("thread_id")
 

@@ -76,6 +76,7 @@ class PatchCandidate(BaseModel):
     pattern: str # K+1 patterns: p1, p2, p1+p2, + 1 Unconstrained: p0
     rationale: Optional[str] = None # the rationale of the selected pattern
     version: int = 1 # Version number (1 for v1, 2 for v2, etc.)
+    loop_n: int = 1 # Which outer loop generated this patch
     origin_v1_id: Optional[str] = None # Link back to the original v1 candidate
     status: str = "pending" # pending, passed, failed
     execution_trace: Optional[str] = None
