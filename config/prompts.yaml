@@ -225,7 +225,7 @@ patch_generation:
     2. **Analyze the Flaws:** Use these failures as negative constraints. Analyze them to understand what specific logic, syntax, or architectural choices to avoid.
   
   # debate_history_section: | # to add debate history later
-  #   **Prior Debate History (for context — do NOT repeat failed approaches):**
+  #   **Prior Debate History (for context - do NOT repeat failed approaches):**
   #   {debate_history}
 
   pattern_guided:
@@ -341,7 +341,7 @@ patch_generation_new:
     2. **Analyze the Flaws:** Use these failures as negative constraints. Analyze them to understand what specific logic, syntax, or architectural choices to avoid.
   
   # debate_history_section: | # to add debate history later
-  #   **Prior Debate History (for context — do NOT repeat failed approaches):**
+  #   **Prior Debate History (for context - do NOT repeat failed approaches):**
   #   {debate_history}
 
   pattern_guided:
@@ -531,7 +531,7 @@ debater_dynamic_arg_select:
     and a list of v1 patch candidates with their diffs and strategies.
 
     Respond with the recommended patch id, your analysis, and final justification. 
-    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+    Keep your response under 500 words. Be concise and specific - prioritize concrete evidence over general statements.
   # ONLY with valid JSON matching this schema (fill in the values, do NOT return booleans or scores -- write explanations):
   # {{
   #   "recommended_patch_id": "<id of the best candidate>",
@@ -580,7 +580,7 @@ debater_static_arg_select:
     You will receive the bug context and a list of v1 patch candidates.
 
     Respond with the recommended patch id, your analysis, and final justification. 
-    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+    Keep your response under 500 words. Be concise and specific - prioritize concrete evidence over general statements.
   # {{
   #   "recommended_patch_id": "<id of the best candidate>",
   #   "analysis": [
@@ -638,7 +638,7 @@ debater_dynamic_arg_refine:
     4. Given the history of prior verdicts and failures, what pattern of mistakes is emerging?
 
     Respond with your diagnosis on the reasons for failure and likely recurring mistakes, based on the execution trace and runtime behavior ONLY.
-    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+    Keep your response under 500 words. Be concise and specific - prioritize concrete evidence over general statements.
 
   # ONLY with valid JSON matching this schema:
   # {
@@ -661,7 +661,7 @@ debater_static_arg_refine:
     4. What structural changes would make the next version more robust?
 
     Respond with your diagnosis on the reasons for failure and likely recurring mistakes, based on the code structure and without reference to runtime behavior.
-    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+    Keep your response under 500 words. Be concise and specific - prioritize concrete evidence over general statements.
   # {
   #   "structural_issues": "<syntactic or structural problems in the failed diff>",
   #   "api_violations": "<any contract, type, or interface violations introduced>",
@@ -692,7 +692,7 @@ debater_dynamic_rebuttal:
     You have read the Static Debater's argument. Counter their claims using runtime evidence.
     Where you agree, acknowledge it. Where you disagree, explain why from a runtime behavior perspective.
     If the Static Debater recommended a different patch than you, argue why yours is better from a runtime standpoint.
-    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+    Keep your response under 500 words. Be concise and specific - prioritize concrete evidence over general statements.
 
   # Respond ONLY with valid JSON matching this schema:
   # {
@@ -713,7 +713,7 @@ debater_static_rebuttal:
     You have read the Dynamic Debater's argument. Counter their claims using structural evidence.
     Where you agree, acknowledge it. Where you disagree, explain why from a code structure perspective.
     If the Dynamic Debater recommended a different patch than you, argue why yours is better from a structural standpoint.
-    Keep your response under 500 words. Be concise and specific — prioritize concrete evidence over general statements.
+    Keep your response under 500 words. Be concise and specific - prioritize concrete evidence over general statements.
 
   # Respond ONLY with valid JSON matching this schema:
   # {
