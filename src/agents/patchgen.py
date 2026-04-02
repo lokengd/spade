@@ -11,7 +11,7 @@ from src.core.factory import create_llm_client
 from src.utils.snippet_extractor import extract_snippet, extract_snippet_fix
 from src.core import settings
 from src.utils.db_logger import db_logger
-from src.utils.prompt_helper import get_failed_patches_section
+from src.utils.prompt_helper import get_failed_patches_section, get_suspicious_locations
 
 agent_base_name = "PatchGen"
 
@@ -235,7 +235,7 @@ def generate_refined_patch_backup(state: SpadeState):
     loop_info_str, loop_info_dict = get_loop_info(temp_state, include_inner=True)
     
     specific_agent_name = f"{agent_base_name}-{active_pattern}"
-    log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
+    log(f"{loop_info_str} Lineage: origin_id={origin_id} -> Generating v{v_now}", specific_agent_name)
 
     agent_config = settings.LLM_AGENTS["patchgen"]
     # client = LLM_Client(agent=specific_agent_name, **agent_config)
@@ -1160,14 +1160,15 @@ def generate_refined_patch(state: SpadeState,
     pattern_rationale = ""
     if previous_patch:
         prev_version = previous_patch.version
-        log(f"Start refinement chain for {origin_id} from v{prev_version}...", agent_base_name)
         previous_patch_diff = previous_patch.code_diff
         active_pattern = previous_patch.pattern
         pattern_rationale = previous_patch.rationale or ""
-        v_now = prev_version + 1
+        v_now = prev_version + 1 # NOTE: this will make version to be 3 if the same patch has been picked as winner previously
+        sample_idx = previous_patch.sample_idx
+        log(f"Previous patch found. Generate refined patch from {origin_id} to {previous_patch.id} to v{v_now}_{sample_idx}...", f"{agent_base_name}-{active_pattern}")
     else:
-        log(f"Starting refinement for {origin_id} (v2)...", agent_base_name)
-        v_now = 2
+        v_now = 2 # default 
+        sample_idx = 1 # default
         previous_patch_diff = ""
         active_pattern = P_UNCONSTRAINED # default for now, may be overwritten at code segment below        
         # Find the v1 base
@@ -1176,6 +1177,7 @@ def generate_refined_patch(state: SpadeState,
                 previous_patch_diff = p.code_diff
                 active_pattern = p.pattern
                 pattern_rationale = p.rationale or ""
+                log(f"No prevous patch found. Generate refined patch from {origin_id} to v{v_now}_{sample_idx}...", f"{agent_base_name}-{active_pattern}")
                 break
 
     # Update version before getting loop info
@@ -1183,8 +1185,8 @@ def generate_refined_patch(state: SpadeState,
     temp_state["current_patch_version"] = v_now
     loop_info_str, loop_info_dict = get_loop_info(temp_state, include_inner=True)
     
-    specific_agent_name = f"{agent_base_name}-{active_pattern}"
-    log(f"{loop_info_str} Lineage: {origin_id} -> Generating v{v_now}", specific_agent_name)
+    specific_agent_name = f"{agent_base_name}-{active_pattern}-{sample_idx}"
+    log(f"{loop_info_str} Lineage: origin_id={origin_id} -> Generating v{v_now}_{sample_idx}", specific_agent_name)
 
     agent_config = settings.LLM_AGENTS["patchgen"]
     print(f">>> Agent Config: {agent_config}")
@@ -1217,10 +1219,10 @@ def generate_refined_patch(state: SpadeState,
 
     metrics = {}
     raw_telemetry = {}
-    patch_id = f"v{v_now}_{suffix}"
+    pattern_id = active_pattern[:2].lower() # take the first 2 chars of pattern id
+    patch_id = f"v{v_now}_{sample_idx}_{pattern_id}_{suffix}"
 
     all_patches = []
-
 
     # Iterative refinement: keep improving the same file content.
     current_content = file_contents.copy()
@@ -1351,6 +1353,7 @@ def generate_refined_patch(state: SpadeState,
 
     patch = PatchCandidate(
         id=patch_id, 
+        sample_idx=sample_idx,
         code_diff=final_patch,
         pattern=active_pattern,
         rationale=pattern_rationale,
@@ -1389,6 +1392,7 @@ def generate_v1_patch( #todo ------------------------------------
     # FIX PATTERN--------------
     # active_pattern is passed via Send API in graph.py
     active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
+    print(f">>> Active Pattern: {active_pattern}")
     bug_context = state["bug_context"]
     run_id = state.get("thread_id")
     
@@ -1409,11 +1413,13 @@ def generate_v1_patch( #todo ------------------------------------
     pattern_description = prompts_config.get("pattern_taxonomy", {}).get(pattern, "")
 
     log_prefix = "Unconstrained" if is_unconstrained else pattern_str
-    specific_agent_name = f"{agent_base_name}-{pattern}"
+    sample_idx = state.get("sample_index")
+    specific_agent_name = f"{agent_base_name}-{pattern}-{sample_idx}"
     log(f"{loop_info_str} {log_prefix} PatchGen working on pattern -> {pattern_str}", specific_agent_name)
     # -------------------------------
 
-    patch_id = f"v1_{uuid.uuid4().hex[:6]}"
+    pattern_id = pattern[:2].lower() # take the first 2 chars of pattern id
+    patch_id = f"v1_{sample_idx}_{pattern_id}_{uuid.uuid4().hex[:6]}"
     metrics = {}
     raw_telemetry = {}
 
@@ -1588,6 +1594,7 @@ def generate_v1_patch( #todo ------------------------------------
  
     patch = PatchCandidate(
         id=patch_id, 
+        sample_idx=sample_idx,
         code_diff=final_patch,
         pattern=pattern,
         rationale=pattern_rationale,

@@ -89,10 +89,12 @@ def get_log_header(experiment_id: str) -> str:
         f"Start of Experiment: {experiment_id}",
         "-" * width,
         f"Orchestration Parameters:",
-        f" K (Top-Patterns)     : {settings.K_PATTERNS}",
-        f" N (Outer Loops)      : {settings.N_OUTER_LOOPS}",
-        f" M (Inner Loops)      : {settings.M_INNER_LOOPS}",
-        f" V (Version Patience) : {settings.V_PATIENCE}",
+        f" P (Pattern Samples)       : {settings.P_SAMPLES}",
+        f" Q (Unconstrained Samples) : {settings.Q_SAMPLES}",
+        f" K (Top-Patterns)          : {settings.K_PATTERNS}",
+        f" N (Outer Loops)           : {settings.N_OUTER_LOOPS}",
+        f" M (Inner Loops)           : {settings.M_INNER_LOOPS}",
+        f" V (Version Patience)      : {settings.V_PATIENCE}",
         "*" * width,
     ]
     return "\n".join(lines)

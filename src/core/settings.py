@@ -13,6 +13,8 @@ ACTIVE_EXPERIMENTS = EXPERIMENTS_DATA.get("active_experiments", [])
 EXPERIMENTS = EXPERIMENTS_DATA.get("experiments", {})
 
 # Global orchestration constants (placeholders)
+P_SAMPLES = 1
+Q_SAMPLES = 1
 K_PATTERNS = 2
 N_OUTER_LOOPS = 2
 M_INNER_LOOPS = 1
@@ -20,7 +22,9 @@ V_PATIENCE = 2
 SNIPPET_CONTEXT_LINES = 15
 FL_RESULTSET = ""
 
-# Default Configuration Paths
+# Default Configuration
+DEFAULT_P_SAMPLES = 1
+DEFAULT_Q_SAMPLES = 1
 DEFAULT_LLM_CONFIG_PATH = BASE_DIR / "config" / "llm.yaml"
 DEFAULT_PROMPTS_CONFIG_PATH = BASE_DIR / "config" / "prompts.yaml"
 DEFAULT_API_KEY_CONFIG_PATH = BASE_DIR / "config" / "api_keys.yaml"
@@ -45,6 +49,7 @@ def load_llm_config(config_path: pathlib.Path):
 def update_orchestration_settings(experiment_id: str):
     """Updates global orchestration constants and config paths based on the experiment_id."""
     global K_PATTERNS, N_OUTER_LOOPS, M_INNER_LOOPS, V_PATIENCE, SNIPPET_CONTEXT_LINES, FL_RESULTSET
+    global P_SAMPLES, Q_SAMPLES
     global LLM_CONFIG_PATH, PROMPTS_CONFIG_PATH, API_KEY_CONFIG_PATH
 
     exp = EXPERIMENTS.get(experiment_id)
@@ -64,6 +69,18 @@ def update_orchestration_settings(experiment_id: str):
     V_PATIENCE = exp["v_patience"]
     SNIPPET_CONTEXT_LINES = exp["snippet_context_lines"]
     FL_RESULTSET = exp["fl_resultset"]
+
+    p_samples = exp.get("p_samples")
+    if p_samples:
+        P_SAMPLES = p_samples
+    else:
+        P_SAMPLES = DEFAULT_P_SAMPLES
+
+    q_samples = exp.get("q_samples")
+    if q_samples:
+        Q_SAMPLES = q_samples
+    else:
+        Q_SAMPLES = DEFAULT_Q_SAMPLES
 
     # Handle LLM and Prompts config overrides
     llm_cfg = exp.get("llm_config")
