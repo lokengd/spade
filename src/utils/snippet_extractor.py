@@ -360,7 +360,7 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
                     # If function is provided but no target line is inside it, the whole function is extracted.
                     ranges.append((start, end))
                     if class_idx is not None:
-                        ranges.append((class_idx, start))
+                        ranges.append((class_idx, class_idx + 1))
                 else:
                     # Extract within margin + function/class headers
                     ranges.append((start, start + 1)) # function header
@@ -398,20 +398,20 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
 
     # 5. Construct snippet
     result = ["```python"] 
-    if imports:
-        result.append("# --- Imports ---")
-        result.extend(imports)
-        result.append("...")
+    # if imports:
+    #     result.append("# --- Imports ---")
+    #     result.extend(imports)
+    #     # result.append("...")
 
     for i, (start, end) in enumerate(merged):
-        if i > 0:
-            result.append("    ...") # Gap between ranges
+        # if i > 0:
+        #     result.append("    ...") # Gap between ranges
         
         last_was_skipped = False
         for idx in range(start, end):
             if idx in docstring_indices:
-                if not last_was_skipped:
-                    result.append("    ...") # Jump over docstring
+                # if not last_was_skipped:
+                #     result.append("    ...") # Jump over docstring
                 last_was_skipped = True
                 continue
             
@@ -425,156 +425,3 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
 
     result.append("```")
     return "\n".join(result)
-
-
-# def extract_snippet_from_content(
-#     repo_path: str,
-#     relative_file_path: str,
-#     target_lines: List[int] = None,
-#     function_names: Union[str, List[str]] = None,
-#     margin: int = 5,
-#     include_docstring: bool = False,
-#     current_contents: Optional[Dict[str, str]] = None  # ✅ NEW: In-memory file contents
-# ) -> str:
-#     """
-#     Extracts imports and code snippets from requested functions or target lines.
-#     Supports iterative patching by reading from in-memory `current_contents` instead of disk.
-    
-#     Args:
-#         repo_path: Base repository path (fallback if file not in current_contents)
-#         relative_file_path: Path relative to repo_root (e.g., "src/module.py")
-#         target_lines: 1-indexed line numbers to highlight (may be stale after patches)
-#         function_names: Function/class names to extract (more stable than line numbers)
-#         margin: Context lines around target lines
-#         include_docstring: Whether to include docstrings
-#         current_contents: Dict of {filepath: content} from iterative patching
-#     """
-    
-#     # ✅ Priority 1: Get content from current_contents (modified state)
-#     lines = []
-#     if current_contents and relative_file_path in current_contents:
-#         content = current_contents[relative_file_path]
-#         lines = content.splitlines(keepends=True)
-#         # Ensure each line ends with newline for consistency
-#         lines = [line if line.endswith('\n') else line + '\n' for line in lines]
-#         source = "memory"
-#     else:
-#         # ✅ Fallback: Read from disk (original state)
-#         full_path = os.path.join(repo_path, relative_file_path)
-#         if not os.path.exists(full_path):
-#             return f"# [Error] Could not locate {relative_file_path}"
-#         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
-#             lines = f.readlines()
-#         source = "disk"
-    
-#     if not lines:
-#         return f"# [Error] File {relative_file_path} is empty."
-    
-#     # ✅ Normalize target_lines: Filter out invalid lines after patches
-#     valid_target_lines = set()
-#     if target_lines:
-#         max_line = len(lines)
-#         for tl in target_lines:
-#             if 1 <= tl <= max_line:
-#                 valid_target_lines.add(tl)
-#             # ✅ Optional: Try to find similar content if line number is stale
-#             # (See "Advanced: Line Number Recovery" section below)
-    
-#     # 1. Extract imports
-#     imports = []
-#     for i, line in enumerate(lines):
-#         stripped = line.strip()
-#         if stripped.startswith("class ") or stripped.startswith("def "):
-#             break
-#         if stripped.startswith("import ") or stripped.startswith("from "):
-#             imports.append(f"   {i + 1:4d}: {line.rstrip()}")
-    
-#     # 2. Identify code ranges to include
-#     ranges = []  # list of (start_idx, end_idx)
-#     targets = valid_target_lines  # Use filtered targets
-#     func_names = [function_names] if isinstance(function_names, str) else (function_names or [])
-#     requested_func_starts = set()
-    
-#     if not func_names:
-#         # If no function is provided, extract the whole file
-#         ranges.append((0, len(lines)))
-#     else:
-#         for fname in func_names:
-#             start_idx = None
-#             class_idx = None
-#             if "." in fname:
-#                 parts = fname.split(".", 1)
-#                 result = find_method_in_class(lines, parts[0], parts[1])
-#                 if result:
-#                     start_idx = result[0]
-#                     class_pattern = re.compile(rf"^\s*class\s+{re.escape(parts[0])}\b")
-#                     for j in range(start_idx, -1, -1):
-#                         if class_pattern.search(lines[j]):
-#                             class_idx = j
-#                             break
-#             else:
-#                 pattern = re.compile(rf"^\s*(async\s+)?def\s+{re.escape(fname)}\b")
-#                 for i, line in enumerate(lines):
-#                     if pattern.match(line):
-#                         start_idx = i
-#                         break
-            
-#             if start_idx is not None:
-#                 requested_func_starts.add(start_idx)
-#                 if class_idx is not None:
-#                     requested_func_starts.add(class_idx)
-#                 start, end = get_function_body_range(lines, start_idx)
-                
-#                 # ✅ Convert 1-indexed targets to 0-indexed for comparison
-#                 targets_in_func = [t for t in targets if start < t - 1 < end]
-                
-#                 if not targets_in_func:
-#                     ranges.append((start, end))
-#                     if class_idx is not None:
-#                         ranges.append((class_idx, class_idx + 1))
-#                 else:
-#                     ranges.append((start, start + 1))
-#                     if class_idx is not None:
-#                         ranges.append((class_idx, class_idx + 1))
-#                     for tl in targets_in_func:
-#                         # tl is 1-indexed, convert to 0-indexed for range calculation
-#                         tl_idx = tl - 1
-#                         ranges.append((max(start, tl_idx - margin), min(end, tl_idx + margin + 1)))
-    
-#     # 3. Merge overlapping or adjacent ranges
-#     ranges.sort()
-#     merged = []
-#     if ranges:
-#         curr_start, curr_end = ranges[0]
-#         for next_start, next_end in ranges[1:]:
-#             if next_start <= curr_end + 2:
-#                 curr_end = max(curr_end, next_end)
-#             else:
-#                 merged.append((curr_start, curr_end))
-#                 curr_start, curr_end = next_start, next_end
-#         merged.append((curr_start, curr_end))
-    
-#     # 4. Construct snippet
-#     result = ["```python"]
-#     if imports:
-#         result.append("# --- Imports ---")
-#         result.extend(imports)
-#         result.append("...")
-    
-#     for i, (start, end) in enumerate(merged):
-#         if i > 0:
-#             result.append("    ...")
-        
-#         for idx in range(start, end):
-#             # ✅ Mark targets based on CURRENT line numbers (1-indexed)
-#             marker = ">> " if (idx + 1) in targets else "   "
-#             if idx in requested_func_starts and (idx + 1) not in targets:
-#                 marker = "f> "
-#             result.append(f"{marker}{idx + 1:4d}: {lines[idx].rstrip()}")
-    
-#     result.append("```")
-    
-#     # ✅ Add metadata for debugging
-#     result.append(f"\n# [Source: {source}] [Lines: {len(lines)}] [Targets: {len(targets)}]")
-    
-#     return "\n".join(result)
