@@ -149,9 +149,9 @@ def v1_fallback_policy(state: SpadeState):
     if settings.M_INNER_LOOPS == 0:
         curr_n = state.get("outer_loop_count", 1)
         if curr_n < settings.N_OUTER_LOOPS:
-            log(f"{loop_info_str} All v1 failed. M=0: Transitioning to Outer Loop N={curr_n + 1}.", "Orchestrator", level=logging.WARNING)
+            log(f"{loop_info_str} All v1 failed. M=0: Skip debate panel and reset to start new Outer Loop N={curr_n + 1}.", "Orchestrator", level=logging.WARNING)
             return {
-                "resolution_status": [_update_db_status(f"N{curr_n}_failed")], 
+                "resolution_status": [_update_db_status(f"N{curr_n}_reset")], 
                 "inner_loop_count": 1, 
                 "outer_loop_count": curr_n + 1, 
                 "current_patch_version": 1
@@ -171,7 +171,7 @@ def route_after_v1_fallback(state: SpadeState):
         return "hard_stop"
         
     statuses = state.get("resolution_status", [])        
-    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_failed"):
+    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_reset"):
         # Transitions to new outer loop: triggers reproduction/pattern_selection
         return route_after_reproduction(state)
         
@@ -256,7 +256,7 @@ def refined_fallback_policy(state: SpadeState):
     if curr_n < settings.N_OUTER_LOOPS:
         log(f"{loop_info_str} INNER-LOOP-LIMIT M={settings.M_INNER_LOOPS} REACHED. Hard reset to Pattern Selection, preparing for N={curr_n + 1}\n", "Orchestrator", level=logging.WARNING)
         return {
-            "resolution_status": [_update_db_status(f"N{curr_n}_failed")], 
+            "resolution_status": [_update_db_status(f"N{curr_n}_reset")], 
             "inner_loop_count": 1, # Reset M
             "outer_loop_count": curr_n + 1, # Increment N
             "current_patch_version": 1, # Reset v
@@ -283,7 +283,7 @@ def route_after_refined_fallback(state: SpadeState):
         return "hard_stop"
         
     statuses = state.get("resolution_status", [])        
-    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_failed"):
+    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_reset"):
         log(f"{loop_info_str} Dynamic failure ({statuses[-1]}). Transitioning to new Outer Loop (Pattern Selection).", caller="Orchestrator")
         return "pattern_selection"
         
