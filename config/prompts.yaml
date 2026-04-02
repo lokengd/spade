@@ -44,10 +44,10 @@ pattern_selection:
     Rules:
     - Do NOT output any keys other than "selected_count", "selections", and optionally "overall_rationale".    
     - The "selections" array must contain exactly {k} patterns matching "selected_count".
+    - Each selected "pattern_id" must be UNIQUE; do not include duplicate patterns in the list.
     - Provide a specific "rationale" inside each selection explaining why that pattern and scope were chosen.
     - If no matching fix-patterns apply, return "selected_count": 0, an empty "selections" array [], and provide an "overall_rationale" explaining why.
-
-
+  
   user: |
     ## Bug Issue Description
     {issue_text}
@@ -58,11 +58,13 @@ pattern_selection:
     ## Suspicious Code Snippets
     {suspicious_code_snippets}
 
-    ## Error Trace
     {error_trace}
 
     {failed_patches_history}
-   
+  include_error_trace: False
+  error_trace_section: |
+      ## Error Trace
+      {error_trace}
   failed_patches_history: |
     ## Previously Failed Patches
     The patches listed below were previously generated but failed verification. 

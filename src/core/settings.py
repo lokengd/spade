@@ -21,6 +21,7 @@ M_INNER_LOOPS = 1
 V_PATIENCE = 2
 SNIPPET_CONTEXT_LINES = 15
 FL_RESULTSET = ""
+K_PATTERNS_TOTAL = 6 # total patterns available
 
 # Default Configuration
 DEFAULT_P_SAMPLES = 1

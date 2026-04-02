@@ -277,6 +277,18 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 	"""Run SWE-bench evaluation on a specific instance and verify logs."""
 	log(f"{run_id}: Running evaluation for instance {instance_id} with run ID {run_id}... and patch {patch}", caller=CALLER, level=logging.INFO)
 
+	if (patch.strip() == "") or (patch is None) or (patch.isspace()) or (patch == False):
+		# Short circuit for empty patch case, as we don't want to run the full evaluation if there is no patch to apply.
+		log(f"{run_id}: No/Empty patch provided, skipping evaluation and returning bug_resolved=False.", caller=CALLER, level=logging.INFO)
+		return EvaluationResult(
+			evaluation_ran_successfully=True, 
+			evaluation_error_message=None, 
+			bug_resolved=False, 
+			patch_applied_successfully=False,
+			patch_empty=True,
+		)
+
+
 	eval_dir = get_eval_dir_path()
 
 	if not (eval_dir / SWE_BENCH_REPO_NAME).exists():
@@ -352,6 +364,7 @@ def run_evaluation_on_instance(instance_id: str, run_id: str, patch: str, max_wo
 		evaluation_error_message=None, 
 		bug_resolved=test_case_results["bug_resolved"], 
 		patch_applied_successfully=test_case_results["patch_applied_successfully"],
+		patch_empty=False,
 		total_tests=test_case_results["total_tests"],
 		pass_to_pass_success=test_case_results["pass_to_pass_success"],
 		fail_to_pass_success=test_case_results["fail_to_pass_success"],

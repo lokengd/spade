@@ -55,6 +55,7 @@ class EvaluationResult(BaseModel):
     # These fields capture the actual results of the test execution for a given patch candidate
     bug_resolved: bool = None
     patch_applied_successfully: bool = None
+    patch_empty: bool = None
 
     total_tests: int = -1
     pass_to_pass_success: bool = None
