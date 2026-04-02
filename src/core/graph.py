@@ -94,25 +94,61 @@ def route_after_pattern_selection(state: SpadeState):
 
 def route_after_judge(state: SpadeState):
     if check_status(state, ["judge_failed"]):
-        curr_m = state.get("inner_loop_count", 1)
-        curr_n = state.get("outer_loop_count", 1)
-        
-        # We need to look at the previous counters before the increment in Judge._handle_judge_failure
-        # Actually, Judge returns the NEW counters. 
-        # So we just check if it's still within limits.
-        
-        if curr_m > 1 and curr_m <= settings.M_INNER_LOOPS:
-             log(f"Judge failed. Backtracking to pick a NEW winner (M={curr_m}).", "Orchestrator")
-             return "debate_panel"
-             
-        if curr_n > 1 and curr_n <= settings.N_OUTER_LOOPS:
-             log(f"Judge failed and M reached limit. Transitioning to new Outer Loop (N={curr_n}).", "Orchestrator")
-             return "pattern_selection"
-
-        log("Judge failed and all limits hit. Hard Stop!", "Orchestrator", level=logging.WARNING)
+        log("Judge agent encountered an exception. Hard Stop!", "Orchestrator", level=logging.ERROR)
         return "hard_stop"
+    
+    if check_status(state, ["judge_no_winner"]):
+        return "judge_fallback_policy"
         
     return "generate_refined_patch"
+
+def judge_fallback_policy(state: SpadeState):
+    """
+    Policy Method: Handles Judge failure to select a winner.
+    Influences only the inner flow (M loop). Strategic resets to new patterns (N) 
+    are reserved for the Test Agent.
+    """
+    run_id = state.get("thread_id")
+    curr_m = state.get("inner_loop_count", 1)
+    loop_info_str, _ = get_loop_info(state, include_inner=True)
+
+    # Inner helper to update the DB
+    def _update_db_status(status: str = "failed"):
+        if run_id:
+            db_logger.update_repair_run(
+                run_id=run_id,
+                fl_match=False, 
+                is_resolved=False,
+                status=status
+            )
+            return status
+        return "failed"
+
+    # Try next winner attempt (M+1)
+    if curr_m < settings.M_INNER_LOOPS:
+        log(f"{loop_info_str} Judge failed to find winner. Backtracking for attempt {curr_m + 1}/{settings.M_INNER_LOOPS}.", "Orchestrator", level=logging.WARNING)
+        return {
+            "resolution_status": [_update_db_status("judge_backtrack")], 
+            "inner_loop_count": curr_m + 1,
+            "current_patch_version": 1,
+        }
+
+    # If M limit is hit, the Judge process for this pool is considered a failure.
+    # We do NOT automatically try new patterns (N+1) here; we let the experiment stop.
+    log(f"{loop_info_str} Judge failed to find winner after {settings.M_INNER_LOOPS} attempts. Hard stop for current strategy.", "Orchestrator", level=logging.ERROR)
+    return {
+        "resolution_status": [_update_db_status("hit_max_limit")],
+    }
+
+def route_after_judge_fallback(state: SpadeState):
+    if check_status(state, ["hit_max_limit"]):
+        return "hard_stop"
+        
+    statuses = state.get("resolution_status", [])        
+    if statuses and statuses[-1].startswith("N") and statuses[-1].endswith("_reset"):
+        return "pattern_selection"
+        
+    return "debate_panel"
 
 def route_after_v1(state: SpadeState):
     if check_status(state, ["resolved"]):
@@ -313,6 +349,7 @@ def build_graph():
     graph.add_node("verify_refined", test_agent.verify_refined)        
     graph.add_node("v1_fallback_policy", v1_fallback_policy)
     graph.add_node("refined_fallback_policy", refined_fallback_policy)
+    graph.add_node("judge_fallback_policy", judge_fallback_policy)
 
     # Add edges
     graph.add_edge(START, "fl_ensemble")
@@ -387,9 +424,21 @@ def build_graph():
         route_after_judge,
         {
             "generate_refined_patch": "generate_refined_patch",
+            "judge_fallback_policy": "judge_fallback_policy",
             "hard_stop": END
         }
     )
+
+    graph.add_conditional_edges(
+        "judge_fallback_policy",
+        route_after_judge_fallback,
+        {
+            "pattern_selection": "pattern_selection",
+            "debate_panel": "debate_panel",
+            "hard_stop": END
+        }
+    )
+
     graph.add_edge("generate_refined_patch", "verify_refined")
     
     graph.add_conditional_edges("verify_refined", route_after_refined, {
