@@ -44,12 +44,15 @@ def run(state: SpadeState):
         taxonomy_str += f"- {pat_id}: {description.strip()}\n\n"
 
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
-    log(f"{loop_info_str} Selecting Top-{settings.K_PATTERNS} Patterns...", agent_name)
+    
+    # Cap K_PATTERNS at K_PATTERNS_TOTAL
+    k_val = min(settings.K_PATTERNS, settings.K_PATTERNS_TOTAL)
+    log(f"{loop_info_str} Selecting Top-{k_val} Patterns...", agent_name)
 
     # Format the System Prompt
     system_template = prompts_config["pattern_selection"]["system"]
     system_prompt = system_template.format(
-        k=settings.K_PATTERNS,
+        k=k_val,
         pattern_taxonomy=taxonomy_str.strip()
     )
 
@@ -84,9 +87,18 @@ def run(state: SpadeState):
 
     # Format the User Prompt
     user_template = prompts_config["pattern_selection"]["user"]
+    
+    # Handle optional error trace
+    include_error_trace = prompts_config["pattern_selection"].get("include_error_trace", True)
+    error_trace_section = ""
+    if include_error_trace:
+        error_trace_template = prompts_config["pattern_selection"].get("error_trace_section", "## Error Trace\n{error_trace}")
+        error_trace_val = bug_context.error_trace if bug_context.error_trace else "No trace available."
+        error_trace_section = error_trace_template.format(error_trace=error_trace_val)
+
     user_prompt = user_template.format(
         issue_text=bug_context.issue_text,
-        error_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
+        error_trace=error_trace_section,
         suspicious_locations=get_suspicious_locations(bug_context),
         suspicious_code_snippets=code_snippets,
         failed_patches_history=failed_patches_history

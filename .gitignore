@@ -220,5 +220,6 @@ __marimo__/
 
 # Project-specific ignores
 data/
+debug/
 /config/api_keys.yaml
 /config/experiments.yaml
