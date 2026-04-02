@@ -98,7 +98,7 @@ SPADE is orchestrated as a multi-agent graph using LangGraph, designed for itera
 The orchestration consists of several key stages:
 1. **Fault Localization & Reproduction**: The `fl_ensemble` and `reproduction` agents identify the bug location and generate a reproduction script.
 2. **Pattern Selection**: The `pattern_selection` agent selects **K** semantic patterns most relevant to the bug.
-3. **Parallel Patch Generation**: **K+1** parallel `patchgen` agents generate patch candidates (K based on patterns + 1 unconstrained).
+3. **Parallel Patch Generation**: **(P * K) + Q** parallel `patchgen` agents generate patch candidates (**P** samples for each of the **K** selected patterns, plus **Q** unconstrained samples). By default, **P=1** and **Q=1**, resulting in the standard **K+1** strategy.
 4. **Debate Panel**: A `dynamic_debater` (pro-patch from runtime analysis) and `static_debater` (pro-patch from structural analysis) exchange arguments and rebuttals.
 5. **Verdict & Refinement**: A `judge` agent selects the winner of the patch candidate closest to the real patch or provides feedback for refinement over **M** inner loops of debates.
 
@@ -109,6 +109,8 @@ Experiments are configured in `config/experiments.yaml` using the following para
 | Parameter | Description |
 | :--- | :--- |
 | **K** (`k_patterns`) | Number of semantic patterns selected for parallel patch generation. |
+| **P** (`p_samples`) | Number of patch samples to generate for each selected pattern. Defaults to 1. |
+| **Q** (`q_samples`) | Number of unconstrained patch samples (not following any pattern). Defaults to 1. |
 | **N** (`n_outer_loops`) | Maximum number of full orchestration attempts (re-selecting patterns/trying new approaches) per bug. |
 | **M** (`m_inner_loops`) | Maximum number of debate and refinement cycles for a selected patch candidate. |
 | **V** (`v_patience`) | Maximum number of refinement attempts (via version increments) before giving up on a specific patch candidate within the debate panel. |
@@ -120,8 +122,9 @@ By customizing `llm_config` and `prompts_config`, you can easily test different 
 ### 3.3. Ablation Studies
 
 SPADE supports various ablation configurations to evaluate the impact of specific components. For example:
-* **K=0**: Skips pattern selection, proceeding directly to unconstrained patch generation.
+* **K=0**: Skips pattern selection, proceeding directly to **Q** unconstrained patch generation samples.
 * **M=0**: Skips the debate panel and iterative refinement, relying on initial patch candidates.
+* **P=5**: Generates 5 candidate patches for each selected pattern to increase sampling diversity and account for LLM stochasticity.
 
 ### 3.4. Dataset
 
