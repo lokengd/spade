@@ -843,7 +843,9 @@ def generate_v1_patch(
     pattern_description = prompts_config.get("pattern_taxonomy", {}).get(pattern, "")
 
     log_prefix = "Unconstrained" if is_unconstrained else pattern_str
-    specific_agent_name = f"{agent_base_name}-{pattern}"
+    # specific_agent_name = f"{agent_base_name}-{pattern}"
+    sample_idx = state.get("sample_index") # state variable added by graph.py/activate_patchgen_agents
+    specific_agent_name = f"{agent_base_name}-{pattern}-{sample_idx}"    
     log(f"{loop_info_str} {log_prefix} PatchGen working on pattern -> {pattern_str}", specific_agent_name)
     # -------------------------------
 
@@ -990,7 +992,9 @@ def generate_v1_patch(
         if not final_patch and len(all_unique_contents) > 1:
             continue
 
-        patch_id = f"v1_{uuid.uuid4().hex[:6]}"
+        pattern_id = pattern[:2].lower() # take the first 2 chars of pattern id
+        patch_id = f"v1_{sample_idx}_{pattern_id}_{uuid.uuid4().hex[:6]}"
+        # patch_id = f"v1_{uuid.uuid4().hex[:6]}"
 
         if run_id and raw_telemetry:
             db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
@@ -1011,6 +1015,7 @@ def generate_v1_patch(
      
         patch = PatchCandidate(
             id=patch_id, 
+            sample_idx=sample_idx,
             code_diff=final_patch,
             pattern=pattern,
             rationale=pattern_rationale,
