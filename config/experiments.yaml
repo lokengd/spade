@@ -1,9 +1,24 @@
 # List of experiment IDs to run
 # active_experiments: ["spade_trial_run_qwen3-coder-30b"]
-active_experiments: ["spade_baseline_k2_n3_m1_v2_subset_1"]
+active_experiments: ["baseline_k2_n3_m1_v2_subset4"]
 
 # Experiments collection
 experiments:
+  baseline_k2_n3_m1_v2_subset4:
+    description: "baseline_k2_n3_m1_v2_subset4"
+    p_samples: 1
+    q_samples: 1
+    k_patterns: 2
+    n_outer_loops: 3
+    m_inner_loops: 1
+    v_patience: 2
+    bug_list: ["django__django-13964"] # ["astropy__astropy-6938","django__django-11099","django__django-12113","django__django-12908","django__django-13964","django__django-14534","django__django-15061","django__django-15695","django__django-16046","matplotlib__matplotlib-23314","matplotlib__matplotlib-25433","pydata__xarray-4094","pylint-dev__pylint-7080","pytest-dev__pytest-5692","scikit-learn__scikit-learn-13779","sphinx-doc__sphinx-8595","sympy__sympy-13177","sympy__sympy-14817","sympy__sympy-17655","sympy__sympy-20212","sympy__sympy-21847"] # ["astropy__astropy-6938"] # matplotlib__matplotlib-25433 
+    # bug_list: "*"
+    fl_resultset: "fl_results/subset_files/spade_baseline_k2_n3_m1_v2_subset_4.jsonl"
+    snippet_context_lines: 10
+    # Optional: override default config: "llm.yaml" and "prompts.yaml"
+    # llm_config: "config/llm_trial_run.yaml"
+    # prompts_config: "config/prompts_trial_run.yaml"
   spade_baseline_k2_n3_m1_v2_subset_1:
     description: "spade_baseline_k2_n3_m1_v2_subset_1"
     p_samples: 1

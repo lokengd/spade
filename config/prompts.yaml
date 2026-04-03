@@ -361,8 +361,7 @@ patch_generation_new:
       ### CRITICAL RULES
       - The SEARCH blocks must match the Source Code EXACTLY (same indentation, same spaces).
       - Include 2 to 4 lines of surrounding context in the SEARCH block to make it unique.
-      - Do NOT use "..." or ellipsis to abbreviate code. The SEARCH block must contain the COMPLETE, EXACT lines from the source code with no omissions.
-      - If no bugs are found, respond exactly with: `# No changes needed`
+      - The SEARCH block must contain the COMPLETE, EXACT lines from the source code with no omissions.
 
       ### OUTPUT FORMAT
 
@@ -385,9 +384,6 @@ patch_generation_new:
       ## Bug Issue Description
       {issue_text}
 
-      ## Error Trace
-      {error_trace}
-
       ## Suspicious Code Snippets
       {suspicious_snippets}
 
@@ -398,7 +394,7 @@ patch_generation_new:
 
       {failed_patches_history}
 
-      Generate the patch as valid SEARCH/REPLACE blocks.
+      Generate the patch in the form of SEARCH/REPLACE blocks upon the snippets provided.
       
   unconstrained:
     user: |
@@ -414,12 +410,9 @@ patch_generation_new:
       ### CRITICAL RULES FOR SEARCH BLOCKS
       - **COPY-PASTE ONLY**: The text inside `<<<<<<< SEARCH` must be a SUBSTRING of the file content provided above.
       - **DO NOT GUESS**: Do not try to recreate indentation from memory. Copy it directly from the Input Context.
-      - **UNIQUENESS**: Include 3 lines of context above and below the change to ensure the search string is unique.
       - **WHITESPACE**: Preserve all tabs, spaces, INDENTATION, and newlines exactly as they appear in the Input Context.
-      - **NO LINE NUMBERS**: Do NOT include line numbers (e.g., "202:", "203:") in SEARCH blocks.
-      - Do NOT use "..." or ellipsis to abbreviate code. The SEARCH block must contain the COMPLETE, EXACT lines from the source code with no omissions.
+      - The SEARCH block must contain the COMPLETE, EXACT lines from the source code with no omissions.
       - Must wrap the entire patch in ```python code fences.
-      - If no bugs are found, respond exactly with: `# No changes needed`
 
       ### OUTPUT FORMAT
 
@@ -442,15 +435,13 @@ patch_generation_new:
       ## Bug Issue Description
       {issue_text}
 
-      ## Error Trace
-      {error_trace}
-
       ## Suspicious Code Snippets
       {suspicious_snippets}
 
       {failed_patches_history}
 
-      Generate the patch as valid SEARCH/REPLACE blocks.
+      Generate the patch in the form of SEARCH/REPLACE blocks upon the snippets provided.
+  
   refinement:
     system: |
 
@@ -513,7 +504,7 @@ patch_generation_new:
 
       {failed_patches_history}
 
-      Refine the patch SEARCH/REPLACE blocks.
+      Refine the patch in the form of SEARCH/REPLACE blocks.
   
 # =============================================================================
 # Debater Prompts
