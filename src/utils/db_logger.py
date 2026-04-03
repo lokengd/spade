@@ -151,8 +151,8 @@ class DBLogger:
                 SELECT 
                     COUNT(CASE WHEN p.loop_n = 1 AND p.loop_m = 1 AND p.loop_v = 1 THEN 1 END) as pass_at_1,
                     COUNT(CASE WHEN p.loop_n = 1 AND p.loop_m = 1 AND p.loop_v > 1 THEN 1 END) as debate_rescues,
-                    COUNT(CASE WHEN p.loop_n = 1 AND p.loop_m > 1 THEN 1 END) as inner_rescues,
-                    COUNT(CASE WHEN p.loop_n > 1 THEN 1 END) as outer_rescues,
+                    COUNT(CASE WHEN p.loop_m >= 1 AND p.loop_v > 1 THEN 1 END) as inner_rescues,
+                    COUNT(CASE WHEN p.loop_n >= 1 AND p.loop_v = 1 THEN 1 END) as outer_rescues,
                     AVG(p.patch_version) as avg_attempts
                 FROM patch_evaluations p
                 JOIN repair_runs r ON p.run_id = r.run_id

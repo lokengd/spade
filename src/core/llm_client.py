@@ -168,15 +168,20 @@ class LLM_Client:
 
         try:
             start_time = time.time()
+            extra_body = {}
+            if self.top_k is not None:
+                extra_body["top_k"] = self.top_k
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
-                # think=False,
+                top_p=self.top_p if self.top_p is not None else None,
+                extra_body=extra_body if extra_body else None,
+                response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
-                ]
-            )
+                ]        
+            ) 
             duration = time.time() - start_time
             
             text_response = response.choices[0].message.content
@@ -205,16 +210,20 @@ class LLM_Client:
             # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
             
             start_time = time.time()
+            extra_body = {}
+            if self.top_k is not None:
+                extra_body["top_k"] = self.top_k
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
-                # think=False,
+                top_p=self.top_p if self.top_p is not None else None,
+                extra_body=extra_body if extra_body else None,
                 response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
-                ]
-            )
+                ]        
+            )    
             duration = time.time() - start_time
             
             raw_json = response.choices[0].message.content

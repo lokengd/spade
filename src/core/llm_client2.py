@@ -239,6 +239,8 @@ class OpenRouterClient(Base_LLM_Client):
     DEFAULT_LLM_SETTINGS = {
         "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
         "temperature": 0.1,
+        "top_k": 50,
+        "top_p": 0.95
     }
 
     def __init__(
@@ -250,6 +252,8 @@ class OpenRouterClient(Base_LLM_Client):
         base_url: str = "https://openrouter.ai/api/v1",
         verbose: bool = False,
         temperature: float = DEFAULT_LLM_SETTINGS["temperature"],
+        top_k: float = DEFAULT_LLM_SETTINGS["top_k"],
+        top_p: float = DEFAULT_LLM_SETTINGS["top_p"],
         stream: bool = False,
         site_url: str | None = None,
         app_name: str | None = None,
@@ -355,10 +359,15 @@ class OpenRouterClient(Base_LLM_Client):
                 ],
                 "max_tokens": 4096,
                 "effort": "high",
+                "temperature": self.temperature,
+                "top_p": self.top_p,
+                ##**self.default_params,
                 # "stream": self.stream,
-                # **self.default_params,
                 # "temperature": temperature,  # override per-call
             }
+            # optional params
+            if self.top_k is not None:
+                payload["top_k"] = self.top_k
 
             raw_output = ""
             usage = {"prompt_tokens": 0, "completion_tokens": 0}
