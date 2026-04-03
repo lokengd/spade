@@ -24,8 +24,9 @@ class Base_LLM_Client:
         if not usage:
             return {"total_seconds": round(duration, 3)}
             
-        p_tokens = getattr(usage, 'prompt_tokens', 0)
-        c_tokens = getattr(usage, 'completion_tokens', 0)
+        p_tokens = usage.get("prompt_tokens", 0)
+        c_tokens = usage.get("completion_tokens", 0)
+        cost = usage.get("cost", 0.0)
         
         rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
         cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
@@ -33,7 +34,7 @@ class Base_LLM_Client:
         return {
             "total_prompt_tokens": p_tokens,
             "total_completion_tokens": c_tokens,
-            "total_cost_usd": cost_usd,
+            "total_cost_usd": cost,
             "total_seconds": round(duration, 3),
             f"calls_{self.model_name}": 1
         }
@@ -132,6 +133,9 @@ class Base_LLM_Client:
     def generate_json_response(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         raise NotImplementedError("Must be implemented by subclass.")
     
+
+
+
 class Ollama_Client(Base_LLM_Client):
     def __init__(self, agent: str, provider: str, model: str, temperature: float = 0.0, base_url: str = None, api_key: str = None):
         super().__init__(agent, provider, model)
@@ -156,7 +160,6 @@ class Ollama_Client(Base_LLM_Client):
 
 
     
-
     def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[str, dict, dict]:
         """Returns a simple, unstructured Python string (str), metrics, and raw telemetry."""
 
@@ -239,8 +242,6 @@ class OpenRouterClient(Base_LLM_Client):
     DEFAULT_LLM_SETTINGS = {
         "model": "gpt-oss-120b:nitro", #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
         "temperature": 0.1,
-        "top_k": 50,
-        "top_p": 0.95
     }
 
     def __init__(
@@ -252,11 +253,9 @@ class OpenRouterClient(Base_LLM_Client):
         base_url: str = "https://openrouter.ai/api/v1",
         verbose: bool = False,
         temperature: float = DEFAULT_LLM_SETTINGS["temperature"],
-        top_k: float = DEFAULT_LLM_SETTINGS["top_k"],
-        top_p: float = DEFAULT_LLM_SETTINGS["top_p"],
+        top_k: float = None,
+        top_p: float = None,
         stream: bool = False,
-        site_url: str | None = None,
-        app_name: str | None = None,
     ):
         super().__init__(agent, provider, model)
         self.base_url = base_url.rstrip("/")
@@ -264,9 +263,9 @@ class OpenRouterClient(Base_LLM_Client):
         self.models_url = f"{self.base_url}/models"
         self.verbose = verbose
         self.stream = stream
-        self.default_params = {
-            "temperature": temperature,
-        }
+        self.temperature = temperature
+        self.top_k = top_k
+        self.top_p = top_p
 
         if api_key:
             self.api_key = api_key
@@ -281,10 +280,6 @@ class OpenRouterClient(Base_LLM_Client):
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-        # if site_url:
-        #     self.headers["HTTP-Referer"] = site_url
-        # if app_name:
-        #     self.headers["X-Title"] = app_name
         self.caller = f"{self.agent_name}-{self.model_name}"
 
         print(f"Initialized OpenRouterClient for agent '{self.agent_name}' with api_key '{self.api_key[:4]}***' and model '{self.model_name}'")
@@ -306,38 +301,6 @@ class OpenRouterClient(Base_LLM_Client):
             log(f"❌ Cannot connect to OpenRouter: {e}", caller=self.caller, level=logging.ERROR)
             return False
 
-    # def generate_text(
-    #     self,
-    #     prompt: str,
-    #     max_tokens: int = 4096,
-    #     temperature: float = 0.2,
-    #     sample_id: int = 0,
-    # ) -> dict:
-    #     """Generate completion from OpenRouter chat/completions."""
-    #     payload = {
-    #         "model": self.model,
-    #         "messages": [{"role": "user", "content": prompt}],
-    #         "max_tokens": max_tokens,
-    #         "effort": "low",
-    #         # "stream": self.stream,
-    #         # **self.default_params,
-    #         # "temperature": temperature,  # override per-call
-    #     }
-
-    #     raw_output = ""
-    #     usage = {"prompt_tokens": len(prompt) // 4, "completion_tokens": 0}
-
-    #     response = requests.post(
-    #         self.api_url,
-    #         headers=self.headers,
-    #         json=payload,
-    #         timeout=180,
-    #     )
-    #     response.raise_for_status()
-    #     data = response.json()
-    #     raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-
-    #     return {"response": raw_output, "usage": usage}
     
     def generate_json_response(self, system_prompt: str, user_prompt: str,response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
@@ -346,11 +309,9 @@ class OpenRouterClient(Base_LLM_Client):
         raw_json = "No response received"
         try:
             log(f"System Prompt: <see trajectory>", caller=self.caller)    
-            log(f"User Prompt: <see trajectory>", caller=self.caller)    
-            # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
-            # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
+            log(f"User Prompt: <see trajectory>", caller=self.caller)     
 
-
+            start_time = time.time()
             payload = {
                 "model": self.model_name,
                 "messages": [
@@ -358,25 +319,22 @@ class OpenRouterClient(Base_LLM_Client):
                     {"role": "user", "content": user_prompt}
                 ],
                 "max_tokens": 4096,
-                "effort": "high",
+                "effort": "medium",
                 "temperature": self.temperature,
-                "top_p": self.top_p,
-                ##**self.default_params,
-                # "stream": self.stream,
-                # "temperature": temperature,  # override per-call
             }
             # optional params
             if self.top_k is not None:
                 payload["top_k"] = self.top_k
+            if self.top_p is not None:
+                payload["top_p"] = self.top_p
 
             raw_output = ""
-            usage = {"prompt_tokens": 0, "completion_tokens": 0}
 
             response = requests.post(
                 self.api_url,
                 headers=self.headers,
                 json=payload,
-                timeout=180,
+                timeout=600,
             )
             response.raise_for_status()
             data = response.json()
@@ -385,16 +343,11 @@ class OpenRouterClient(Base_LLM_Client):
             parsed_data = response_model.model_validate_json(raw_output)
             response_for_trajectory = parsed_data.model_dump(mode='json')  # Pydantic v2
 
-
-            # raw_json = response.choices[0].message.content
-            metrics = {} # self._calculate_metrics(response.usage, 0)
-
+            duration = time.time() - start_time
+            usage = data.get("usage", {})
+            metrics = self._calculate_metrics(usage, duration)
 
             telemetry = self._save_trajectory(system_prompt, user_prompt, response_for_trajectory, metrics, loop_info=loop_info)
-            # telemetry = self._save_trajectory(system_prompt, user_prompt, json.loads(parsed_data), metrics, loop_info=loop_info)
-            # parsed_data = response_model.model_validate_json(raw_json)
-            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model_name)
-            # log(f"LLM response metrics: {metrics}", caller=self.model_name)
 
             return parsed_data, metrics, telemetry
         
@@ -412,9 +365,7 @@ class OpenRouterClient(Base_LLM_Client):
         try:
             log(f"System Prompt: <see trajectory>", caller=self.caller)    
             log(f"User Prompt: <see trajectory>", caller=self.caller)
-            # log(f"System Prompt: {system_prompt}", caller=self.agent_name)    
-            # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
-
+            start_time = time.time()
 
             payload = {
                 "model": self.model_name,
@@ -423,34 +374,36 @@ class OpenRouterClient(Base_LLM_Client):
                     {"role": "user", "content": user_prompt}
                 ],
                 "max_tokens": 4096,
-                "effort": "high",
-                # "stream": self.stream,
-                # **self.default_params,
-                # "temperature": temperature,  # override per-call
+                "effort": "medium",
+                "temperature": self.temperature,
             }
+            # optional params
+            if self.top_k is not None:
+                payload["top_k"] = self.top_k
+            if self.top_p is not None:
+                payload["top_p"] = self.top_p
 
             raw_output = ""
-            usage = {"prompt_tokens": 0, "completion_tokens": 0}
 
             response = requests.post(
                 self.api_url,
                 headers=self.headers,
                 json=payload,
-                timeout=180,
-            )
+                timeout=600,
+            )            
+
             response.raise_for_status()
             data = response.json()
             raw_output = data.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-
-            # raw_json = response.choices[0].message.content
-            metrics = {} # self._calculate_metrics(response.usage, 0)
-
+            usage = data.get("usage", {})
+            # print(f"OpenRouter API Usage Info: {usage}")
+            
+            duration = time.time() - start_time
+            metrics = self._calculate_metrics(usage, duration)
+            # print(f"METRICS: {metrics}")
 
             telemetry = self._save_trajectory(system_prompt, user_prompt, raw_output, metrics, loop_info=loop_info)
-            # parsed_data = response_model.model_validate_json(raw_json)
-            # log(f"LLM structured response received. Duration: {metrics['total_seconds']}s", caller=self.model_name)
-            # log(f"LLM response metrics: {metrics}", caller=self.model_name)
 
             return raw_output, metrics, telemetry
         
