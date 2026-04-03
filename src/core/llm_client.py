@@ -96,7 +96,7 @@ class LLM_Client:
                 pretty_print_state([entry])
             pretty_output = f.getvalue()
             # Print to console for immediate feedback
-            print(pretty_output)
+            # print(pretty_output)
         except Exception as e:
             log(f"Failed to pretty print trajectory: {e}", caller=self.agent_name, level=logging.WARNING)
             pretty_output = None
@@ -168,15 +168,20 @@ class LLM_Client:
 
         try:
             start_time = time.time()
+            extra_body = {}
+            if self.top_k is not None:
+                extra_body["top_k"] = self.top_k
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
-                # think=False,
+                top_p=self.top_p if self.top_p is not None else None,
+                extra_body=extra_body if extra_body else None,
+                response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
-                ]
-            )
+                ]        
+            ) 
             duration = time.time() - start_time
             
             text_response = response.choices[0].message.content
@@ -189,9 +194,21 @@ class LLM_Client:
 
             return text_response, metrics, telemetry
         
+        except requests.exceptions.Timeout as e:
+            log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.caller, level=logging.ERROR)
+            # Return empty response to allow the agent to burn an attempt and retry
+            return None, {}, {}
+            
+        except requests.exceptions.RequestException as e:
+            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            return None, {}, {}
+            
         except Exception as e:
-            log(f"LLM Text Gen Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
-            raise
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
+            
+            # Removed `raise`. We now fail gracefully and let the outer loop handle it.
+            return None, {}, {}
 
     def generate_json_response(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
@@ -205,16 +222,20 @@ class LLM_Client:
             # log(f"User Prompt: {user_prompt}", caller=self.agent_name)    
             
             start_time = time.time()
+            extra_body = {}
+            if self.top_k is not None:
+                extra_body["top_k"] = self.top_k
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 temperature=self.temperature,
-                # think=False,
+                top_p=self.top_p if self.top_p is not None else None,
+                extra_body=extra_body if extra_body else None,
                 response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
-                ]
-            )
+                ]        
+            )    
             duration = time.time() - start_time
             
             raw_json = response.choices[0].message.content
@@ -227,9 +248,19 @@ class LLM_Client:
 
             return parsed_data, metrics, telemetry
         
+        except requests.exceptions.Timeout as e:
+            log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.caller, level=logging.ERROR)
+            # Return empty response to allow the agent to burn an attempt and retry
+            return None, {}, {}
+            
+        except requests.exceptions.RequestException as e:
+            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            return None, {}, {}
+            
         except Exception as e:
-            log(f"LLM Structured Error ({self.provider}): {e}", caller=self.agent_name, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error: \n{raw_json}", caller=self.agent_name, level=logging.ERROR)
-            e.raw_json = raw_json
-            raise
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
+            
+            # Removed `raise`. We now fail gracefully and let the outer loop handle it.
+            return None, {}, {}
 

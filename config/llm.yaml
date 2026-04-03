@@ -12,35 +12,35 @@ agents:
     model: "openai/gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
     base_url: "https://openrouter.ai/api/v1"
     temperature: 0.1
-    # top_p: 0.95
-    # top_k: 20
+    top_k: 10
+    top_p: 0.10
     api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 
   patchgen:
     provider: "openrouter.ai"
     model: "gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
     base_url: "https://openrouter.ai/api/v1"
-    temperature: 0.2
-    # top_p: 0.95
-    # top_k: 20
+    temperature: 0.5
+    top_k: 50
+    top_p: 0.95
     api_key: null 
 
   debaters:
     provider: "openrouter.ai"
     model: "openai/gpt-oss-120b:nitro" #"qwen3.5:9b", # qwen2.5-coder:14b # deepseek-r1:latest gpt-oss:20b gpt-oss-120b
     base_url: "https://openrouter.ai/api/v1"
-    temperature: 0.5
-    # top_p: 0.95
-    # top_k: 20
+    temperature: 0.3
+    top_k: 40
+    top_p: 0.90
     api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 
   judge:
     provider: "openrouter.ai"
     model: "openai/gpt-oss-120b:nitro" 
     base_url: "https://openrouter.ai/api/v1"
-    temperature: 0.5
-    # top_p: 0.95
-    # top_k: 20
+    temperature: 0.1
+    top_k: 10
+    top_p: 0.10
     api_key: 'openrouter.api_key' # follow format [provider].[api_key] based on the structure at config/api_keys.yaml
 
 
