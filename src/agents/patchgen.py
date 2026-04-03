@@ -872,7 +872,7 @@ def generate_v1_patch(
     # Run until we find NUM_SAMPLES diverse patches or exhaust MAX_ATTEMPTS
     while len(all_unique_contents) < NUM_SAMPLES and attempt < MAX_ATTEMPTS:
         attempt += 1
-        log(f"\nAttempt {attempt}/{MAX_ATTEMPTS} to generate valid patches (Found: {len(all_unique_contents)}/{NUM_SAMPLES})...", specific_agent_name)
+        log(f"\n-- ({specific_agent_name}) ATTEMPT {attempt}/{MAX_ATTEMPTS} to generate valid patches (Found: {len(all_unique_contents)}/{NUM_SAMPLES})...", specific_agent_name)
 
         # --- RANDOM RESTART ---
         # Select a random starting state from our pool (includes the original unpatched code)

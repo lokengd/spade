@@ -334,7 +334,7 @@ class OpenRouterClient(Base_LLM_Client):
                 self.api_url,
                 headers=self.headers,
                 json=payload,
-                timeout=600,
+                timeout=180,
             )
             response.raise_for_status()
             data = response.json()
@@ -351,11 +351,27 @@ class OpenRouterClient(Base_LLM_Client):
 
             return parsed_data, metrics, telemetry
         
+        # except Exception as e:
+        #     log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+        #     log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.caller, level=logging.ERROR)
+        #     e.raw_output = raw_output
+        #     raise
+
+        except requests.exceptions.Timeout as e:
+            log(f"LLM API Timeout (OpenRouter): Request exceeded 180s timeout.", caller=self.caller, level=logging.ERROR)
+            # Return empty response to allow the agent to burn an attempt and retry
+            return None, {}, {}
+            
+        except requests.exceptions.RequestException as e:
+            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            return None, {}, {}
+            
         except Exception as e:
             log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.caller, level=logging.ERROR)
-            e.raw_output = raw_output
-            raise
+            log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
+            
+            # Removed `raise`. We now fail gracefully and let the outer loop handle it.
+            return None, {}, {}
 
     def generate_text(self, system_prompt: str, user_prompt: str, loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
@@ -389,7 +405,7 @@ class OpenRouterClient(Base_LLM_Client):
                 self.api_url,
                 headers=self.headers,
                 json=payload,
-                timeout=600,
+                timeout=180,
             )            
 
             response.raise_for_status()
@@ -407,8 +423,18 @@ class OpenRouterClient(Base_LLM_Client):
 
             return raw_output, metrics, telemetry
         
+        except requests.exceptions.Timeout as e:
+            log(f"LLM API Timeout (OpenRouter): Request exceeded 180s timeout.", caller=self.caller, level=logging.ERROR)
+            # Return empty response to allow the agent to burn an attempt and retry
+            return None, {}, {}
+            
+        except requests.exceptions.RequestException as e:
+            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            return None, {}, {}
+            
         except Exception as e:
             log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error: \n{raw_output}", caller=self.caller, level=logging.ERROR)
-            e.raw_output = raw_output
-            raise
+            log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
+            
+            # Removed `raise`. We now fail gracefully and let the outer loop handle it.
+            return None, {}, {}
