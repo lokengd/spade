@@ -137,10 +137,17 @@ def verify_refined(state: SpadeState):
         log(f"{loop_info_str} No refined patch found to verify.", agent_name, level=logging.ERROR)
         return {"resolution_status": ["test_agent_failed"]}
 
-    patch = refined_patches[-1]
     run_id = state.get("thread_id")
+    bug_id = state["bug_context"].bug_id
+    # patch = refined_patches[-1]
+    patch = next((p for p in reversed(refined_patches) if p.bug_id == bug_id), None)
+
+    if patch is None:
+        # handle missing case
+        log(f"{loop_info_str} No matching refined patch found for bug_id {bug_id}.", agent_name, level=logging.ERROR)
+        return {"resolution_status": ["test_agent_failed"]}
     
-    log(f"{loop_info_str} Refined patch verification ({patch.id})...", agent_name)
+    log(f"{loop_info_str} Refined patch verification ({patch.id}) or bug_id {bug_id}...", agent_name)
     
     patch = _execute_and_evaluate(patch, state)
 

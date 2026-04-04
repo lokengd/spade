@@ -72,6 +72,7 @@ class EvaluationResult(BaseModel):
 
 class PatchCandidate(BaseModel):
     id: str
+    bug_id: str
     sample_idx: int = 1
     code_diff: str
     pattern: str # K+1 patterns: p1, p2, p1+p2, + 1 Unconstrained: p0

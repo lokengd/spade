@@ -558,6 +558,7 @@ def generate_refined_patch(state: SpadeState,
 
     patch = PatchCandidate(
         id=patch_id, 
+        bug_id=instance_id,
         sample_idx=sample_idx,
         code_diff=final_patch,
         pattern=active_pattern,
@@ -786,6 +787,7 @@ def generate_v1_patch_wo_randomRestart( #todo ----------------------------------
  
     patch = PatchCandidate(
         id=patch_id, 
+        bug_id=instance_id,
         sample_idx=sample_idx,
         code_diff=final_patch,
         pattern=pattern,
@@ -1015,6 +1017,7 @@ def generate_v1_patch(
      
         patch = PatchCandidate(
             id=patch_id, 
+            bug_id=instance_id,
             sample_idx=sample_idx,
             code_diff=final_patch,
             pattern=pattern,
