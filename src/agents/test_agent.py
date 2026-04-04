@@ -83,6 +83,7 @@ def verify_v1(state: SpadeState):
     v1_patches = state.get("v1_patches", [])
     any_passed = False
 
+    v1_patches = [patch for patch in v1_patches if patch.status == "pending"]
     v1_patches_code_diff = [patch.code_diff for patch in v1_patches]
     evaluation_results = run_evaluation_on_instance_in_parallel(
         instance_id=state["bug_context"].bug_id,
