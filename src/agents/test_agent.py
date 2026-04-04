@@ -140,7 +140,7 @@ def verify_refined(state: SpadeState):
     run_id = state.get("thread_id")
     bug_id = state["bug_context"].bug_id
     # patch = refined_patches[-1]
-    patch = next((p for p in reversed(refined_patches) if p.bug_id == bug_id), None)
+    patch = next((p for p in reversed(refined_patches) if p.bug_id == bug_id and p.status == "pending"), None)
 
     if patch is None:
         # handle missing case
