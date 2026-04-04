@@ -1027,6 +1027,7 @@ def generate_v1_patch(
             status="pending",
             execution_trace=bug_context.error_trace if bug_context.error_trace else "No trace available.",
             explanation=explanation,
+            loop_n=state.get("outer_loop_count", 1),
         )
         final_v1_patches.append(patch)
     
