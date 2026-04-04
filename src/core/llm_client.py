@@ -195,17 +195,17 @@ class LLM_Client:
             return text_response, metrics, telemetry
         
         except requests.exceptions.Timeout as e:
-            log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.caller, level=logging.ERROR)
+            log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.agent_name, level=logging.ERROR)
             # Return empty response to allow the agent to burn an attempt and retry
             return None, {}, {}
             
         except requests.exceptions.RequestException as e:
-            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
             return None, {}, {}
             
         except Exception as e:
-            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error", caller=self.agent_name, level=logging.ERROR)
             
             # Removed `raise`. We now fail gracefully and let the outer loop handle it.
             return None, {}, {}
@@ -249,17 +249,17 @@ class LLM_Client:
             return parsed_data, metrics, telemetry
         
         except requests.exceptions.Timeout as e:
-            log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.caller, level=logging.ERROR)
+            log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.agent_name, level=logging.ERROR)
             # Return empty response to allow the agent to burn an attempt and retry
             return None, {}, {}
             
         except requests.exceptions.RequestException as e:
-            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
+            log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
             return None, {}, {}
             
         except Exception as e:
-            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
-            log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
+            log(f"LLM Structured Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
+            log(f"Raw LLM Response that possibly caused the error", caller=self.agent_name, level=logging.ERROR)
             
             # Removed `raise`. We now fail gracefully and let the outer loop handle it.
             return None, {}, {}
