@@ -72,6 +72,9 @@ class DBLogger:
                 CREATE TABLE IF NOT EXISTS llm_telemetry (
                     telemetry_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     run_id TEXT,
+                    experiment_id TEXT,
+                    bug_id TEXT,
+                    reference TEXT,
                     agent_name TEXT NOT NULL,
                     model TEXT NOT NULL,
                     provider TEXT NOT NULL,
@@ -86,7 +89,8 @@ class DBLogger:
                     response_json TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY(run_id) REFERENCES repair_runs(run_id)
+                    FOREIGN KEY(run_id) REFERENCES repair_runs(run_id),
+                    FOREIGN KEY(experiment_id) REFERENCES experiments(experiment_id)
                 )
             """)
             
@@ -94,6 +98,8 @@ class DBLogger:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS patch_evaluations (
                     patch_id TEXT PRIMARY KEY,
+                    experiment_id TEXT,
+                    bug_id TEXT,
                     patch_version INTEGER,
                     run_id TEXT,
                     loop_n INTEGER,
@@ -107,7 +113,8 @@ class DBLogger:
                     previous_feedback TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY(run_id) REFERENCES repair_runs(run_id)
+                    FOREIGN KEY(run_id) REFERENCES repair_runs(run_id),
+                    FOREIGN KEY(experiment_id) REFERENCES experiments(experiment_id)
                 );             
             """)
             conn.commit()
@@ -276,19 +283,22 @@ class DBLogger:
                 WHERE run_id = ?
             """, (fl_match, is_resolved, status, duration, run_id))
 
-    def log_telemetry(self, run_id: str, agent_name: str, log_data: dict) -> int:
+    def log_telemetry(self, run_id: str, agent_name: str, log_data: dict, experiment_id: str = None, bug_id: str = None, reference: str = None) -> int:
         with sqlite3.connect(self.db_path) as conn:
             metrics = log_data.get("metrics") or {}
             loop = log_data.get("loop_info") or {}
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO llm_telemetry (
-                    run_id, agent_name, model, provider, 
+                    run_id, experiment_id, bug_id, reference, agent_name, model, provider, 
                     loop_n, loop_m, loop_v,
                     prompt_tokens, completion_tokens, cost_usd, duration_seconds
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 run_id,
+                experiment_id,
+                bug_id,
+                reference,
                 agent_name,
                 log_data.get("model"),
                 log_data.get("provider"),
@@ -300,38 +310,16 @@ class DBLogger:
                 metrics.get("total_cost_usd"),
                 metrics.get("total_seconds")
             ))            
-            # cursor.execute("""
-            #     INSERT INTO llm_telemetry (
-            #         run_id, agent_name, model, provider, 
-            #         loop_n, loop_m, loop_v,
-            #         prompt_tokens, completion_tokens, cost_usd, duration_seconds,
-            #         prompt_json, response_json
-            #     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            # """, (
-            #     run_id,
-            #     agent_name,
-            #     log_data.get("model"),
-            #     log_data.get("provider"),
-            #     loop.get("n"),
-            #     loop.get("m"),
-            #     loop.get("v"),
-            #     metrics.get("total_prompt_tokens"),
-            #     metrics.get("total_completion_tokens"),
-            #     metrics.get("total_cost_usd"),
-            #     metrics.get("total_seconds"),
-            #     json.dumps(log_data.get("prompts")) if log_data.get("prompts") is not None else None,
-            #     json.dumps(log_data.get("response")) if log_data.get("response") is not None else None
-            # ))
             return cursor.lastrowid
 
-    def log_patch(self, patch_id: str, run_id: str, patch_version: int, loop_n: int, loop_m: int, loop_v: int, pattern: str, rationale: str, explanation: str, diff: str, tests_passed: bool = False, feedback: str = None):
+    def log_patch(self, patch_id: str, run_id: str, patch_version: int, loop_n: int, loop_m: int, loop_v: int, pattern: str, rationale: str, explanation: str, diff: str, tests_passed: bool = False, feedback: str = None, experiment_id: str = None, bug_id: str = None):
         with sqlite3.connect(self.db_path) as conn:
             conn.cursor().execute("""
                 INSERT OR REPLACE INTO patch_evaluations (
-                    patch_id, run_id, patch_version, 
+                    patch_id, experiment_id, bug_id, run_id, patch_version, 
                     loop_n, loop_m, loop_v, pattern_applied, pattern_rationale, patch_explanation, patch_diff, tests_passed, previous_feedback, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (patch_id, run_id, patch_version, loop_n, loop_m, loop_v, pattern, rationale, explanation, diff, tests_passed, feedback))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (patch_id, experiment_id, bug_id, run_id, patch_version, loop_n, loop_m, loop_v, pattern, rationale, explanation, diff, tests_passed, feedback))
 
     def update_patch(self, patch_id: str, tests_passed: bool):
         with sqlite3.connect(self.db_path) as conn:

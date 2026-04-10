@@ -23,7 +23,7 @@ class LLM_Client:
         self.top_p = top_p
         self.top_k = top_k
         self.base_url = base_url
-        
+        self.api_key = "dummy_key" # default        
         # Resolve API Key dynamically
         if api_key:
             def load_api_key():
@@ -37,11 +37,8 @@ class LLM_Client:
                 self.api_key = api_key_config[provider][key_name]
 
             except (ValueError, KeyError, FileNotFoundError) as e:
-                log(
-                    f"{api_key} is missing or invalid! ({e})",
-                    caller=self.agent_name,
-                    level=logging.WARNING
-                )
+                log(f"{api_key} is missing or invalid! ({e})", caller=self.agent_name, level=logging.WARNING)
+
 
         # Initialize the appropriate client based on provider
         client_kwargs = {"api_key": self.api_key}
@@ -59,6 +56,7 @@ class LLM_Client:
         p_tokens = getattr(usage, 'prompt_tokens', 0)
         c_tokens = getattr(usage, 'completion_tokens', 0)
         
+        # Using cost table at llm.yaml
         rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
         cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
         
@@ -196,19 +194,22 @@ class LLM_Client:
         
         except requests.exceptions.Timeout as e:
             log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.agent_name, level=logging.ERROR)
+            raise
             # Return empty response to allow the agent to burn an attempt and retry
-            return None, {}, {}
+            # return None, {}, {}
             
         except requests.exceptions.RequestException as e:
             log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
-            return None, {}, {}
+            raise
+            # Return empty response to allow the agent to burn an attempt and retry
+            # return None, {}, {}
             
         except Exception as e:
             log(f"LLM Structured Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
             log(f"Raw LLM Response that possibly caused the error", caller=self.agent_name, level=logging.ERROR)
-            
+            raise
             # Removed `raise`. We now fail gracefully and let the outer loop handle it.
-            return None, {}, {}
+            # return None, {}, {}
 
     def generate_json_response(self, system_prompt: str, user_prompt: str, response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
@@ -250,17 +251,19 @@ class LLM_Client:
         
         except requests.exceptions.Timeout as e:
             log(f"LLM API Timeout (OpenRouter): Request exceeded 600s timeout.", caller=self.agent_name, level=logging.ERROR)
+            raise
             # Return empty response to allow the agent to burn an attempt and retry
-            return None, {}, {}
+            # return None, {}, {}
             
         except requests.exceptions.RequestException as e:
             log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
-            return None, {}, {}
+            raise
+            # return None, {}, {}
             
         except Exception as e:
             log(f"LLM Structured Error (OpenRouter): {e}", caller=self.agent_name, level=logging.ERROR)
             log(f"Raw LLM Response that possibly caused the error", caller=self.agent_name, level=logging.ERROR)
-            
+            raise
             # Removed `raise`. We now fail gracefully and let the outer loop handle it.
-            return None, {}, {}
+            # return None, {}, {}
 

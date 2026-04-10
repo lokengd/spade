@@ -34,6 +34,8 @@ def run(state: SpadeState):
     agent_config = settings.LLM_AGENTS["pattern_selection"]
     client = LLM_Client(agent=agent_name, **agent_config)
     run_id = state.get("thread_id")
+    experiment_id = state.get("experiment_id")
+    bug_id = state["bug_context"].bug_id
 
     # Load configuration and patterns
     prompts_config = load_prompts()
@@ -113,29 +115,50 @@ def run(state: SpadeState):
     metrics = {}
     final_selection = []
     raw_telemetry = {}
-    try:
-        # Get both the structured response AND telemetry metrics
-        structured_response, metrics, raw_telemetry = client.generate_json_response(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            response_model=PatternSelectionResponse,
-            loop_info=loop_info_dict
-        )
-        
-        # Log to DB
-        if run_id and raw_telemetry:
-            db_logger.log_telemetry(run_id, agent_name, raw_telemetry)
+    MAX_RETRIES = 3 # to ensure selected pattern count equals to K_PATTERNS
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            # Get both the structured response AND telemetry metrics
+            structured_response, metrics, raw_telemetry = client.generate_json_response(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                response_model=PatternSelectionResponse,
+                loop_info=loop_info_dict
+            )
+            
+            # Log to DB
+            if run_id and raw_telemetry:
+                db_logger.log_telemetry(run_id, agent_name, raw_telemetry, experiment_id=experiment_id, bug_id=bug_id, reference=f"k{settings.K_PATTERNS}_attempt_{attempt}")
 
-        if structured_response.selected_count == 0 or not structured_response.selections:
-            log("No patterns matched. Proceeding with K=0.", agent_name, level=logging.INFO)
-        else:
+            if structured_response.selected_count == 0 or not structured_response.selections:
+                log("No patterns matched. Proceeding with K=0.", agent_name, level=logging.INFO)
+                continue
+
+            # Enforce uniqueness of K_PATTERNS
             # Enforce the K_PATTERNS limit and convert Pydantic models to dicts for LangGraph
-            final_selection = [s.model_dump() for s in structured_response.selections[:settings.K_PATTERNS]]
+            # final_selection = [s.model_dump() for s in structured_response.selections[:settings.K_PATTERNS]]
+            final_selection = select_unique_patterns(
+                structured_response.selections,
+                settings.K_PATTERNS,
+                agent_name
+            )            
             selected_ids = [s["pattern_id"] for s in final_selection]
             log(f"Selected {len(final_selection)} patterns: {selected_ids}", agent_name, level=logging.INFO)
+            log(f"[Attempt {attempt}] Selected {len(final_selection)} patterns: {selected_ids}", agent_name, level=logging.INFO)
 
-    except Exception as e:
-        log(f"Pattern Selection captured an exception: {e}.", agent_name, level=logging.ERROR)
+            break  # Success            
+
+        except Exception as e:
+            log(f"[Attempt {attempt}] Pattern selection failed: {e}", agent_name, level=logging.ERROR)
+            if attempt == MAX_RETRIES:
+                log(f"Max retries {MAX_RETRIES} reached. Pattern selection failed.",agent_name, level=logging.ERROR)
+                return {
+                    "resolution_status": ["pattern_selection_failed"],
+                    "total_metrics": metrics
+                }
+
+    # Final guard (in case loop exited without success)
+    if not final_selection:
         return {
             "resolution_status": ["pattern_selection_failed"],
             "total_metrics": metrics
@@ -147,3 +170,36 @@ def run(state: SpadeState):
         "current_patch_version": 1, # Reset patch version to 1 for the new set of patterns
         "total_metrics": metrics 
     }
+
+def select_unique_patterns(selections, k, agent_name):
+    """
+    Ensure exactly k unique patterns (by pattern_id), preserving order.
+    Raises ValueError if not enough unique items.
+    """
+    seen = set()
+    unique = []
+
+    for s in selections:
+        pattern_id = getattr(s, "pattern_id", None)
+        if pattern_id is None:
+            continue  # skip invalid entries
+
+        if pattern_id not in seen:
+            seen.add(pattern_id)
+            unique.append(s)
+
+        if len(unique) == k:
+            break
+
+    if len(unique) < k:
+        log(f"Only {len(unique)} unique patterns found, expected {k}", agent_name, level=logging.ERROR)
+        raise ValueError(
+            f"{agent_name}: Only {len(unique)} unique patterns found, expected {k}"
+        )
+
+    final_selection = [s.model_dump() for s in unique]
+    selected_ids = [s["pattern_id"] for s in final_selection]
+
+    log(f"Selected {len(final_selection)} unique patterns: {selected_ids}", agent_name, level=logging.INFO)
+
+    return final_selection

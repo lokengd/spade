@@ -138,6 +138,8 @@ def run(state: SpadeState):
     v1_patches = [p for p in v1_patches_all if getattr(p, "loop_n", 1) == current_n]    
     candidates_block = _format_candidates_block(v1_patches)
     run_id = state.get("thread_id")
+    experiment_id = state.get("experiment_id")
+    bug_id = state["bug_context"].bug_id
 
     # Shared debate context
     debate_kwargs = {
@@ -187,6 +189,10 @@ def run(state: SpadeState):
             response_model=JudgeVerdict,
             loop_info=loop_info_dict
         )
+        # Log to DB
+        if run_id and raw_telemetry:
+            db_logger.log_telemetry(run_id, agent_name, raw_telemetry, experiment_id=experiment_id, bug_id=bug_id, reference=None)
+
     except Exception as e:
         log(f"Judge structured parse failed: {e}. Attempting key remapping.", agent_name, level=logging.WARNING)
         verdict = None

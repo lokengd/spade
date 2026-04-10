@@ -357,7 +357,8 @@ def generate_refined_patch(state: SpadeState,
     refined_patches = state.get("refined_patches", [])
     v1_patches = state.get("v1_patches", [])
     run_id = state.get("thread_id")
-    
+    experiment_id = state.get("experiment_id")
+
     # Deciding lineage: Search for the most recent refinement of this winner
     previous_patch = None
     for p in reversed(refined_patches):
@@ -540,7 +541,7 @@ def generate_refined_patch(state: SpadeState,
     explanation = "<skip>"
     # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
-        db_logger.log_telemetry(run_id, f"{agent_base_name}_refined_{active_pattern}", raw_telemetry)
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_refined_{active_pattern}", raw_telemetry, experiment_id=experiment_id, bug_id=instance_id, reference=patch_id)
         db_logger.log_patch(
             patch_id=patch_id,
             run_id=run_id,
@@ -553,7 +554,9 @@ def generate_refined_patch(state: SpadeState,
             explanation=explanation,
             diff=final_patch,
             tests_passed=False, #new patch gen, not yet passed
-            feedback=state.get("verdict")
+            feedback=state.get("verdict"),
+            experiment_id=experiment_id,
+            bug_id=instance_id
         )
 
     patch = PatchCandidate(
@@ -601,6 +604,7 @@ def generate_v1_patch_wo_randomRestart( #todo ----------------------------------
     print(f">>> Active Pattern: {active_pattern}")
     bug_context = state["bug_context"]
     run_id = state.get("thread_id")
+    experiment_id = state.get("experiment_id")
     
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
     
@@ -769,7 +773,7 @@ def generate_v1_patch_wo_randomRestart( #todo ----------------------------------
     explanation = "<skip>"
     # # Log Telemetry and Patch to DB
     if run_id and raw_telemetry:
-        db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
+        db_logger.log_telemetry(run_id, f"{agent_base_name}_{active_pattern}", raw_telemetry, experiment_id=experiment_id, bug_id=instance_id, reference=patch_id)
         db_logger.log_patch(
             patch_id=patch_id,
             run_id=run_id,
@@ -782,7 +786,9 @@ def generate_v1_patch_wo_randomRestart( #todo ----------------------------------
             explanation=explanation,
             diff=final_patch,
             tests_passed=False, #new patch gen, not yet passed
-            feedback=""
+            feedback="",
+            experiment_id=experiment_id,
+            bug_id=instance_id   
         )
  
     patch = PatchCandidate(
@@ -829,6 +835,7 @@ def generate_v1_patch(
     active_pattern = state.get("active_pattern", P_UNCONSTRAINED)
     bug_context = state["bug_context"]
     run_id = state.get("thread_id")
+    experiment_id = state.get("experiment_id")
     
     loop_info_str, loop_info_dict = get_loop_info(state, include_inner=False)
     is_unconstrained = active_pattern == P_UNCONSTRAINED
@@ -848,6 +855,7 @@ def generate_v1_patch(
     # specific_agent_name = f"{agent_base_name}-{pattern}"
     sample_idx = state.get("sample_index") # state variable added by graph.py/activate_patchgen_agents
     specific_agent_name = f"{agent_base_name}-{pattern}-{sample_idx}"    
+    pattern_id_tiny = pattern[:2].lower() # take the first 2 chars of pattern id
     log(f"{loop_info_str} {log_prefix} PatchGen working on pattern -> {pattern_str}", specific_agent_name)
     # -------------------------------
 
@@ -941,6 +949,10 @@ def generate_v1_patch(
             loop_info=loop_info_dict
         )
         
+        if run_id and attempt_telemetry:
+            reference = f"v1_{sample_idx}_{pattern_id_tiny}_sample{len(all_unique_contents)}"
+            db_logger.log_telemetry(run_id, f"{specific_agent_name}", attempt_telemetry, experiment_id=experiment_id, bug_id=instance_id, reference=reference)
+
         # Aggregate metrics
         metrics.update(attempt_metrics)
         raw_telemetry.update(attempt_telemetry)
@@ -994,12 +1006,10 @@ def generate_v1_patch(
         if not final_patch and len(all_unique_contents) > 1:
             continue
 
-        pattern_id = pattern[:2].lower() # take the first 2 chars of pattern id
-        patch_id = f"v1_{sample_idx}_{pattern_id}_{uuid.uuid4().hex[:6]}"
+        patch_id = f"v1_{sample_idx}_{pattern_id_tiny}_{uuid.uuid4().hex[:6]}"
         # patch_id = f"v1_{uuid.uuid4().hex[:6]}"
 
-        if run_id and raw_telemetry:
-            db_logger.log_telemetry(run_id, f"{agent_base_name}_{pattern}", raw_telemetry)
+        if run_id:
             db_logger.log_patch(
                 patch_id=patch_id,
                 run_id=run_id,
@@ -1012,7 +1022,9 @@ def generate_v1_patch(
                 explanation=explanation,
                 diff=final_patch,
                 tests_passed=False, 
-                feedback=""
+                feedback="",
+                experiment_id=experiment_id,
+                bug_id=instance_id                
             )
      
         patch = PatchCandidate(

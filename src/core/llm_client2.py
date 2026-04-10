@@ -26,10 +26,11 @@ class Base_LLM_Client:
             
         p_tokens = usage.get("prompt_tokens", 0)
         c_tokens = usage.get("completion_tokens", 0)
-        cost = usage.get("cost", 0.0)
-        
-        rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
-        cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
+        cost = usage.get("cost", 0.0) # This is exact cost return by the response, will match the exact value on openrouter log. 
+
+        # not using cost table at llm.yaml
+        # rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
+        # cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
         
         return {
             "total_prompt_tokens": p_tokens,
@@ -182,7 +183,12 @@ class Ollama_Client(Base_LLM_Client):
             duration = time.time() - start_time
             
             text_response = response.choices[0].message.content
-            metrics = self._calculate_metrics(response.usage, duration)
+
+            data = response.json()
+            usage = data.get("usage", {})
+            print(f"Ollama_Client API Usage Info: {usage}")
+
+            metrics = self._calculate_metrics(usage, duration)
 
             telemetry = self._save_trajectory(system_prompt, user_prompt, text_response, metrics, loop_info=loop_info)
             
@@ -267,14 +273,20 @@ class OpenRouterClient(Base_LLM_Client):
         self.top_k = top_k
         self.top_p = top_p
 
-        if api_key:
-            self.api_key = api_key
-        else:
+        if api_key == 'openrouter.api_key':
             def load_api_key():
                 with open(settings.API_KEY_CONFIG_PATH, "r") as f:
-                    return yaml.safe_load(f)
-            api_key_config = load_api_key()
-            self.api_key = api_key_config["openrouter"]["api_key"]
+                    return yaml.safe_load(f)                
+            try:
+                api_key_config = load_api_key()
+                provider, key_name = api_key.split(".", 1)
+                log(f"Loading {api_key} from {settings.API_KEY_CONFIG_PATH}", caller=self.agent_name, level=logging.DEBUG)
+                self.api_key = api_key_config[provider][key_name]
+
+            except (ValueError, KeyError, FileNotFoundError) as e:
+                log(f"{api_key} is missing or invalid! ({e})", caller=self.agent_name, level=logging.WARNING)
+        elif api_key:
+            self.api_key = api_key
 
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -289,19 +301,24 @@ class OpenRouterClient(Base_LLM_Client):
         try:
             resp = requests.get(self.models_url, headers=self.headers, timeout=20)
             resp.raise_for_status()
+            # explicit auth handling
+            if resp.status_code == 401:
+                log("❌ Invalid OpenRouter API key", caller=self.caller, level=logging.ERROR)
+                return False
+
             data = resp.json()
             models = [m.get("id", "") for m in data.get("data", [])]
-            if self.model not in models:
-                log(f"⚠ Model '{self.model}' not found via OpenRouter.", caller=self.caller)
+            if self.model_name not in models:
+                log(f"⚠ Model '{self.model_name}' not found via OpenRouter.", caller=self.caller)
                 log(f"Available examples: {', '.join(models[:10])}", caller=self.caller)
                 return False
-            log(f"✅ OpenRouter connected. Model '{self.model}' ready.", caller=self.caller)
+            log(f"✅ OpenRouter connected. Model '{self.model_name}' ready.", caller=self.caller)
             return True
         except Exception as e:
             log(f"❌ Cannot connect to OpenRouter: {e}", caller=self.caller, level=logging.ERROR)
             return False
 
-    
+        
     def generate_json_response(self, system_prompt: str, user_prompt: str,response_model: Type[T], loop_info: Optional[dict] = None) -> Tuple[T, dict, dict]:
         """
         Forces the LLM to output its answer as a strict JSON object that matches a Pydantic schema (Type[T]).
@@ -425,16 +442,19 @@ class OpenRouterClient(Base_LLM_Client):
         
         except requests.exceptions.Timeout as e:
             log(f"LLM API Timeout (OpenRouter): Request exceeded 180s timeout.", caller=self.caller, level=logging.ERROR)
-            # Return empty response to allow the agent to burn an attempt and retry
-            return None, {}, {}
+            raise
+            # # Return empty response to allow the agent to burn an attempt and retry
+            # return None, {}, {}
             
         except requests.exceptions.RequestException as e:
             log(f"LLM API Network/HTTP Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
-            return None, {}, {}
+            raise
+            # # Return empty response to allow the agent to burn an attempt and retry
+            # return None, {}, {}
             
         except Exception as e:
             log(f"LLM Structured Error (OpenRouter): {e}", caller=self.caller, level=logging.ERROR)
             log(f"Raw LLM Response that possibly caused the error", caller=self.caller, level=logging.ERROR)
-            
+            raise
             # Removed `raise`. We now fail gracefully and let the outer loop handle it.
-            return None, {}, {}
+            # return None, {}, {}
