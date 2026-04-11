@@ -52,18 +52,23 @@ class LLM_Client:
     def _calculate_metrics(self, usage, duration: float) -> dict:
         if not usage:
             return {"total_seconds": round(duration, 3)}
-            
-        p_tokens = getattr(usage, 'prompt_tokens', 0)
-        c_tokens = getattr(usage, 'completion_tokens', 0)
         
+        log(f"API Usage: {usage}", caller=self.agent_name, level=logging.INFO)
+        # p_tokens = getattr(usage, 'prompt_tokens', 0)
+        # c_tokens = getattr(usage, 'completion_tokens', 0)
+        
+        p_tokens = usage.prompt_tokens
+        c_tokens = usage.completion_tokens
+        cost = usage.cost  # This is exact cost return by the response, will match the exact value on openrouter log. 
+
         # Using cost table at llm.yaml
-        rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
-        cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
+        # rates = settings.COST_TABLE.get(self.model_name, {"input": 0.0, "output": 0.0})
+        # cost_usd = (p_tokens / 1_000_000 * rates["input"]) + (c_tokens / 1_000_000 * rates["output"])
         
         return {
             "total_prompt_tokens": p_tokens,
             "total_completion_tokens": c_tokens,
-            "total_cost_usd": cost_usd,
+            "total_cost_usd": cost,
             "total_seconds": round(duration, 3),
             f"calls_{self.model_name}": 1
         }
