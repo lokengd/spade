@@ -137,7 +137,7 @@ def run(state: SpadeState):
     log(f">>> suspicious_loc: {suspicious_locs}", agent_name)
 
     too_long_files = []
-    MAX_LINES = 100 # Threshold for too long snippets
+    MAX_LINES = 200 # Threshold for too long snippets
     file_snippets = {}
     for file, funcloc in suspicious_locs.items(): #bug_context.suspicious_locs:
         # log(f">> Processing file: {file} with suspicious locations: {funcloc}", agent_name)
@@ -154,17 +154,17 @@ def run(state: SpadeState):
                         margin=settings.SNIPPET_CONTEXT_LINES
                     )
         else:
-            continue # rather just skip
-            # # then get the whole file as snippet
-            # snippet = extract_snippet_fix(
-            #     repo_path=bug_context.local_repo_path,
-            #     relative_file_path=file,
-            #     margin=settings.SNIPPET_CONTEXT_LINES
-            # )
-            # # log(f">> Extracted snippet for {file}:\n{snippet}\n", agent_name)
-            # if snippet.count('\n') >= MAX_LINES:
-            #     too_long_files.append(file)
-            #     continue
+            # continue # rather just skip
+            # then get the whole file as snippet
+            snippet = extract_snippet_fix(
+                repo_path=bug_context.local_repo_path,
+                relative_file_path=file,
+                margin=settings.SNIPPET_CONTEXT_LINES
+            )
+            # log(f">> Extracted snippet for {file}:\n{snippet}\n", agent_name)
+            if snippet.count('\n') >= MAX_LINES:
+                too_long_files.append(file)
+                continue
         
         file_snippets[file] = snippet
 

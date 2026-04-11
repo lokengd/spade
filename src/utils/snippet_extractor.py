@@ -285,6 +285,27 @@ def find_function_end(lines: List[str], start_line: int) -> int:
     
     return end_line
 
+def get_class_body_range(lines, class_idx):
+    """Returns (start, exclusive_end) for a class block based on indentation."""
+    if not lines or class_idx >= len(lines):
+        return class_idx, class_idx + 1
+        
+    class_indent = len(lines[class_idx]) - len(lines[class_idx].lstrip())
+    end = class_idx + 1
+    
+    for i in range(class_idx + 1, len(lines)):
+        line = lines[i]
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):  # Skip blanks/comments
+            continue
+            
+        line_indent = len(line) - len(line.lstrip())
+        if line_indent <= class_indent:  # Indentation dropped → class ended
+            break
+        end = i + 1
+        
+    return class_idx, end
+
 #TODO -----------------------------
 def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: List[int] = None, function_names: Union[str, List[str]] = None, margin: int = 5, include_docstring: bool = True) -> str:
     """
@@ -322,6 +343,8 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
     
     func_names = [function_names] if isinstance(function_names, str) else (function_names or [])
     requested_func_starts = set()
+
+
     
     if not func_names:
         # If no function is provided, extract the whole file
@@ -331,15 +354,24 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
             start_idx = None
             class_idx = None
             if "." in fname:
-                parts = fname.split(".", 1)
-                result = find_method_in_class(lines, parts[0], parts[1])
+                class_name, method_name = fname.split(".", 1)
+                result = find_method_in_class(lines, class_name, method_name)
+
                 if result:
                     start_idx = result[0]
                     # Find class header line
-                    class_pattern = re.compile(rf"^\s*class\s+{re.escape(parts[0])}\b")
+                    class_pattern = re.compile(rf"^\s*class\s+{re.escape(class_name)}\b")
                     for j in range(start_idx, -1, -1):
                         if class_pattern.search(lines[j]):
                             class_idx = j
+                            break
+                else:
+                    # METHOD NOT FOUND → Fallback: locate the class definition
+                    class_pattern = re.compile(rf"^\s*class\s+{re.escape(class_name)}\b")
+                    for i, line in enumerate(lines):
+                        if class_pattern.match(line):
+                            class_idx = i
+                            fallback_to_class = True
                             break
             else:
                 pattern = re.compile(rf"^\s*(async\s+)?def\s+{re.escape(fname)}\b")
@@ -347,7 +379,8 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
                     if pattern.match(line):
                         start_idx = i
                         break
-                        
+
+            # ✅ CASE 1: Function/Method found → original smart extraction logic  
             if start_idx is not None:
                 requested_func_starts.add(start_idx)
                 if class_idx is not None:
@@ -368,6 +401,12 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
                         ranges.append((class_idx, class_idx + 1)) # class header
                     for tl in targets_in_func:
                         ranges.append((max(start, tl - 1 - margin), min(end, tl + margin)))
+            
+            # ✅ CASE 2: Method not found → Fallback to full class
+            elif fallback_to_class and class_idx is not None:
+                requested_func_starts.add(class_idx)
+                class_start, class_end = get_class_body_range(lines, class_idx)
+                ranges.append((class_start, class_end))
 
     # 3. Merge overlapping or adjacent ranges
     ranges.sort()
@@ -384,17 +423,6 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
 
     # 4. Identify docstrings to skip
     docstring_indices: Set[int] = set()
-    if not include_docstring:
-        for i, line in enumerate(lines):
-            # Only detect docstrings for definitions within our included ranges
-            if any(start <= i < end for start, end in merged):
-                if line.lstrip().startswith(("def ", "class ")):
-                    d_range = get_docstring_range(lines, i)
-                    if d_range:
-                        for d_idx in range(d_range[0], d_range[1]):
-                            # Never skip a line if it's explicitly targeted
-                            if (d_idx + 1) not in targets:
-                                docstring_indices.add(d_idx)
 
     # 5. Construct snippet
     result = ["```python"] 
@@ -421,7 +449,15 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
             if idx in requested_func_starts and (idx + 1) not in targets:
                 marker = "f> "
             # result.append(f"{marker}{idx + 1:4d}: {lines[idx].rstrip()}")
+            
             result.append(f"{lines[idx].rstrip()}")
+        
+        # add empty line between blocks for readability
+        if i < len(merged) - 1:
+            result.append("")
+            result.append("")
+            result.append("")
+            
 
     result.append("```")
     return "\n".join(result)

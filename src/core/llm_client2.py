@@ -338,6 +338,15 @@ class OpenRouterClient(Base_LLM_Client):
                 "max_tokens": 4096,
                 "effort": "medium",
                 "temperature": self.temperature,
+                'provider': {
+                    'sort': {
+                        'by': 'price',
+                        'partition': 'none',
+                    },
+                    # 'preferred_min_throughput': {
+                    #     'p75': 50, # Prefer providers with >50 tokens/sec for 75% of requests in last 5 minutes
+                    #     },
+                },
             }
             # optional params
             if self.top_k is not None:
@@ -409,6 +418,15 @@ class OpenRouterClient(Base_LLM_Client):
                 "max_tokens": 4096,
                 "effort": "medium",
                 "temperature": self.temperature,
+                'provider': {
+                    'sort': {
+                        'by': 'price',
+                        'partition': 'none',
+                    },
+                    # 'preferred_min_throughput': {
+                    #     'p75': 50, # Prefer providers with >50 tokens/sec for 75% of requests in last 5 minutes
+                    #     },
+                },
             }
             # optional params
             if self.top_k is not None:

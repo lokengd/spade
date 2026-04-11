@@ -392,9 +392,10 @@ patch_generation_new:
       **Description:** {active_pattern_description}
       **Rationale:** {active_pattern_rationale}
 
+      ## Failed Patches History
       {failed_patches_history}
 
-      Generate the patch in the form of SEARCH/REPLACE blocks upon the snippets provided.
+      Generate at least TWO SEARCH/REPLACE blocks for the snippets provided to fix the bug.
       
   unconstrained:
     user: |
@@ -438,9 +439,10 @@ patch_generation_new:
       ## Suspicious Code Snippets
       {suspicious_snippets}
 
+      ## Failed Patches History
       {failed_patches_history}
 
-      Generate the patch in the form of SEARCH/REPLACE blocks upon the snippets provided.
+      Generate at least TWO SEARCH/REPLACE blocks for the snippets provided to fix the bug.
   
   refinement:
     system: |
