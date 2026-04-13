@@ -51,6 +51,20 @@ def run(state: SpadeState):
     k_val = min(settings.K_PATTERNS, settings.K_PATTERNS_TOTAL)
     log(f"{loop_info_str} Selecting Top-{k_val} Patterns...", agent_name)
 
+    # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
+    metrics = {}
+    final_selection = []
+
+    # skip pattern selection when K=0, for cases when N > 1 (n=1 is handled at graph.py route_after_reproduction)
+    if k_val == 0:
+        log("K=0: Skipping Pattern Selection, proceeding to Unconstrained PatchGen.", caller=agent_name)
+        return {
+            "selected_patterns": final_selection, # empty for k=0
+            "inner_loop_count": 1, # Reset inner loop count at the start of a new pattern selection
+            "current_patch_version": 1, # Reset patch version to 1 for the new set of patterns
+            "total_metrics": metrics 
+        }
+
     # Format the System Prompt
     system_template = prompts_config["pattern_selection"]["system"]
     system_prompt = system_template.format(
@@ -111,9 +125,6 @@ def run(state: SpadeState):
     # system_prompt += "\n" + json_response_template
     user_prompt += "\n" + json_response_template
 
-    # Default to empty list: If anything goes wrong, K=0, meaning only the +1 Unconstrained Agent will run.
-    metrics = {}
-    final_selection = []
     raw_telemetry = {}
     MAX_RETRIES = 3 # to ensure selected pattern count equals to K_PATTERNS
     for attempt in range(1, MAX_RETRIES + 1):
