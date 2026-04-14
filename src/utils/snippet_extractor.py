@@ -353,6 +353,10 @@ def extract_snippet_fix(repo_path: str, relative_file_path: str, target_lines: L
         for fname in func_names:
             start_idx = None
             class_idx = None
+            fallback_to_class = False
+
+            print(f"\n>>> Searching for function: {fname}")
+
             if "." in fname:
                 class_name, method_name = fname.split(".", 1)
                 result = find_method_in_class(lines, class_name, method_name)

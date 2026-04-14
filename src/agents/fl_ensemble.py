@@ -166,6 +166,10 @@ def run(state: SpadeState):
                 too_long_files.append(file)
                 continue
         
+        # if empty, meaning just two lines of code wrapper, then skip
+        if snippet.count('\n') <= 2:
+            log(f">> Skipping {file} due to very empty.", agent_name)
+            continue
         file_snippets[file] = snippet
 
     #delete files with too long snippets from the context to avoid overwhelming the LLM
@@ -187,11 +191,9 @@ def run(state: SpadeState):
             f.write(snippet)
         log(f"Exported snippet for {file} to {export_path}", agent_name)
     
-    # exit(0) # TEMPORARY EXIT TO TEST SNIPPET EXTRACTION BEFORE PROCEEDING WITH LLM INTERACTION
 
     # for file, snippet in file_snippets.items():
     #     log(f">>> 🔧 Snippet for {file}:\n{snippet}\n", agent_name)
-
 
     return {
         "bug_context": bug_context,
